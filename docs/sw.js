@@ -37,7 +37,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   const filename = url.pathname.split('/').pop();
 
-  // ?�심 ???�일: ??�� ?�트?�크?�서 최신�?가?�오�?(?�프?�인 ??캐시 ?�용)
+  // ?�심 ???�일: ??�� ?�트?�크?�서 최신�?가?�오�?(?�프?�인 ??캐시 ?�용)
   if (NETWORK_FIRST.includes(filename)) {
     e.respondWith(
       fetch(new Request(e.request.url, { cache: 'no-store' }))
@@ -52,7 +52,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // ?�머지 (?��?지, PDF, ?�이브러�???: 캐시 ?�선, ?�으�??�트?�크?�서 받아 캐시
+  // ?�머지 (?��?지, PDF, ?�이브러�???: 캐시 ?�선, ?�으�??�트?�크?�서 받아 캐시
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
