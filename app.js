@@ -2900,39 +2900,24 @@ function restartExplorer() {
   scrollToTop();
 }
 
-const HOLIDAY_API_KEY = "768032991f4fbf49afa6a72c715777db57071595ecd12c61a79db6df149f3803";
+let _holidaysJsonCache = null;
+
+async function loadHolidaysJson() {
+  if (_holidaysJsonCache) return _holidaysJsonCache;
+  try {
+    const res = await fetch("./holidays.json");
+    _holidaysJsonCache = await res.json();
+  } catch {
+    _holidaysJsonCache = {};
+  }
+  return _holidaysJsonCache;
+}
 
 async function fetchKoreanHolidays(year) {
   if (state.dateCalc.apiHolidays[year] !== undefined) return;
   state.dateCalc.apiHolidays[year] = null;
-
-  // 1차: 공공데이터포털 (한국천문연구원 특일 정보) — CORS 프록시 경유
-  try {
-    const govUrl = `https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo?serviceKey=${HOLIDAY_API_KEY}&solYear=${year}&_type=json&numOfRows=100`;
-    const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(govUrl)}`);
-    const data = await res.json();
-    const items = data?.response?.body?.items?.item;
-    if (items) {
-      const list = Array.isArray(items) ? items : [items];
-      state.dateCalc.apiHolidays[year] = list
-        .filter(item => item.isHoliday === "Y")
-        .map(item => {
-          const d = String(item.locdate);
-          return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
-        });
-      renderDateCalculator();
-      return;
-    }
-  } catch {}
-
-  // 2차 폴백: Nager.Date (임시공휴일 반영 지연 가능)
-  try {
-    const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/KR`);
-    const data = await res.json();
-    state.dateCalc.apiHolidays[year] = Array.isArray(data) ? data.map(item => item.date) : [];
-  } catch {
-    state.dateCalc.apiHolidays[year] = [];
-  }
+  const all = await loadHolidaysJson();
+  state.dateCalc.apiHolidays[year] = all[String(year)] ?? [];
   renderDateCalculator();
 }
 
