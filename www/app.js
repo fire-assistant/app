@@ -789,6 +789,7 @@ const screens = {
   explorerYear: document.getElementById("screen-explorer-year"),
   date: document.getElementById("screen-date"),
   inspection: document.getElementById("screen-inspection"),
+  multiuseSelect: document.getElementById("screen-multiuse-select"),
   multiuse: document.getElementById("screen-multiuse"),
   guide: document.getElementById("screen-guide"),
   reportGuide: document.getElementById("screen-report-guide"),
@@ -813,8 +814,14 @@ const explorerModeBadgeEl = document.getElementById("explorer-mode-badge");
 function applyExplorerModeUI() {
   if (!explorerTitleEl || !explorerModeBadgeEl) return;
   const isYearMode = explorerRuntime.mode === "year";
-  explorerTitleEl.textContent = isYearMode ? "소방시설탐색기 (연도별)" : "소방시설탐색기";
-  explorerModeBadgeEl.classList.toggle("hidden", !isYearMode);
+  const isMultiuseOnly = explorerRuntime.mode === "multiuse-only";
+  if (isMultiuseOnly) {
+    explorerTitleEl.textContent = "다중이용업소 안전시설 탐색";
+    explorerModeBadgeEl.classList.add("hidden");
+  } else {
+    explorerTitleEl.textContent = isYearMode ? "소방시설탐색기 (연도별)" : "소방시설탐색기";
+    explorerModeBadgeEl.classList.toggle("hidden", !isYearMode);
+  }
 }
 
 const questionCard = document.getElementById("question-card");
@@ -952,6 +959,19 @@ function sanitizeAssistantNumericInput(value) {
 }
 
 function getActiveSteps() {
+  if (explorerRuntime.mode === "multiuse-only") {
+    const MULTIUSE_KEYS = ["multiuseSimpleSprinklerCheck", "multiuseOnSecondToTenthFloor", "multiuseOnGroundOrRefugeFloor", "multiuseUsesAV", "multiuseHasGasFacility", "multiuseHasRooms", "multiuseHasEvacuationRoute"];
+    return steps.filter((step) => {
+      if (!MULTIUSE_KEYS.includes(step.key)) return false;
+      if (step.key === "multiuseOnGroundOrRefugeFloor") {
+        return state.answers.multiuseIsPostpartum === "yes" || state.answers.multiuseIsGosiwon === "yes";
+      }
+      if (step.key === "multiuseOnSecondToTenthFloor") {
+        return state.answers.multiuseInBasement !== "yes";
+      }
+      return true;
+    });
+  }
   return steps.filter((step) => {
     if (["isThirdClassNeighborhood", "permitBefore1992", "pre1992PermitRange", "thirdClassDetailUse"].includes(step.key)) return false;
     if (!step.onlyFor) return true;
@@ -1020,7 +1040,8 @@ const screenLabels = {
   explorerYear: "소방시설탐색기",
   date: "날짜 계산기",
   inspection: "작동·종합 대상 판독기",
-  multiuse: "다중이용업소 판독기",
+  multiuseSelect: "다중이용업소 판독기",
+  multiuse: "다중이용업소 해당 여부 판독기",
   guide: "이용 안내",
   reportGuide: "자체점검 보고서 읽는법",
   occupancy: "수용인원 계산기",
@@ -1205,7 +1226,9 @@ function renderCompoundStep(step) {
     ];
 
     const toggleOption = (name) => {
-      state.answers[name] = state.answers[name] === "yes" ? "no" : "yes";
+      const wasSelected = state.answers[name] === "yes";
+      selectedKeys.forEach((k) => { state.answers[k] = "no"; });
+      if (!wasSelected) state.answers[name] = "yes";
       renderCurrentStep();
     };
 
@@ -2674,6 +2697,16 @@ function showResults() {
     showToast("현재 질문의 값을 먼저 입력해 주세요.");
     return;
   }
+  if (explorerRuntime.mode === "multiuse-only") {
+    const input = normalizeAnswers();
+    explorerViewState.lastInput = input;
+    renderMultiuseSafetyCard(input);
+    const backBtn = document.getElementById("back-to-main-result");
+    if (backBtn) backBtn.textContent = "이전 질문으로";
+    showExplorerCard("multiuse-result");
+    scrollToTop();
+    return;
+  }
   if (!["neighborhood", "lodging", "elderly", "medical"].includes(state.answers.occupancyType)) {
     showToast("지금은 근린생활시설, 숙박시설, 노유자시설, 의료시설만 판정할 수 있습니다. 해당 용도를 선택해 주세요.");
     return;
@@ -2893,6 +2926,30 @@ function restartExplorer() {
     medicalParkingStructureArea: 0,
     medicalMechanicalParkingCapacity: 0,
     medicalElectricalRoomArea: 0,
+  });
+  showExplorerCard("question");
+  clearMultiuseSections();
+  renderCurrentStep();
+  scrollToTop();
+}
+
+function restartMultiuseOnly() {
+  state.currentStep = 0;
+  explorerViewState.lastInput = null;
+  Object.assign(state.answers, {
+    occupancyType: "neighborhood",
+    hasMultiuseBusiness: "yes",
+    multiuseInBasement: "no",
+    multiuseIsSealed: "no",
+    multiuseIsPostpartum: "no",
+    multiuseIsGosiwon: "no",
+    multiuseIsGunRange: "no",
+    multiuseOnSecondToTenthFloor: "no",
+    multiuseOnGroundOrRefugeFloor: "no",
+    multiuseUsesAV: "no",
+    multiuseHasGasFacility: "no",
+    multiuseHasRooms: "no",
+    multiuseHasEvacuationRoute: "no",
   });
   showExplorerCard("question");
   clearMultiuseSections();
@@ -4071,10 +4128,20 @@ document.getElementById("open-inspection-decoder").addEventListener("click", () 
 });
 document.getElementById("open-multiuse-decoder").addEventListener("click", () => {
   gtag("event", "menu_click", { menu_name: "다중이용업소판독기" });
+  showScreen("multiuseSelect");
+});
+document.getElementById("back-from-multiuse-select").addEventListener("click", () => showScreen("home"));
+document.getElementById("multiuse-select-decoder").addEventListener("click", () => {
   multiuseRestart();
   showScreen("multiuse");
 });
-document.getElementById("back-from-multiuse").addEventListener("click", () => showScreen("home"));
+document.getElementById("multiuse-select-safety").addEventListener("click", () => {
+  explorerRuntime.mode = "multiuse-only";
+  applyExplorerModeUI();
+  showScreen("explorer");
+  restartMultiuseOnly();
+});
+document.getElementById("back-from-multiuse").addEventListener("click", () => showScreen("multiuseSelect"));
 
 // ── 수용인원 계산기 ──────────────────────────────────────────
 
@@ -4314,7 +4381,10 @@ document.getElementById("open-occupancy-calculator").addEventListener("click", (
 });
 document.getElementById("back-from-occupancy").addEventListener("click", () => showScreen("home"));
 document.getElementById("back-from-inspection").addEventListener("click", () => showScreen("home"));
-document.getElementById("back-from-explorer").addEventListener("click", () => showScreen("home"));
+document.getElementById("back-from-explorer").addEventListener("click", () => {
+  if (explorerRuntime.mode === "multiuse-only") showScreen("multiuseSelect");
+  else showScreen("home");
+});
 // =============================================
 // 연도별 탐색기 (Year-based Explorer)
 // =============================================
@@ -9848,7 +9918,11 @@ document.getElementById("open-guide").addEventListener("click", () => showScreen
 })();
 document.getElementById("prev-step").addEventListener("click", () => {
   if (state.currentStep === 0) {
-    showScreen("explorerSelect");
+    if (explorerRuntime.mode === "multiuse-only") {
+      showScreen("multiuseSelect");
+    } else {
+      showScreen("explorerSelect");
+    }
   } else {
     moveStep(-1);
   }
@@ -9887,10 +9961,20 @@ document.getElementById("open-multiuse-safety").addEventListener("click", () => 
   } else {
     renderMultiuseSafetyCard(input);
   }
+  const backBtn = document.getElementById("back-to-main-result");
+  if (backBtn) backBtn.textContent = "기본 결과로";
   showExplorerCard("multiuse-result");
   scrollToTop();
 });
 document.getElementById("back-to-main-result").addEventListener("click", () => {
+  if (explorerRuntime.mode === "multiuse-only") {
+    const activeSteps = getActiveSteps();
+    state.currentStep = activeSteps.length - 1;
+    showExplorerCard("question");
+    renderCurrentStep();
+    scrollToTop();
+    return;
+  }
   if (explorerViewState.lastInput) {
     const input = explorerViewState.lastInput;
     if (input.occupancyType === "lodging") {
@@ -9902,8 +9986,14 @@ document.getElementById("back-to-main-result").addEventListener("click", () => {
   showExplorerCard("main-result");
   scrollToTop();
 });
-document.getElementById("restart-explorer").addEventListener("click", restartExplorer);
-document.getElementById("restart-explorer-from-multiuse").addEventListener("click", restartExplorer);
+document.getElementById("restart-explorer").addEventListener("click", () => {
+  if (explorerRuntime.mode === "multiuse-only") { restartMultiuseOnly(); return; }
+  restartExplorer();
+});
+document.getElementById("restart-explorer-from-multiuse").addEventListener("click", () => {
+  if (explorerRuntime.mode === "multiuse-only") { restartMultiuseOnly(); return; }
+  restartExplorer();
+});
 document.getElementById("result-back-to-select").addEventListener("click", () => {
   const activeSteps = getActiveSteps();
   state.currentStep = activeSteps.length - 1;
