@@ -2984,6 +2984,7 @@ function renderDateCalculator() {
       <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.22); border: 1.5px solid rgba(217, 48, 37, 0.75);"></span>선임기한</div>
       <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.22); border: 1.5px solid rgba(66, 133, 244, 0.8);"></span>선임신고 범위</div>
       <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.22); border: 1.5px solid rgba(66, 133, 244, 0.85);"></span>선임신고기한</div>
+      <div class="cl-item"><span class="cl-dot" style="background: #cda7ff;"></span>입력 공휴일</div>
     `;
   }
 
@@ -10622,6 +10623,17 @@ const RG_FACILITY_DESCS = {
   ],
 };
 
+// 설비별 참고 박스 (noteTitle + noteItems)
+const RG_FACILITY_NOTES = {
+  'a05': {
+    noteTitle: '전층경보 vs 우선경보 방식',
+    noteItems: [
+      { tag: '전층경보', text: '화재 감지 시 건물 전체에 즉시 경보를 발령하는 방식입니다. <b>11층 미만(공동주택은 16층 미만)</b>인 건축물에 적용됩니다.' },
+      { tag: '우선경보', text: '화재가 발생한 층과 위험도가 높은 인접 층에 우선 경보를 발령하는 방식입니다. <b>11층 이상(공동주택은 16층 이상)</b>인 특정소방대상물에 적용됩니다. 대형 건물에서 일시 대피로 인한 병목 현상과 혼란을 방지하기 위해 사용됩니다.' },
+    ],
+  },
+};
+
 const RG_FACILITY_GROUPS = [
   {
     id: 'water', sectionLabel: '3-3', page: 5, name: '수계소화설비',
@@ -11361,6 +11373,23 @@ function renderFacilityBlock(c, item, selectedIds) {
     });
     descWrap.appendChild(ul);
     body.appendChild(descWrap);
+  }
+
+  var facilityNote = RG_FACILITY_NOTES[item.id];
+  if (facilityNote) {
+    var noteBox = document.createElement('div');
+    noteBox.className = 'rg-role-note';
+    var noteTitleEl = document.createElement('div');
+    noteTitleEl.className = 'rg-role-note-title';
+    noteTitleEl.innerHTML = '<span class="rg-note-badge">참고</span> ' + facilityNote.noteTitle;
+    noteBox.appendChild(noteTitleEl);
+    facilityNote.noteItems.forEach(function (ni) {
+      var row = document.createElement('div');
+      row.className = 'rg-role-item';
+      row.innerHTML = '<span class="rg-role-tag">' + ni.tag + '</span>' + ni.text;
+      noteBox.appendChild(row);
+    });
+    body.appendChild(noteBox);
   }
 
   header.addEventListener('click', function () {

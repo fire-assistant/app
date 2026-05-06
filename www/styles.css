@@ -1522,7 +1522,8 @@ input:focus-visible {
 }
 
 .cal-day.holiday {
-  box-shadow: inset 0 0 0 1.5px rgba(170, 118, 255, 0.45);
+  background: rgba(170, 118, 255, 0.22);
+  box-shadow: inset 0 0 0 1.5px rgba(170, 118, 255, 0.6);
   color: #cda7ff;
 }
 
@@ -2697,8 +2698,9 @@ html[data-theme="light"] .cal-day.appoint-range.report-deadline {
 }
 
 html[data-theme="light"] .cal-day.holiday {
+  background: rgba(106, 48, 204, 0.12);
+  box-shadow: inset 0 0 0 1.5px rgba(106, 48, 204, 0.55);
   color: #6a30cc;
-  box-shadow: inset 0 0 0 1.5px rgba(106, 48, 204, 0.4);
 }
 
 /* ══════════════════════════════════════════════
@@ -4184,6 +4186,8 @@ html[data-theme="official"] .cal-day.appoint-range.report-deadline {
   color: #1a73e8;
 }
 html[data-theme="official"] .cal-day.holiday {
+  background: rgba(112, 64, 192, 0.12);
+  box-shadow: inset 0 0 0 1.5px rgba(112, 64, 192, 0.5);
   color: #7040c0;
 }
 
