@@ -8,16 +8,13 @@ echo ================================
 echo.
 
 set "REPO_URL=https://github.com/carrotcakehope/supply-fireapp.git"
-set "FOLDER_NAME=supply-fireapp"
 
-if exist "%FOLDER_NAME%" (
+if exist ".git" (
     echo [INFO] Already exists. Updating...
-    cd /d "%FOLDER_NAME%"
     git pull
 ) else (
     echo [INFO] Downloading...
-    git clone "%REPO_URL%"
-    cd /d "%FOLDER_NAME%"
+    git clone "%REPO_URL%" .
 )
 
 if %errorlevel% neq 0 (
