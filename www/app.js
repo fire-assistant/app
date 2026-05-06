@@ -3184,9 +3184,10 @@ function renderDateCalculator() {
           ${mode.supportsHolidaySelection ? `
           <div class="holiday-toggle">
             <button class="holiday-toggle-btn${state.dateCalc.selectMode === "base" ? " active" : ""}" type="button" data-select-mode="base">기산일 선택</button>
-            <button class="holiday-toggle-btn${state.dateCalc.selectMode === "holiday" ? " active" : ""}" type="button" data-select-mode="holiday">입력 공휴일 지정</button>
+            ${state.dateCalc.selectMode === "holiday" && state.dateCalc.holidays.length > 0
+              ? `<button class="holiday-toggle-btn active holiday-clear-btn" type="button" data-action="clear-holidays">입력한 공휴일 ${state.dateCalc.holidays.length}개 지우기</button>`
+              : `<button class="holiday-toggle-btn${state.dateCalc.selectMode === "holiday" ? " active" : ""}" type="button" data-select-mode="holiday">입력 공휴일 지정</button>`}
           </div>
-          ${state.dateCalc.holidays.length > 0 ? `<div class="holiday-clear-wrap"><button class="holiday-clear-btn" type="button" data-action="clear-holidays">추가 입력한 공휴일 ${state.dateCalc.holidays.length}개 지우기</button></div>` : ""}
           <p class="calc-copy">${(() => {
             const isLoading = Object.values(state.dateCalc.apiHolidays).some(v => v === null);
             const loadingText = isLoading ? " <span style='color:var(--text-dim);font-size:11px'>(공휴일 불러오는 중…)</span>" : "";
