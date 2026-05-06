@@ -606,6 +606,7 @@ const state = {
     mode: "inspect_report",
     baseDate: todayString(),
     holidays: [],
+    apiHolidays: {},
     selectMode: "base",
     noncomplianceType: "repair",
     assistantTargetType: "apartment",
@@ -2899,6 +2900,50 @@ function restartExplorer() {
   scrollToTop();
 }
 
+const HOLIDAY_API_KEY = "768032991f4fbf49afa6a72c715777db57071595ecd12c61a79db6df149f3803";
+
+async function fetchKoreanHolidays(year) {
+  if (state.dateCalc.apiHolidays[year] !== undefined) return;
+  state.dateCalc.apiHolidays[year] = null;
+
+  // 1차: 공공데이터포털 (한국천문연구원 특일 정보) — CORS 프록시 경유
+  try {
+    const govUrl = `https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo?serviceKey=${HOLIDAY_API_KEY}&solYear=${year}&_type=json&numOfRows=100`;
+    const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(govUrl)}`);
+    const data = await res.json();
+    const items = data?.response?.body?.items?.item;
+    if (items) {
+      const list = Array.isArray(items) ? items : [items];
+      state.dateCalc.apiHolidays[year] = list
+        .filter(item => item.isHoliday === "Y")
+        .map(item => {
+          const d = String(item.locdate);
+          return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
+        });
+      renderDateCalculator();
+      return;
+    }
+  } catch {}
+
+  // 2차 폴백: Nager.Date (임시공휴일 반영 지연 가능)
+  try {
+    const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/KR`);
+    const data = await res.json();
+    state.dateCalc.apiHolidays[year] = Array.isArray(data) ? data.map(item => item.date) : [];
+  } catch {
+    state.dateCalc.apiHolidays[year] = [];
+  }
+  renderDateCalculator();
+}
+
+function getApiHolidaySet() {
+  const result = new Set();
+  for (const arr of Object.values(state.dateCalc.apiHolidays)) {
+    if (Array.isArray(arr)) arr.forEach(d => result.add(d));
+  }
+  return result;
+}
+
 function renderDateCalculator() {
   const root = document.getElementById("date-content");
   const prevLeftScroll = root.querySelector(".date-left")?.scrollTop ?? 0;
@@ -2913,7 +2958,14 @@ function renderDateCalculator() {
   const modeInfoBody = mode.kind === "inspect_report"
     ? mode.infoBody
     : mode.infoBody;
-  const holidayKeys = new Set(mode.supportsHolidaySelection ? state.dateCalc.holidays : []);
+  if (mode.supportsHolidaySelection) {
+    const baseYear = parseDate(state.dateCalc.baseDate).getFullYear();
+    [baseYear, baseYear + 1, state.dateCalc.viewYear].forEach(y => {
+      if (state.dateCalc.apiHolidays[y] === undefined) fetchKoreanHolidays(y);
+    });
+  }
+  const apiHolidaySet = mode.supportsHolidaySelection ? getApiHolidaySet() : new Set();
+  const holidayKeys = new Set(mode.supportsHolidaySelection ? [...state.dateCalc.holidays, ...apiHolidaySet] : []);
   const rangeKeys = new Set();
   const appointRangeKeys = new Set();
   const reportRangeKeys = new Set();
@@ -3149,8 +3201,15 @@ function renderDateCalculator() {
             <button class="holiday-toggle-btn${state.dateCalc.selectMode === "base" ? " active" : ""}" type="button" data-select-mode="base">기산일 선택</button>
             <button class="holiday-toggle-btn${state.dateCalc.selectMode === "holiday" ? " active" : ""}" type="button" data-select-mode="holiday">입력 공휴일 지정</button>
           </div>
-          ${state.dateCalc.holidays.length > 0 ? `<div class="holiday-clear-wrap"><button class="holiday-clear-btn" type="button" data-action="clear-holidays">입력한 공휴일 ${state.dateCalc.holidays.length}개 모두 지우기</button></div>` : ""}
-          <p class="calc-copy">${mode.kind === "noncompliance_dual" ? "완료신고기한 계산에 반영할 공휴일이 있으면 입력 공휴일 지정 버튼을 눌러 추가해주세요. 이행완료기한에는 반영되지 않습니다." : "기간 내에 공휴일이 있으면 입력 공휴일 지정 버튼을 눌러서 수동으로 공휴일을 추가해주세요."}</p>
+          ${state.dateCalc.holidays.length > 0 ? `<div class="holiday-clear-wrap"><button class="holiday-clear-btn" type="button" data-action="clear-holidays">추가 입력한 공휴일 ${state.dateCalc.holidays.length}개 지우기</button></div>` : ""}
+          <p class="calc-copy">${(() => {
+            const isLoading = Object.values(state.dateCalc.apiHolidays).some(v => v === null);
+            const loadingText = isLoading ? " <span style='color:var(--text-dim);font-size:11px'>(공휴일 불러오는 중…)</span>" : "";
+            if (mode.kind === "noncompliance_dual") {
+              return `공휴일은 자동 적용됩니다.${loadingText} 완료신고기한에 반영할 공휴일이 빠졌다면 입력 공휴일 지정 버튼으로 추가하세요. 이행완료기한에는 반영되지 않습니다.`;
+            }
+            return `공휴일은 자동 적용됩니다.${loadingText} 임시공휴일 등 빠진 날짜가 있으면 입력 공휴일 지정 버튼으로 추가하세요.`;
+          })()}</p>
           ` : ""}
           <div class="cal-wrap">
             <div class="cal-nav">
@@ -3261,6 +3320,7 @@ function renderDateCalculator() {
     button.addEventListener("click", () => {
       if (mode.supportsHolidaySelection && state.dateCalc.selectMode === "holiday") {
         const clicked = button.dataset.date;
+        if (getApiHolidaySet().has(clicked)) return; // 자동 공휴일은 수동 토글 불가
         const index = state.dateCalc.holidays.indexOf(clicked);
         if (index >= 0) state.dateCalc.holidays.splice(index, 1);
         else state.dateCalc.holidays.push(clicked);

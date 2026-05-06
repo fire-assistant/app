@@ -4539,11 +4539,15 @@ html[data-theme="blossom"] .status-not-required {
 }
 
 /* 공휴일이 범위 칸과 겹칠 때 — html[data-theme] 접두어로 (0,4,1) 특이도 확보, 테마 오버라이드(0,3,1) 이김 */
+/* color는 여기서 설정하지 않아 각 테마 holiday 색상 규칙을 그대로 상속 */
 .cal-day.appoint-range.holiday,
 .cal-day.report-range.holiday,
 html[data-theme] .cal-day.appoint-range.holiday,
 html[data-theme] .cal-day.report-range.holiday {
   background: rgba(170, 118, 255, 0.22);
   box-shadow: inset 0 0 0 1.5px rgba(170, 118, 255, 0.6);
-  color: #cda7ff;
+}
+
+html[data-theme="blossom"] .cal-day.holiday {
+  color: #4a1f90;
 }
