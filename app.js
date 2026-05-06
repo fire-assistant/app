@@ -2941,8 +2941,8 @@ function renderDateCalculator() {
     `;
     legendMarkup = `
       <div class="cl-item"><span class="cl-dot" style="background: transparent; border: 2px solid var(--red);"></span>선택일</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.6);"></span>산정 날짜</div>
-      <div class="cl-item"><span class="cl-dot" style="background: var(--amber);"></span>마감일</div>
+      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.18);"></span>산정 날짜</div>
+      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.45); border: 1.5px solid rgba(217, 48, 37, 0.85);"></span>마감일</div>
       <div class="cl-item"><span class="cl-dot" style="background: #cda7ff;"></span>입력 공휴일</div>
     `;
   }
@@ -2980,10 +2980,10 @@ function renderDateCalculator() {
     `;
     legendMarkup = `
       <div class="cl-item"><span class="cl-dot" style="background: transparent; border: 2px solid var(--red);"></span>선택일</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.6);"></span>선임기한 범위</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.22); border: 1.5px solid rgba(217, 48, 37, 0.75);"></span>선임기한</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.22); border: 1.5px solid rgba(66, 133, 244, 0.8);"></span>선임신고 범위</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.22); border: 1.5px solid rgba(66, 133, 244, 0.85);"></span>선임신고기한</div>
+      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.18);"></span>선임기한 범위</div>
+      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.45); border: 1.5px solid rgba(217, 48, 37, 0.85);"></span>선임기한</div>
+      <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.14);"></span>선임신고 범위</div>
+      <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.42); border: 1.5px solid rgba(66, 133, 244, 0.85);"></span>선임신고기한</div>
       <div class="cl-item"><span class="cl-dot" style="background: #cda7ff;"></span>입력 공휴일</div>
     `;
   }
@@ -3019,10 +3019,10 @@ function renderDateCalculator() {
     `;
     legendMarkup = `
       <div class="cl-item"><span class="cl-dot" style="background: transparent; border: 2px solid var(--red);"></span>선택일</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.6);"></span>이행완료 범위</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.22); border: 1.5px solid rgba(217, 48, 37, 0.75);"></span>이행완료기한</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.22); border: 1.5px solid rgba(66, 133, 244, 0.8);"></span>완료신고 범위</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.22); border: 1.5px solid rgba(66, 133, 244, 0.85);"></span>완료신고기한</div>
+      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.18);"></span>이행완료 범위</div>
+      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.45); border: 1.5px solid rgba(217, 48, 37, 0.85);"></span>이행완료기한</div>
+      <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.14);"></span>완료신고 범위</div>
+      <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.42); border: 1.5px solid rgba(66, 133, 244, 0.85);"></span>완료신고기한</div>
       <div class="cl-item"><span class="cl-dot" style="background: #cda7ff;"></span>입력 공휴일</div>
     `;
   }

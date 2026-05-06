@@ -1485,40 +1485,40 @@ input:focus-visible {
 }
 
 .cal-day.report-range {
-  box-shadow: inset 0 0 0 1.5px rgba(66, 133, 244, 0.55);
+  background: rgba(66, 133, 244, 0.14);
   color: #fff;
 }
 
 .cal-day.appoint-range.report-range {
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.22) 0%, rgba(66, 133, 244, 0.22) 50%, rgba(217, 48, 37, 0.18) 50%, rgba(217, 48, 37, 0.18) 100%);
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.16) 0%, rgba(66, 133, 244, 0.16) 50%, rgba(217, 48, 37, 0.16) 50%, rgba(217, 48, 37, 0.16) 100%);
 }
 
 .cal-day.deadline {
-  background: rgba(249, 171, 0, 0.18);
-  color: var(--amber);
+  background: rgba(217, 48, 37, 0.45);
+  color: var(--red-soft);
   font-weight: 700;
-  box-shadow: inset 0 0 0 1.5px rgba(249, 171, 0, 0.5);
+  box-shadow: inset 0 0 0 1.5px rgba(217, 48, 37, 0.85);
 }
 
 .cal-day.appoint-deadline {
-  background: rgba(217, 48, 37, 0.22);
+  background: rgba(217, 48, 37, 0.45);
   color: var(--red-soft);
   font-weight: 700;
-  box-shadow: inset 0 0 0 1.5px rgba(217, 48, 37, 0.58);
+  box-shadow: inset 0 0 0 1.5px rgba(217, 48, 37, 0.85);
 }
 
 .cal-day.report-deadline {
-  background: rgba(66, 133, 244, 0.22);
+  background: rgba(66, 133, 244, 0.42);
   color: #9fc4ff;
   font-weight: 700;
-  box-shadow: inset 0 0 0 1.5px rgba(66, 133, 244, 0.72);
+  box-shadow: inset 0 0 0 1.5px rgba(66, 133, 244, 0.85);
 }
 
 .cal-day.appoint-range.report-deadline {
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.28) 0%, rgba(66, 133, 244, 0.28) 50%, rgba(217, 48, 37, 0.18) 50%, rgba(217, 48, 37, 0.18) 100%);
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.42) 0%, rgba(66, 133, 244, 0.42) 50%, rgba(217, 48, 37, 0.16) 50%, rgba(217, 48, 37, 0.16) 100%);
   color: #9fc4ff;
   font-weight: 700;
-  box-shadow: inset 0 0 0 1.5px rgba(66, 133, 244, 0.8);
+  box-shadow: inset 0 0 0 1.5px rgba(66, 133, 244, 0.85);
 }
 
 .cal-day.holiday {
