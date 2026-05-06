@@ -3148,6 +3148,7 @@ function renderDateCalculator() {
           <div class="holiday-toggle">
             <button class="holiday-toggle-btn${state.dateCalc.selectMode === "base" ? " active" : ""}" type="button" data-select-mode="base">기산일 선택</button>
             <button class="holiday-toggle-btn${state.dateCalc.selectMode === "holiday" ? " active" : ""}" type="button" data-select-mode="holiday">입력 공휴일 지정</button>
+            ${state.dateCalc.holidays.length > 0 ? `<button class="holiday-clear-btn" type="button" data-action="clear-holidays">전체 삭제</button>` : ""}
           </div>
           <p class="calc-copy">${mode.kind === "noncompliance_dual" ? "완료신고기한 계산에 반영할 공휴일이 있으면 입력 공휴일 지정 버튼을 눌러 추가해주세요. 이행완료기한에는 반영되지 않습니다." : "기간 내에 공휴일이 있으면 입력 공휴일 지정 버튼을 눌러서 수동으로 공휴일을 추가해주세요."}</p>
           ` : ""}
@@ -3233,6 +3234,12 @@ function renderDateCalculator() {
   root.querySelectorAll("[data-select-mode]").forEach((button) => {
     button.addEventListener("click", () => {
       state.dateCalc.selectMode = button.dataset.selectMode;
+      renderDateCalculator();
+    });
+  });
+  root.querySelectorAll("[data-action='clear-holidays']").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.dateCalc.holidays = [];
       renderDateCalculator();
     });
   });

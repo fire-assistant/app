@@ -1114,6 +1114,24 @@ input:focus-visible {
   font-weight: 700;
 }
 
+.holiday-clear-btn {
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(170, 118, 255, 0.5);
+  background: rgba(170, 118, 255, 0.1);
+  color: #cda7ff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.holiday-clear-btn:hover {
+  background: rgba(170, 118, 255, 0.22);
+  border-color: rgba(170, 118, 255, 0.75);
+}
+
 .calc-card h3,
 .calc-card h4 {
   margin: 0;
@@ -4513,4 +4531,12 @@ html[data-theme="blossom"] .status-not-required {
   color: #6a4858;
   background: rgba(100, 60, 80, 0.08);
   border-color: rgba(100, 60, 80, 0.2);
+}
+
+/* 공휴일이 범위 칸과 겹칠 때 — 모든 테마 오버라이드보다 뒤에 위치해야 purple fill이 적용됨 */
+.cal-day.appoint-range.holiday,
+.cal-day.report-range.holiday {
+  background: rgba(170, 118, 255, 0.22);
+  box-shadow: inset 0 0 0 1.5px rgba(170, 118, 255, 0.6);
+  color: #cda7ff;
 }
