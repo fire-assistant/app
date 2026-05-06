@@ -1114,6 +1114,17 @@ input:focus-visible {
   font-weight: 700;
 }
 
+.holiday-toggle-btn.holiday-clear-btn {
+  background: rgba(170, 118, 255, 0.18);
+  border-color: rgba(170, 118, 255, 0.6);
+  color: #cda7ff;
+  white-space: nowrap;
+}
+
+.holiday-toggle-btn.holiday-clear-btn:hover {
+  background: rgba(170, 118, 255, 0.28);
+}
+
 .holiday-clear-wrap {
   display: flex;
   justify-content: flex-end;
