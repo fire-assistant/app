@@ -1115,14 +1115,14 @@ input:focus-visible {
 }
 
 .holiday-toggle-btn.holiday-clear-btn {
-  background: rgba(170, 118, 255, 0.18);
-  border-color: rgba(170, 118, 255, 0.6);
-  color: #cda7ff;
+  background: rgba(170, 118, 255, 0.18) !important;
+  border-color: rgba(170, 118, 255, 0.6) !important;
+  color: #cda7ff !important;
   white-space: nowrap;
 }
 
 .holiday-toggle-btn.holiday-clear-btn:hover {
-  background: rgba(170, 118, 255, 0.28);
+  background: rgba(170, 118, 255, 0.28) !important;
 }
 
 .holiday-clear-wrap {
