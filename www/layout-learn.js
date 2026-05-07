@@ -179,37 +179,49 @@
     var ML  = 18;
     var MT  = 14;
     var MB  = 14;
-    var SW  = 38;
-    var BW  = 176;
+    var SW  = 38;   // 계단 폭
+    var LW  = 14;   // 부속실 폭
+    var BW  = 176;  // 전체 건물 폭 (계단 + 부속실 + 본체 포함)
     var GH  = 10;
     var STW = 2.5;
 
+    // 특별피난계단 적용 여부
+    var special    = (above >= 11 || below >= 3);
     var bothMode   = (stair === 'both');
     var centerMode = (stair === 'center');
-    var stairLX, stairRX, bodyX, bodyW;
-    var bodyLeftW, bodyRightW, bodyRightX;
+
+    // ── 배치 좌표 계산 ──────────────────────────────────────────────
+    var stairLX, stairRX, lobbyLX, lobbyRX, bodyX, bodyW;
+    var bodyLeftW, bodyRightW, bodyRightX, lobbyRightX;
 
     if (stair === 'left') {
       stairLX = ML;
-      bodyX   = ML + SW;
-      bodyW   = BW - SW;
+      lobbyLX = ML + SW;
+      bodyX   = ML + SW + (special ? LW : 0);
+      bodyW   = BW - SW - (special ? LW : 0);
     } else if (stair === 'right') {
       bodyX   = ML;
-      bodyW   = BW - SW;
-      stairLX = ML + bodyW;
+      bodyW   = BW - SW - (special ? LW : 0);
+      lobbyLX = ML + bodyW;
+      stairLX = ML + bodyW + (special ? LW : 0);
     } else if (bothMode) {
       stairLX = ML;
-      stairRX = ML + BW - SW;
-      bodyX   = ML + SW;
-      bodyW   = BW - SW * 2;
+      lobbyLX = ML + SW;
+      bodyX   = ML + SW + (special ? LW : 0);
+      bodyW   = BW - SW * 2 - (special ? LW * 2 : 0);
+      lobbyRX = ML + SW + (special ? LW : 0) + bodyW;
+      stairRX = lobbyRX + (special ? LW : 0);
     } else {
       // center
-      bodyLeftW  = Math.floor((BW - SW) / 2);
-      bodyRightW = (BW - SW) - bodyLeftW;
-      stairLX    = ML + bodyLeftW;
-      bodyRightX = stairLX + SW;
-      bodyX      = ML;
-      bodyW      = BW - SW;
+      var innerW = BW - SW - (special ? LW * 2 : 0);
+      bodyLeftW  = Math.floor(innerW / 2);
+      bodyRightW = innerW - bodyLeftW;
+      lobbyLX    = ML + bodyLeftW;
+      stairLX    = ML + bodyLeftW + (special ? LW : 0);
+      lobbyRightX = stairLX + SW;
+      bodyRightX  = lobbyRightX + (special ? LW : 0);
+      bodyX       = ML;
+      bodyW       = innerW;
     }
 
     var aboveH  = above * FH;
@@ -241,6 +253,10 @@
         fill: 'none', stroke: 'currentColor', 'stroke-width': sw || STW });
     }
 
+    function rectFill(x, y, w, h, fill) {
+      return el('rect', { x: x, y: y, width: w, height: h, fill: fill, stroke: 'none' });
+    }
+
     function txt(x, y, content, size, weight, opacity) {
       var t = el('text', {
         x: x, y: y,
@@ -256,6 +272,7 @@
       return t;
     }
 
+    // 계단 렌더링 (지상 전체 높이)
     function renderStair(sx, topY, h) {
       svg.appendChild(rect(sx, topY, SW, h));
       var stepLines = Math.min(above * 4, 20);
@@ -266,11 +283,42 @@
       svg.appendChild(txt(sx + SW / 2, topY + h / 2, '계단', 9, 'normal', 0.55));
     }
 
+    // 부속실 렌더링 (층별 분할 + 해칭 배경)
+    function renderLobby(lx, topY, count, fh) {
+      for (var f = 0; f < count; f++) {
+        var fy = topY + f * fh;
+        // 연한 배경
+        svg.appendChild(rectFill(lx, fy, LW, fh, 'rgba(239,68,68,0.07)'));
+      }
+      svg.appendChild(rect(lx, topY, LW, fh * count));
+      for (var f = 1; f < count; f++) {
+        svg.appendChild(line(lx, topY + f * fh, lx + LW, topY + f * fh, STW));
+      }
+      // "부속" 세로 텍스트
+      for (var f = 0; f < count; f++) {
+        var t = el('text', {
+          x: lx + LW / 2,
+          y: topY + f * fh + fh / 2,
+          'text-anchor': 'middle',
+          'dominant-baseline': 'middle',
+          'font-size': 7,
+          'font-weight': '600',
+          'font-family': 'inherit',
+          fill: 'currentColor',
+          opacity: 0.65,
+          'writing-mode': 'tb',
+          'letter-spacing': 1,
+        });
+        t.textContent = '부속실';
+        svg.appendChild(t);
+      }
+    }
+
+    // 본체 층 렌더링 (지상)
     function renderBodyFloors(bx, bw, topY) {
       svg.appendChild(rect(bx, topY, bw, aboveH));
       for (var f = 1; f < above; f++) {
-        var dy = topY + f * FH;
-        svg.appendChild(line(bx, dy, bx + bw, dy, STW));
+        svg.appendChild(line(bx, topY + f * FH, bx + bw, topY + f * FH, STW));
       }
       for (var f = 0; f < above; f++) {
         var floorNum = above - f;
@@ -294,19 +342,29 @@
     // ── 지상층 ────────────────────────────────────────────────────────
     if (above > 0) {
       var topY = MT;
+
       renderStair(stairLX, topY, aboveH);
-      if (bothMode) renderStair(stairRX, topY, aboveH);
+      if (special) renderLobby(lobbyLX, topY, above, FH);
+
+      if (bothMode) {
+        renderStair(stairRX, topY, aboveH);
+        if (special) renderLobby(lobbyRX, topY, above, FH);
+      }
 
       if (!centerMode) {
         renderBodyFloors(bodyX, bodyW, topY);
       } else {
-        // center: left-half and right-half share same floor numbers (display-only, no sections)
+        // center: 좌·우 본체, 계단 중간
         svg.appendChild(rect(ML, topY, bodyLeftW, aboveH));
         svg.appendChild(rect(bodyRightX, topY, bodyRightW, aboveH));
         for (var f = 1; f < above; f++) {
           var dy = topY + f * FH;
           svg.appendChild(line(ML, dy, ML + bodyLeftW, dy, STW));
           svg.appendChild(line(bodyRightX, dy, bodyRightX + bodyRightW, dy, STW));
+        }
+        if (special) {
+          renderLobby(lobbyLX, topY, above, FH);
+          renderLobby(lobbyRightX, topY, above, FH);
         }
         for (var f = 0; f < above; f++) {
           var floorNum = above - f;
@@ -317,39 +375,67 @@
       }
     }
 
-    // ── 지면선 ────────────────────────────────────────────────────────
+    // ── 지면선 (건물 폭에 맞춰 좌우 대칭) ──────────────────────────────
     svg.appendChild(el('line', {
-      x1: 0, y1: groundY, x2: VW, y2: groundY,
+      x1: ML - 6, y1: groundY, x2: ML + BW + 6, y2: groundY,
       stroke: 'currentColor', 'stroke-width': 3,
     }));
 
     // ── 지하층 ────────────────────────────────────────────────────────
     if (below > 0) {
-      var basW    = bothMode ? SW + bodyW + SW : SW + bodyW;
-      var basX    = ML;
       var basTopY = MT + aboveH + GH;
 
-      svg.appendChild(rect(basX, basTopY, basW, belowH));
-      for (var b = 1; b < below; b++) {
-        var dy = basTopY + b * FH;
-        svg.appendChild(line(basX, dy, basX + basW, dy, STW));
-      }
-      for (var b = 0; b < below; b++) {
-        var key = -(b + 1);
-        var fy = basTopY + b * FH;
-        var secs = getSections(key, basW);
-        if (secs) {
-          var cx = basX;
-          for (var s = 0; s < secs.length; s++) {
-            if (s < secs.length - 1) {
-              svg.appendChild(line(cx + secs[s].w, fy, cx + secs[s].w, fy + FH, 1, 0.45));
-            }
-            svg.appendChild(txt(cx + secs[s].w / 2, fy + FH / 2, secs[s].label, 9, '500'));
-            cx += secs[s].w;
-          }
-        } else {
-          svg.appendChild(txt(basX + basW / 2, fy + FH / 2, '지하' + (b + 1) + '층', 12));
+      // 계단 (지상과 같은 X 위치로 이어짐)
+      function renderBasStair(sx) {
+        svg.appendChild(rect(sx, basTopY, SW, belowH));
+        var stepLines = Math.min(below * 4, 16);
+        for (var i = 1; i < stepLines; i++) {
+          var sy = basTopY + (belowH * i) / stepLines;
+          svg.appendChild(line(sx + 4, sy, sx + SW - 4, sy, 0.6, 0.2));
         }
+        svg.appendChild(txt(sx + SW / 2, basTopY + belowH / 2, '계단', 9, 'normal', 0.55));
+      }
+
+      renderBasStair(stairLX);
+      if (bothMode) renderBasStair(stairRX);
+
+      // 부속실 (지하)
+      if (special) {
+        renderLobby(lobbyLX, basTopY, below, FH);
+        if (bothMode) renderLobby(lobbyRX, basTopY, below, FH);
+        if (centerMode) renderLobby(lobbyRightX, basTopY, below, FH);
+      }
+
+      // 본체 (지하)
+      function renderBasBody(bx, bw) {
+        svg.appendChild(rect(bx, basTopY, bw, belowH));
+        for (var b = 1; b < below; b++) {
+          svg.appendChild(line(bx, basTopY + b * FH, bx + bw, basTopY + b * FH, STW));
+        }
+        for (var b = 0; b < below; b++) {
+          var key = -(b + 1);
+          var fy = basTopY + b * FH;
+          var secs = getSections(key, bw);
+          if (secs) {
+            var cx = bx;
+            for (var s = 0; s < secs.length; s++) {
+              if (s < secs.length - 1) {
+                svg.appendChild(line(cx + secs[s].w, fy, cx + secs[s].w, fy + FH, 1, 0.45));
+              }
+              svg.appendChild(txt(cx + secs[s].w / 2, fy + FH / 2, secs[s].label, 9, '500'));
+              cx += secs[s].w;
+            }
+          } else {
+            svg.appendChild(txt(bx + bw / 2, fy + FH / 2, '지하' + (b + 1) + '층', 12));
+          }
+        }
+      }
+
+      if (!centerMode) {
+        renderBasBody(bodyX, bodyW);
+      } else {
+        renderBasBody(ML, bodyLeftW);
+        renderBasBody(bodyRightX, bodyRightW);
       }
     }
   }
