@@ -23,10 +23,7 @@ if not exist .git (
 git config user.name "carrotcakehope" > nul 2>&1
 git config user.email "carrotcakehpe@gmail.com" > nul 2>&1
 
-git remote | findstr /X "origin" > nul 2>&1
-if %errorlevel% neq 0 (
-    git remote add origin https://github.com/carrotcakehope/supply-fireapp.git
-)
+git remote add origin https://github.com/carrotcakehope/supply-fireapp.git 2>nul
 
 echo [1/3] Checking changes...
 git status --short
