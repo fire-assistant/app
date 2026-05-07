@@ -331,6 +331,25 @@
           <button id="result-back-to-select" class="btn btn-ghost" type="button" style="flex:1;">이전</button>
           <button id="restart-explorer" class="btn btn-ghost" type="button" style="flex:1;margin-top:0;">다시 입력</button>
         </div>
+        <button id="open-viz-card" class="btn btn-primary" type="button" style="width:100%;margin-top:8px;">소방시설 설치 시각화 하기</button>
+      </section>
+
+      <section id="viz-card" class="result-card hidden">
+        <div class="rc-grade g-sp">소방시설 설치 시각화</div>
+        <div id="viz-summary" class="info-box blue"></div>
+        <div style="display:flex;gap:12px;margin-top:8px;align-items:flex-start;">
+          <div style="flex:0 0 140px;">
+            <p class="section-label" style="margin-top:0;">별주 요소 소방시설</p>
+            <div id="viz-facility-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <p class="section-label" style="margin-top:0;text-align:center;">건물 단면도</p>
+            <svg id="viz-building-svg" style="width:100%;color:#333;display:block;"></svg>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <button id="viz-back-to-result" class="btn btn-ghost" type="button" style="width:100%;">← 판정 결과로</button>
+        </div>
       </section>
 
       <section id="multiuse-safety-card" class="result-card hidden">

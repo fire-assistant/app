@@ -828,6 +828,7 @@ function applyExplorerModeUI() {
 const questionCard = document.getElementById("question-card");
 const resultCard = document.getElementById("result-card");
 const multiuseSafetyCard = document.getElementById("multiuse-safety-card");
+const vizCard = document.getElementById("viz-card");
 
 const explorerViewState = {
   lastInput: null,
@@ -2574,6 +2575,7 @@ function showExplorerCard(view) {
   questionCard.classList.toggle("hidden", view !== "question");
   resultCard.classList.toggle("hidden", view !== "main-result");
   multiuseSafetyCard.classList.toggle("hidden", view !== "multiuse-result");
+  if (vizCard) vizCard.classList.toggle("hidden", view !== "viz");
 }
 
 function renderMultiuseEntryButton(input) {
@@ -2829,6 +2831,122 @@ function renderExtraItems(input) {
   });
 
   section.classList.toggle("hidden", items.length === 0);
+}
+
+function renderVizBuilding(svgEl, above, below) {
+  var ns = "http://www.w3.org/2000/svg";
+  var FH = 52, ML = 18, MT = 14, MB = 14, SW = 38, BW = 224, GH = 10, STW = 2.5;
+  var bodyX = ML, bodyW = BW - SW;
+  var aboveH = above * FH, belowH = below * FH;
+  var totalH = MT + aboveH + (above > 0 ? GH : 0) + belowH + MB;
+  var groundY = MT + aboveH + GH / 2;
+
+  svgEl.setAttribute("viewBox", "0 0 " + (ML * 2 + BW) + " " + totalH);
+  svgEl.innerHTML = "";
+
+  function el(tag, attrs) {
+    var e = document.createElementNS(ns, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function line(x1, y1, x2, y2, sw) {
+    return el("line", { x1: x1, y1: y1, x2: x2, y2: y2, stroke: "currentColor", "stroke-width": sw || STW });
+  }
+  function rect(x, y, w, h) {
+    return el("rect", { x: x, y: y, width: w, height: h, fill: "none", stroke: "currentColor", "stroke-width": STW });
+  }
+  function txt(x, y, content, size, weight, opacity) {
+    var t = el("text", { x: x, y: y, "text-anchor": "middle", "dominant-baseline": "middle", "font-size": size || 12, "font-weight": weight || "600", "font-family": "inherit", fill: "currentColor" });
+    if (opacity != null) t.setAttribute("opacity", opacity);
+    t.textContent = content;
+    return t;
+  }
+
+  var stairX = ML + bodyW;
+
+  if (above > 0) {
+    var topY = MT;
+    // 계단
+    svgEl.appendChild(rect(stairX, topY, SW, aboveH));
+    var stepLines = Math.min(above * 4, 20);
+    for (var i = 1; i < stepLines; i++) {
+      var sy = topY + (aboveH * i) / stepLines;
+      svgEl.appendChild(line(stairX + 4, sy, stairX + SW - 4, sy, 0.6));
+    }
+    svgEl.appendChild(txt(stairX + SW / 2, topY + aboveH / 2, "계단", 9, "normal"));
+    // 본체
+    svgEl.appendChild(rect(bodyX, topY, bodyW, aboveH));
+    for (var f = 1; f < above; f++) {
+      svgEl.appendChild(line(bodyX, topY + f * FH, bodyX + bodyW, topY + f * FH, STW));
+    }
+    for (var f = 0; f < above; f++) {
+      svgEl.appendChild(txt(bodyX + bodyW / 2, topY + f * FH + FH / 2, (above - f) + "층", 12));
+    }
+  }
+
+  if (above > 0) {
+    svgEl.appendChild(el("line", { x1: ML - 6, y1: groundY, x2: ML + BW + 6, y2: groundY, stroke: "currentColor", "stroke-width": 3 }));
+  }
+
+  if (below > 0) {
+    var basTopY = MT + aboveH + (above > 0 ? GH : 0);
+    // 계단 (지하)
+    svgEl.appendChild(rect(stairX, basTopY, SW, belowH));
+    var bStepLines = Math.min(below * 4, 16);
+    for (var i = 1; i < bStepLines; i++) {
+      var sy = basTopY + (belowH * i) / bStepLines;
+      svgEl.appendChild(line(stairX + 4, sy, stairX + SW - 4, sy, 0.6));
+    }
+    svgEl.appendChild(txt(stairX + SW / 2, basTopY + belowH / 2, "계단", 9, "normal"));
+    // 본체 (지하)
+    svgEl.appendChild(rect(bodyX, basTopY, bodyW, belowH));
+    for (var b = 1; b < below; b++) {
+      svgEl.appendChild(line(bodyX, basTopY + b * FH, bodyX + bodyW, basTopY + b * FH, STW));
+    }
+    for (var b = 0; b < below; b++) {
+      svgEl.appendChild(txt(bodyX + bodyW / 2, basTopY + b * FH + FH / 2, "지하" + (b + 1) + "층", 12));
+    }
+  }
+}
+
+function getVizAboveBelow(input) {
+  switch (input.occupancyType) {
+    case "lodging": return { above: input.lodgingAboveGroundFloors || 0, below: input.lodgingBasementFloors || 0 };
+    case "elderly": return { above: input.elderlyAboveGroundFloors || 0, below: input.elderlyBasementFloors || 0 };
+    case "medical": return { above: input.medicalAboveGroundFloors || 0, below: input.medicalBasementFloors || 0 };
+    default: return { above: input.aboveGroundFloors || 0, below: input.basementFloors || 0 };
+  }
+}
+
+function showVizCard() {
+  const input = explorerViewState.lastInput;
+  if (!input) return;
+
+  const requiredList = document.getElementById("required-list");
+  const vizList = document.getElementById("viz-facility-list");
+  vizList.innerHTML = "";
+  if (requiredList) {
+    requiredList.querySelectorAll(".facility-row").forEach((row) => {
+      const clone = row.cloneNode(true);
+      vizList.appendChild(clone);
+    });
+  }
+  const extraList = document.getElementById("extra-items-list");
+  if (extraList && !extraList.closest("#extra-items-section").classList.contains("hidden")) {
+    extraList.querySelectorAll(".facility-row").forEach((row) => {
+      const clone = row.cloneNode(true);
+      vizList.appendChild(clone);
+    });
+  }
+
+  const summaryEl = document.getElementById("result-summary");
+  document.getElementById("viz-summary").innerHTML = summaryEl ? summaryEl.innerHTML : "";
+
+  const { above, below } = getVizAboveBelow(input);
+  renderVizBuilding(document.getElementById("viz-building-svg"), above, below);
+
+  showExplorerCard("viz");
+  scrollToTop();
 }
 
 function restartExplorer() {
@@ -9969,6 +10087,13 @@ document.getElementById("next-step").addEventListener("click", () => {
   }
   if (state.currentStep === activeSteps.length - 1) showResults();
   else moveStep(1);
+});
+document.getElementById("open-viz-card").addEventListener("click", () => {
+  showVizCard();
+});
+document.getElementById("viz-back-to-result").addEventListener("click", () => {
+  showExplorerCard("main-result");
+  scrollToTop();
 });
 document.getElementById("open-multiuse-safety").addEventListener("click", () => {
   if (!explorerViewState.lastInput) return;
