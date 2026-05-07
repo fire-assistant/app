@@ -65,10 +65,21 @@
 
     <div class="menu-grid">
       <div class="menu-left">
+        <button id="open-layout-learn" class="menu-card" type="button">
+          <div class="menu-icon mc-blue">🏗️</div>
+          <div class="menu-text">
+            <div class="mt-num" style="display:flex;align-items:center;gap:6px;">
+              <span>01</span><span class="test-badge">테스트중</span>
+            </div>
+            <div class="mt-title">소방시설 배치 배우기</div>
+            <div class="mt-desc">건물 구조 입력 후 소방시설 배치 시각화</div>
+          </div>
+        </button>
+
         <button id="open-explorer" class="menu-card" type="button">
           <div class="menu-icon mc-red">🧯</div>
           <div class="menu-text">
-            <div class="mt-num">01</div>
+            <div class="mt-num">02</div>
             <div class="mt-title">소방시설탐색기</div>
             <div class="mt-desc">건물 정보 입력 후 의무 설치 소방시설 도출</div>
           </div>
@@ -77,7 +88,7 @@
         <button id="open-date-calculator" class="menu-card" type="button">
           <div class="menu-icon mc-blue">📅</div>
           <div class="menu-text">
-            <div class="mt-num">02</div>
+            <div class="mt-num">03</div>
             <div class="mt-title">날짜 계산기</div>
             <div class="mt-desc">자체점검·안전관리자·부적합 조치기한 계산</div>
           </div>
@@ -87,7 +98,7 @@
           <div class="menu-icon mc-amber">📋</div>
           <div class="menu-text">
             <div class="mt-num" style="display:flex;align-items:center;gap:6px;">
-              <span>03</span><span class="test-badge">테스트중</span>
+              <span>04</span><span class="test-badge">테스트중</span>
             </div>
             <div class="mt-title">자체점검 보고서 읽는법</div>
             <div class="mt-desc">자체점검 실시결과 보고서 작성·읽기 안내</div>
@@ -97,7 +108,7 @@
         <button id="open-facilities" class="menu-card" type="button">
           <div class="menu-icon mc-purple">⚙️</div>
           <div class="menu-text">
-            <div class="mt-num">04</div>
+            <div class="mt-num">05</div>
             <div class="mt-title">소방시설 설명</div>
             <div class="mt-desc">소방시설별 개요·종류·구성·설치기준</div>
           </div>
@@ -106,7 +117,7 @@
         <button id="open-inspection-decoder" class="menu-card" type="button">
           <div class="menu-icon mc-amber">🏢</div>
           <div class="menu-text">
-            <div class="mt-num">05</div>
+            <div class="mt-num">06</div>
             <div class="mt-title">작동·종합 대상 판독기</div>
             <div class="mt-desc">작동기능점검과 종합정밀점검 대상 판정</div>
           </div>
@@ -115,7 +126,7 @@
         <button id="open-multiuse-decoder" class="menu-card" type="button">
           <div class="menu-icon mc-green">👥</div>
           <div class="menu-text">
-            <div class="mt-num">06</div>
+            <div class="mt-num">07</div>
             <div class="mt-title">다중이용업소 판독기</div>
             <div class="mt-desc">업종별 다중이용업소 해당 여부 판정</div>
           </div>
@@ -124,7 +135,7 @@
         <button id="open-occupancy-calculator" class="menu-card" type="button">
           <div class="menu-icon mc-amber">🧮</div>
           <div class="menu-text">
-            <div class="mt-num">07</div>
+            <div class="mt-num">08</div>
             <div class="mt-title">수용인원 계산기</div>
             <div class="mt-desc">용도별 법정 수용인원 산정</div>
           </div>
@@ -726,10 +737,78 @@
     </div>
   </div>
 
+  <!-- 소방시설 배치 배우기 -->
+  <section id="screen-layout-learn" class="screen">
+    <div class="topbar">
+      <button id="back-from-layout-learn" class="back-btn" type="button">←</button>
+      <span class="tb-title">소방시설 배치 배우기</span>
+      <span class="test-badge" style="margin-left:8px;">테스트중</span>
+    </div>
+    <div class="ll-container">
+
+      <!-- 좌측: 건물 정보 입력 -->
+      <div class="ll-input-panel">
+        <div class="ll-panel-title">건물 정보 입력</div>
+
+        <div class="ll-field-group">
+          <label class="ll-label">지상 층수</label>
+          <div class="ll-stepper">
+            <button class="ll-step-btn" id="ll-above-dec" type="button">−</button>
+            <span class="ll-step-val" id="ll-above-val">3</span>
+            <button class="ll-step-btn" id="ll-above-inc" type="button">+</button>
+          </div>
+        </div>
+
+        <div class="ll-field-group">
+          <label class="ll-label">지하 층수</label>
+          <div class="ll-stepper">
+            <button class="ll-step-btn" id="ll-below-dec" type="button">−</button>
+            <span class="ll-step-val" id="ll-below-val">1</span>
+            <button class="ll-step-btn" id="ll-below-inc" type="button">+</button>
+          </div>
+        </div>
+
+        <div class="ll-field-group">
+          <label class="ll-label">계단 위치</label>
+          <div class="ll-radio-row">
+            <button class="ll-radio-btn" data-pos="left" type="button">좌</button>
+            <button class="ll-radio-btn" data-pos="center" type="button">중간</button>
+            <button class="ll-radio-btn active" data-pos="right" type="button">우</button>
+          </div>
+        </div>
+
+        <div class="ll-info-box">
+          <span class="ll-info-icon">💡</span>
+          층 클릭 시 용도·면적 입력 기능은 다음 업데이트에서 추가됩니다.
+        </div>
+      </div>
+
+      <!-- 중앙: 건물 단면도 SVG -->
+      <div class="ll-building-panel">
+        <div class="ll-panel-title">건물 단면도</div>
+        <div class="ll-svg-wrap">
+          <svg id="ll-building-svg" xmlns="http://www.w3.org/2000/svg" width="100%"></svg>
+        </div>
+      </div>
+
+      <!-- 우측: 층별 상세 (추후 확장) -->
+      <div class="ll-detail-panel">
+        <div class="ll-panel-title">층별 정보</div>
+        <div class="ll-detail-placeholder">
+          <div class="ll-placeholder-icon">🏢</div>
+          <p>건물 단면도에서<br>층을 클릭하면<br>상세 정보를<br>입력할 수 있습니다.</p>
+          <p class="ll-placeholder-sub">(다음 업데이트 예정)</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
   <script src="./pdf.min.js"></script>
   <script src="./app.js"></script>
   <script src="./facilities-data.js"></script>
   <script src="./facilities.js"></script>
+  <script src="./layout-learn.js"></script>
   <script>
   (() => {
     const canvas = document.getElementById('sakuraCanvas');

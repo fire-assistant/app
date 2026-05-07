@@ -4593,3 +4593,195 @@ html[data-theme="blossom"] .status-not-required {
 html[data-theme="blossom"] .cal-day.holiday::after {
   background: #7a40c0;
 }
+
+
+/* ══════════════════════════════════════════════
+   소방시설 배치 배우기 (LAYOUT LEARN)
+   ══════════════════════════════════════════════ */
+
+.ll-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+.ll-input-panel,
+.ll-building-panel,
+.ll-detail-panel {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 12px;
+  box-sizing: border-box;
+}
+
+.ll-input-panel {
+  width: 176px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+}
+
+.ll-building-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg);
+}
+
+.ll-detail-panel {
+  width: 160px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+}
+
+.ll-panel-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.ll-field-group {
+  margin-bottom: 16px;
+}
+
+.ll-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+}
+
+.ll-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ll-step-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--card-bg, var(--surface2));
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.ll-step-btn:active {
+  background: var(--border);
+}
+
+.ll-step-val {
+  font-size: 20px;
+  font-weight: 700;
+  min-width: 28px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ll-radio-row {
+  display: flex;
+  gap: 5px;
+}
+
+.ll-radio-btn {
+  flex: 1;
+  padding: 6px 0;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.ll-radio-btn.active {
+  border-color: var(--red);
+  color: var(--red-soft);
+  background: var(--red-dim);
+}
+
+.ll-info-box {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: var(--amber-dim);
+  border: 1px solid rgba(249, 171, 0, 0.22);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  display: flex;
+  gap: 6px;
+}
+
+.ll-info-icon {
+  flex-shrink: 0;
+}
+
+.ll-svg-wrap {
+  width: 100%;
+  max-width: 280px;
+}
+
+#ll-building-svg {
+  display: block;
+  width: 100%;
+  color: var(--text);
+}
+
+.ll-detail-placeholder {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.7;
+  margin-top: 12px;
+}
+
+.ll-placeholder-icon {
+  font-size: 28px;
+  margin-bottom: 10px;
+  opacity: 0.4;
+}
+
+.ll-placeholder-sub {
+  font-size: 10px;
+  opacity: 0.5;
+  margin-top: 10px;
+}
+
+@media (max-width: 640px) {
+  .ll-container {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+  }
+  .ll-input-panel {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .ll-detail-panel {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+  .ll-svg-wrap {
+    max-width: 260px;
+  }
+}

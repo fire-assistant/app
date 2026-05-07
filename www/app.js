@@ -795,6 +795,7 @@ const screens = {
   reportGuide: document.getElementById("screen-report-guide"),
   occupancy: document.getElementById("screen-occupancy"),
   facilities: document.getElementById("screen-facilities"),
+  layoutLearn: document.getElementById("screen-layout-learn"),
 };
 
 const questionElements = {
@@ -1046,6 +1047,7 @@ const screenLabels = {
   reportGuide: "자체점검 보고서 읽는법",
   occupancy: "수용인원 계산기",
   facilities: "소방시설 설명",
+  layoutLearn: "소방시설 배치 배우기",
 };
 
 function showScreen(name) {
@@ -4390,6 +4392,12 @@ document.getElementById("open-occupancy-calculator").addEventListener("click", (
 });
 document.getElementById("back-from-occupancy").addEventListener("click", () => showScreen("home"));
 document.getElementById("back-from-inspection").addEventListener("click", () => showScreen("home"));
+
+document.getElementById("open-layout-learn").addEventListener("click", () => {
+  showScreen("layoutLearn");
+  if (typeof window.initLayoutLearn === "function") window.initLayoutLearn();
+});
+document.getElementById("back-from-layout-learn").addEventListener("click", () => showScreen("home"));
 document.getElementById("back-from-explorer").addEventListener("click", () => {
   if (explorerRuntime.mode === "multiuse-only") showScreen("multiuseSelect");
   else showScreen("home");
