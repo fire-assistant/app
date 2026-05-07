@@ -4749,7 +4749,7 @@ html[data-theme="blossom"] .cal-day.holiday::after {
 /* ── 층별 용도·면적 테이블 ── */
 .ll-floor-header {
   display: grid;
-  grid-template-columns: 36px 1fr 52px 20px;
+  grid-template-columns: 36px 1fr 1fr 20px;
   gap: 3px;
   font-size: 10px;
   font-weight: 600;
@@ -4775,7 +4775,7 @@ html[data-theme="blossom"] .cal-day.holiday::after {
 
 .ll-floor-row {
   display: grid;
-  grid-template-columns: 36px 1fr 52px 20px;
+  grid-template-columns: 36px 1fr 1fr 20px;
   gap: 3px;
   align-items: center;
   margin-bottom: 3px;
@@ -4802,6 +4802,8 @@ html[data-theme="blossom"] .cal-day.holiday::after {
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
+  text-align: center;
+  text-align-last: center;
 }
 
 .ll-area-inp {
@@ -4885,7 +4887,11 @@ html[data-theme="blossom"] .cal-day.holiday::after {
     border-left: none;
     border-top: 1px solid var(--border);
   }
+  .ll-building-panel {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
   .ll-svg-wrap {
-    max-width: 98%;
+    max-width: 100%;
   }
 }
