@@ -230,7 +230,7 @@
     var groundY = MT + aboveH + GH / 2;
 
     svg.setAttribute('viewBox', '0 0 ' + VW + ' ' + totalH);
-    svg.style.height = totalH + 'px';
+    svg.style.height = '';
     svg.innerHTML = '';
 
     var ns = 'http://www.w3.org/2000/svg';
