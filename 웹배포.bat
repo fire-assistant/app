@@ -71,7 +71,7 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
-git push fireapp main
+git push fireapp main --force
 if %errorlevel% neq 0 (
     echo [ERROR] fireapp push failed
     pause
