@@ -4737,7 +4737,7 @@ html[data-theme="blossom"] .cal-day.holiday::after {
 
 .ll-svg-wrap {
   width: 100%;
-  max-width: 400px;
+  max-width: 460px;
 }
 
 #ll-building-svg {
@@ -4845,6 +4845,7 @@ html[data-theme="blossom"] .cal-day.holiday::after {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  grid-column: 1;
 }
 
 .ll-detail-placeholder {
@@ -4885,6 +4886,6 @@ html[data-theme="blossom"] .cal-day.holiday::after {
     border-top: 1px solid var(--border);
   }
   .ll-svg-wrap {
-    max-width: 90%;
+    max-width: 98%;
   }
 }
