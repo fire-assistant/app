@@ -3027,6 +3027,14 @@ function renderDateCalculator() {
     const countedDates = addInspectReportDays(baseDate, mode.days, holidayKeys);
     countedDates.forEach((date) => rangeKeys.add(dateKey(date)));
     deadline = countedDates[countedDates.length - 1];
+    if (deadline) {
+      const cur = new Date(baseDate); cur.setDate(cur.getDate() + 1);
+      while (cur <= deadline) {
+        const k = dateKey(cur);
+        if (holidayKeys.has(k)) rangeKeys.add(k);
+        cur.setDate(cur.getDate() + 1);
+      }
+    }
     resultSection = `
       <section class="calc-result">
         <div class="calc-result-label">${mode.resultLabel}</div>
