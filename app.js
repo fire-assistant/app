@@ -2960,12 +2960,13 @@ function restartMultiuseOnly() {
 let _holidaysJsonCache = null;
 
 async function loadHolidaysJson() {
-  if (_holidaysJsonCache) return _holidaysJsonCache;
+  if (_holidaysJsonCache !== null) return _holidaysJsonCache;
   try {
     const res = await fetch("./holidays.json");
+    if (!res.ok) throw new Error(res.status);
     _holidaysJsonCache = await res.json();
   } catch {
-    _holidaysJsonCache = {};
+    return {};
   }
   return _holidaysJsonCache;
 }
