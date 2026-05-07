@@ -4221,7 +4221,10 @@ html[data-theme="official"] .cal-day.selected {
 }
 html[data-theme="official"] .cal-day.in-range,
 html[data-theme="official"] .cal-day.appoint-range {
-  background: rgba(0, 48, 135, 0.12);
+  background: rgba(192, 39, 29, 0.22);
+}
+html[data-theme="official"] .cal-day.report-range {
+  background: rgba(26, 115, 232, 0.22);
 }
 html[data-theme="official"] .cal-day:hover:not(.empty):not(.other-month) {
   background: rgba(0, 0, 0, 0.05);
@@ -4463,7 +4466,10 @@ html[data-theme="blossom"] .cal-day.selected {
 }
 html[data-theme="blossom"] .cal-day.in-range,
 html[data-theme="blossom"] .cal-day.appoint-range {
-  background: rgba(200, 75, 110, 0.14);
+  background: rgba(200, 75, 110, 0.30);
+}
+html[data-theme="blossom"] .cal-day.report-range {
+  background: rgba(112, 96, 176, 0.25);
 }
 html[data-theme="blossom"] .cal-day:hover:not(.empty):not(.other-month) {
   background: rgba(200, 75, 110, 0.07);
