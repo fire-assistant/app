@@ -2835,8 +2835,12 @@ function renderExtraItems(input) {
 
 function renderVizBuilding(svgEl, above, below) {
   var ns = "http://www.w3.org/2000/svg";
-  var FH = 52, ML = 18, MT = 14, MB = 14, SW = 38, BW = 224, GH = 10, STW = 2.5;
-  var bodyX = ML, bodyW = BW - SW;
+  var FH = 52, ML = 18, MT = 14, MB = 14, SW = 38, LW = 14, BW = 224, GH = 10, STW = 2.5;
+  var special = (above >= 11 || below >= 3);
+  var bodyW = BW - SW - (special ? LW : 0);
+  var bodyX = ML;
+  var lobbyX = ML + bodyW;
+  var stairX = ML + bodyW + (special ? LW : 0);
   var aboveH = above * FH, belowH = below * FH;
   var totalH = MT + aboveH + (above > 0 ? GH : 0) + belowH + MB;
   var groundY = MT + aboveH + GH / 2;
@@ -2849,11 +2853,16 @@ function renderVizBuilding(svgEl, above, below) {
     for (var k in attrs) e.setAttribute(k, attrs[k]);
     return e;
   }
-  function line(x1, y1, x2, y2, sw) {
-    return el("line", { x1: x1, y1: y1, x2: x2, y2: y2, stroke: "currentColor", "stroke-width": sw || STW });
+  function line(x1, y1, x2, y2, sw, opacity) {
+    var a = { x1: x1, y1: y1, x2: x2, y2: y2, stroke: "currentColor", "stroke-width": sw || STW };
+    if (opacity != null) a.opacity = opacity;
+    return el("line", a);
   }
   function rect(x, y, w, h) {
     return el("rect", { x: x, y: y, width: w, height: h, fill: "none", stroke: "currentColor", "stroke-width": STW });
+  }
+  function rectFill(x, y, w, h, fill) {
+    return el("rect", { x: x, y: y, width: w, height: h, fill: fill, stroke: "none" });
   }
   function txt(x, y, content, size, weight, opacity) {
     var t = el("text", { x: x, y: y, "text-anchor": "middle", "dominant-baseline": "middle", "font-size": size || 12, "font-weight": weight || "600", "font-family": "inherit", fill: "currentColor" });
@@ -2862,7 +2871,20 @@ function renderVizBuilding(svgEl, above, below) {
     return t;
   }
 
-  var stairX = ML + bodyW;
+  function renderLobby(lx, topY, count) {
+    for (var f = 0; f < count; f++) {
+      svgEl.appendChild(rectFill(lx, topY + f * FH, LW, FH, "rgba(239,68,68,0.07)"));
+    }
+    svgEl.appendChild(rect(lx, topY, LW, FH * count));
+    for (var f = 1; f < count; f++) {
+      svgEl.appendChild(line(lx, topY + f * FH, lx + LW, topY + f * FH, STW));
+    }
+    for (var f = 0; f < count; f++) {
+      var t = el("text", { x: lx + LW / 2, y: topY + f * FH + FH / 2, "text-anchor": "middle", "dominant-baseline": "middle", "font-size": 7, "font-weight": "600", "font-family": "inherit", fill: "currentColor", opacity: 0.65, "writing-mode": "tb", "letter-spacing": 1 });
+      t.textContent = "부속실";
+      svgEl.appendChild(t);
+    }
+  }
 
   if (above > 0) {
     var topY = MT;
@@ -2871,9 +2893,11 @@ function renderVizBuilding(svgEl, above, below) {
     var stepLines = Math.min(above * 4, 20);
     for (var i = 1; i < stepLines; i++) {
       var sy = topY + (aboveH * i) / stepLines;
-      svgEl.appendChild(line(stairX + 4, sy, stairX + SW - 4, sy, 0.6));
+      svgEl.appendChild(line(stairX + 4, sy, stairX + SW - 4, sy, 0.6, 0.2));
     }
-    svgEl.appendChild(txt(stairX + SW / 2, topY + aboveH / 2, "계단", 9, "normal"));
+    svgEl.appendChild(txt(stairX + SW / 2, topY + aboveH / 2, "계단", 9, "normal", 0.55));
+    // 부속실
+    if (special) renderLobby(lobbyX, topY, above);
     // 본체
     svgEl.appendChild(rect(bodyX, topY, bodyW, aboveH));
     for (var f = 1; f < above; f++) {
@@ -2895,9 +2919,11 @@ function renderVizBuilding(svgEl, above, below) {
     var bStepLines = Math.min(below * 4, 16);
     for (var i = 1; i < bStepLines; i++) {
       var sy = basTopY + (belowH * i) / bStepLines;
-      svgEl.appendChild(line(stairX + 4, sy, stairX + SW - 4, sy, 0.6));
+      svgEl.appendChild(line(stairX + 4, sy, stairX + SW - 4, sy, 0.6, 0.2));
     }
-    svgEl.appendChild(txt(stairX + SW / 2, basTopY + belowH / 2, "계단", 9, "normal"));
+    svgEl.appendChild(txt(stairX + SW / 2, basTopY + belowH / 2, "계단", 9, "normal", 0.55));
+    // 부속실 (지하)
+    if (special) renderLobby(lobbyX, basTopY, below);
     // 본체 (지하)
     svgEl.appendChild(rect(bodyX, basTopY, bodyW, belowH));
     for (var b = 1; b < below; b++) {

@@ -337,14 +337,14 @@
       <section id="viz-card" class="result-card hidden">
         <div class="rc-grade g-sp">소방시설 설치 시각화</div>
         <div id="viz-summary" class="info-box blue"></div>
-        <div style="display:flex;gap:12px;margin-top:8px;align-items:flex-start;">
-          <div style="flex:0 0 140px;">
-            <p class="section-label" style="margin-top:0;">별주 요소 소방시설</p>
-            <div id="viz-facility-list" style="display:flex;flex-direction:column;gap:6px;"></div>
-          </div>
-          <div style="flex:1;min-width:0;">
+        <div class="viz-layout">
+          <div class="viz-building-wrap">
             <p class="section-label" style="margin-top:0;text-align:center;">건물 단면도</p>
             <svg id="viz-building-svg" style="width:100%;color:#333;display:block;"></svg>
+          </div>
+          <div class="viz-list-wrap">
+            <p class="section-label" style="margin-top:0;">설치 필요한 소방시설</p>
+            <div id="viz-facility-list" style="display:flex;flex-direction:column;gap:6px;"></div>
           </div>
         </div>
         <div style="margin-top:12px;">

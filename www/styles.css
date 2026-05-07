@@ -4896,3 +4896,34 @@ html[data-theme="blossom"] .cal-day.holiday::after {
     max-width: 100%;
   }
 }
+
+/* ══════════════════════════════════════════════
+   VIZ CARD LAYOUT
+   ══════════════════════════════════════════════ */
+.viz-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+.viz-building-wrap {
+  width: 100%;
+}
+.viz-list-wrap {
+  width: 100%;
+}
+@media (min-width: 900px) {
+  .viz-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .viz-building-wrap {
+    flex: 1 1 0;
+    min-width: 0;
+    order: 2;
+  }
+  .viz-list-wrap {
+    flex: 0 0 180px;
+    order: 1;
+  }
+}
