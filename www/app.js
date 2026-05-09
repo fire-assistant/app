@@ -265,6 +265,7 @@ const steps = [
       { value: "no", label: "없음", description: "가스시설이 없음" },
     ],
   },
+  { key: "lodgingFirstSecondFloorArea", title: "지상 1층과 2층의 바닥면적 합계는 얼마인가요?", help: "연면적이 9,000㎡ 이상일 때만 묻습니다.", type: "number", onlyFor: "lodging", min: 0, step: 0.1, placeholder: "예: 9200" },
   { key: "lodgingDetailSet", title: "주차·전기실 추가 조건을 입력해 주세요.", help: "해당 공간이 없으면 0으로 입력해 주세요.", type: "compound", onlyFor: "lodging" },
   {
     key: "lodgingHasMultiuseBusiness",
@@ -412,6 +413,7 @@ const steps = [
       { value: "no", label: "없음", description: "가스시설이 없음" },
     ],
   },
+  { key: "elderlyFirstSecondFloorArea", title: "지상 1층과 2층의 바닥면적 합계는 얼마인가요?", help: "연면적이 9,000㎡ 이상일 때만 묻습니다.", type: "number", onlyFor: "elderly", min: 0, step: 0.1, placeholder: "예: 9200" },
   { key: "elderlyDetailSet", title: "주차·전기실 추가 조건을 입력해 주세요.", help: "해당 공간이 없으면 0으로 입력해 주세요.", type: "compound", onlyFor: "elderly" },
 
   // ── 의료시설 전용 스텝 ──
@@ -456,6 +458,7 @@ const steps = [
       { value: "no", label: "없음", description: "가스시설이 없음" },
     ],
   },
+  { key: "medicalFirstSecondFloorArea", title: "지상 1층과 2층의 바닥면적 합계는 얼마인가요?", help: "연면적이 9,000㎡ 이상일 때만 묻습니다.", type: "number", onlyFor: "medical", min: 0, step: 0.1, placeholder: "예: 9200" },
   { key: "medicalDetailSet", title: "주차·전기실 추가 조건을 입력해 주세요.", help: "해당 공간이 없으면 0으로 입력해 주세요.", type: "compound", onlyFor: "medical" },
 ];
 
@@ -505,6 +508,7 @@ const state = {
     lodgingWindowlessArea: 0,
     lodgingHasLargeFloorFor1000: "no",
     lodgingHasGasFacility: "no",
+    lodgingFirstSecondFloorArea: 0,
     lodgingIsTouristHotel: "no",
     lodgingIndoorParkingArea: 0,
     lodgingParkingStructureArea: 0,
@@ -536,6 +540,7 @@ const state = {
     elderlyHasFloor500Plus: "no",
     elderlyHas24HourStaff: "no",
     elderlyHasGasFacility: "no",
+    elderlyFirstSecondFloorArea: 0,
     elderlyIndoorParkingArea: 0,
     elderlyParkingStructureArea: 0,
     elderlyMechanicalParkingCapacity: 0,
@@ -551,6 +556,7 @@ const state = {
     medicalWindowlessArea: 0,
     medicalHasGrillWindow: "no",
     medicalHasGasFacility: "no",
+    medicalFirstSecondFloorArea: 0,
     medicalIndoorParkingArea: 0,
     medicalParkingStructureArea: 0,
     medicalMechanicalParkingCapacity: 0,
@@ -914,6 +920,82 @@ function sanitizeAssistantNumericInput(value) {
   return String(value ?? "").replace(/\D/g, "");
 }
 
+const simpleAfter2004StepOrder = new Map([
+  "occupancyType",
+
+  "totalArea",
+  "aboveGroundFloors",
+  "basementFloors",
+  "hasWindowlessFloor",
+  "hasLargeTargetFloor",
+  "neighborhoodArea",
+  "facilitySubtype",
+  "postpartumAreaRange",
+  "has24HourStaff",
+  "firstSecondFloorArea",
+  "detailSet",
+  "hasMultiuseBusiness",
+  "multiuseSimpleSprinklerCheck",
+  "multiuseOnSecondToTenthFloor",
+  "multiuseOnGroundOrRefugeFloor",
+  "multiuseUsesAV",
+  "multiuseHasGasFacility",
+  "multiuseHasRooms",
+  "multiuseHasEvacuationRoute",
+
+  "lodgingTotalArea",
+  "lodgingAboveGroundFloors",
+  "lodgingBasementFloors",
+  "lodgingHasWindowlessFloor",
+  "lodgingArea",
+  "lodgingHasLargeFloorFor1000",
+  "lodgingHasGasFacility",
+  "lodgingIsTouristHotel",
+  "lodgingFirstSecondFloorArea",
+  "lodgingDetailSet",
+  "lodgingHasMultiuseBusiness",
+  "lodgingMultiuseSimpleSprinklerCheck",
+  "lodgingMultiuseOnSecondToTenthFloor",
+  "lodgingMultiuseOnGroundOrRefugeFloor",
+  "lodgingMultiuseUsesAV",
+  "lodgingMultiuseHasGasFacility",
+  "lodgingMultiuseHasRooms",
+  "lodgingMultiuseHasEvacuationRoute",
+
+  "elderlyTotalArea",
+  "elderlyAboveGroundFloors",
+  "elderlyBasementFloors",
+  "elderlyHasWindowlessFloor",
+  "elderlySubtype",
+  "elderlyArea",
+  "elderlyHasGrillWindow",
+  "elderlyHasGasFacility",
+  "elderlyHasFloor500Plus",
+  "elderlyHas24HourStaff",
+  "elderlyFirstSecondFloorArea",
+  "elderlyDetailSet",
+
+  "medicalTotalArea",
+  "medicalAboveGroundFloors",
+  "medicalBasementFloors",
+  "medicalHasWindowlessFloor",
+  "medicalSubtype",
+  "medicalArea",
+  "medicalHasGrillWindow",
+  "medicalHasGasFacility",
+  "medicalFirstSecondFloorArea",
+  "medicalDetailSet",
+].map((key, index) => [key, index]));
+
+function sortBySimpleAfter2004Order(activeSteps) {
+  return [...activeSteps].sort((a, b) => {
+    const ai = simpleAfter2004StepOrder.get(a.key) ?? Number.MAX_SAFE_INTEGER;
+    const bi = simpleAfter2004StepOrder.get(b.key) ?? Number.MAX_SAFE_INTEGER;
+    if (ai !== bi) return ai - bi;
+    return steps.indexOf(a) - steps.indexOf(b);
+  });
+}
+
 function getActiveSteps() {
   if (explorerRuntime.mode === "multiuse-only") {
     const MULTIUSE_KEYS = ["multiuseSimpleSprinklerCheck", "multiuseOnSecondToTenthFloor", "multiuseOnGroundOrRefugeFloor", "multiuseUsesAV", "multiuseHasGasFacility", "multiuseHasRooms", "multiuseHasEvacuationRoute"];
@@ -928,7 +1010,7 @@ function getActiveSteps() {
       return true;
     });
   }
-  return steps.filter((step) => {
+  const activeSteps = steps.filter((step) => {
     if (["isThirdClassNeighborhood", "permitBefore1992", "pre1992PermitRange", "thirdClassDetailUse"].includes(step.key)) return false;
     if (!step.onlyFor) return true;
     if (step.onlyFor !== state.answers.occupancyType) return false;
@@ -954,6 +1036,7 @@ function getActiveSteps() {
       const totalF = toNumber(state.answers.lodgingAboveGroundFloors) + toNumber(state.answers.lodgingBasementFloors);
       return la < 600 && ag < 6 && totalF < 6;
     }
+    if (step.key === "lodgingFirstSecondFloorArea") return toNumber(state.answers.lodgingTotalArea) >= 9000;
 
     if (step.key === "lodgingMultiuseOnGroundOrRefugeFloor") {
       return state.answers.lodgingHasMultiuseBusiness === "yes"
@@ -976,14 +1059,17 @@ function getActiveSteps() {
       return state.answers.elderlySubtype === "general"
         && state.answers.elderlyHasFloor500Plus === "yes";
     }
+    if (step.key === "elderlyFirstSecondFloorArea") return toNumber(state.answers.elderlyTotalArea) >= 9000;
     // 의료시설 전용 조건
     if (step.key === "medicalHasGrillWindow") {
       const sub = state.answers.medicalSubtype;
       const ma = toNumber(state.answers.medicalArea);
       return (sub === "psychiatricHospital" || sub === "rehabilitationFacility") && ma < 300;
     }
+    if (step.key === "medicalFirstSecondFloorArea") return toNumber(state.answers.medicalTotalArea) >= 9000;
     return true;
   });
+  return sortBySimpleAfter2004Order(activeSteps);
 }
 
 const screenLabels = {
@@ -1058,6 +1144,47 @@ const AUTO_FILL_PAIRS = {
   medicalTotalArea: "medicalArea",
 };
 
+const FIRST_SECOND_AREA_RULES = {
+  firstSecondFloorArea: {
+    totalAreaKey: "totalArea",
+    aboveGroundFloorsKey: "aboveGroundFloors",
+    basementFloorsKey: "basementFloors",
+  },
+  lodgingFirstSecondFloorArea: {
+    totalAreaKey: "lodgingTotalArea",
+    aboveGroundFloorsKey: "lodgingAboveGroundFloors",
+    basementFloorsKey: "lodgingBasementFloors",
+  },
+  elderlyFirstSecondFloorArea: {
+    totalAreaKey: "elderlyTotalArea",
+    aboveGroundFloorsKey: "elderlyAboveGroundFloors",
+    basementFloorsKey: "elderlyBasementFloors",
+  },
+  medicalFirstSecondFloorArea: {
+    totalAreaKey: "medicalTotalArea",
+    aboveGroundFloorsKey: "medicalAboveGroundFloors",
+    basementFloorsKey: "medicalBasementFloors",
+  },
+};
+
+function calculateFirstSecondFloorArea(targetKey) {
+  const rule = FIRST_SECOND_AREA_RULES[targetKey];
+  if (!rule) return null;
+  const totalArea = toNumber(state.answers[rule.totalAreaKey]);
+  const aboveGroundFloors = toNumber(state.answers[rule.aboveGroundFloorsKey]);
+  const basementFloors = toNumber(state.answers[rule.basementFloorsKey]);
+  const totalFloors = aboveGroundFloors + basementFloors;
+  if (totalFloors <= 0) return 0;
+  return Math.round((totalArea / totalFloors) * 2 * 10) / 10;
+}
+
+function syncDerivedFirstSecondFloorAreas(changedKey) {
+  Object.entries(FIRST_SECOND_AREA_RULES).forEach(([targetKey, rule]) => {
+    if (![rule.totalAreaKey, rule.aboveGroundFloorsKey, rule.basementFloorsKey].includes(changedKey)) return;
+    state.answers[targetKey] = calculateFirstSecondFloorArea(targetKey);
+  });
+}
+
 function renderNumberStep(step) {
   const input = document.createElement("input");
   input.className = "calc-input";
@@ -1065,11 +1192,14 @@ function renderNumberStep(step) {
   input.min = String(step.min ?? 0);
   input.step = String(step.step ?? 1);
   input.placeholder = step.placeholder ?? "";
+  const derivedValue = calculateFirstSecondFloorArea(step.key);
+  if (derivedValue !== null) state.answers[step.key] = derivedValue;
   input.value = state.answers[step.key] ?? "";
   input.addEventListener("input", (event) => {
     state.answers[step.key] = event.target.value;
     const fillKey = AUTO_FILL_PAIRS[step.key];
     if (fillKey) state.answers[fillKey] = event.target.value;
+    syncDerivedFirstSecondFloorAreas(step.key);
   });
   return input;
 }
@@ -1088,6 +1218,7 @@ function makeField(labelText, name, value, extra = {}) {
   input.value = value ?? "";
   input.addEventListener("input", (event) => {
     state.answers[name] = event.target.value;
+    syncDerivedFirstSecondFloorAreas(name);
   });
   wrapper.appendChild(label);
   wrapper.appendChild(input);
@@ -1426,6 +1557,7 @@ function normalizeAnswers() {
     lodgingBasementFloors: toNumber(state.answers.lodgingBasementFloors),
     lodgingBasementAreaSum: toNumber(state.answers.lodgingBasementAreaSum),
     lodgingTotalFloors: toNumber(state.answers.lodgingAboveGroundFloors) + toNumber(state.answers.lodgingBasementFloors),
+    lodgingFirstSecondFloorArea: toNumber(state.answers.lodgingFirstSecondFloorArea),
     lodgingWindowlessArea: state.answers.lodgingHasWindowlessFloor === "yes" ? toNumber(state.answers.lodgingWindowlessArea) : 0,
     lodgingHasLargeFloorFor1000: toBool(state.answers.lodgingHasLargeFloorFor1000),
     lodgingHasGasFacility: toBool(state.answers.lodgingHasGasFacility),
@@ -1454,6 +1586,7 @@ function normalizeAnswers() {
     elderlyBasementFloors: toNumber(state.answers.elderlyBasementFloors),
     elderlyBasementAreaSum: toNumber(state.answers.elderlyBasementAreaSum),
     elderlyTotalFloors: toNumber(state.answers.elderlyAboveGroundFloors) + toNumber(state.answers.elderlyBasementFloors),
+    elderlyFirstSecondFloorArea: toNumber(state.answers.elderlyFirstSecondFloorArea),
     elderlyWindowlessArea: state.answers.elderlyHasWindowlessFloor === "yes" ? toNumber(state.answers.elderlyWindowlessArea) : 0,
     get elderlyHasLargeTargetFloor() {
       const tf = toNumber(state.answers.elderlyAboveGroundFloors) + toNumber(state.answers.elderlyBasementFloors);
@@ -1480,6 +1613,7 @@ function normalizeAnswers() {
     medicalBasementFloors: toNumber(state.answers.medicalBasementFloors),
     medicalBasementAreaSum: toNumber(state.answers.medicalBasementAreaSum),
     medicalTotalFloors: toNumber(state.answers.medicalAboveGroundFloors) + toNumber(state.answers.medicalBasementFloors),
+    medicalFirstSecondFloorArea: toNumber(state.answers.medicalFirstSecondFloorArea),
     medicalWindowlessArea: state.answers.medicalHasWindowlessFloor === "yes" ? toNumber(state.answers.medicalWindowlessArea) : 0,
     medicalHasGrillWindow: toBool(state.answers.medicalHasGrillWindow),
     medicalHasGasFacility: toBool(state.answers.medicalHasGasFacility),
@@ -2812,22 +2946,22 @@ function showResults() {
 
 function getFloorCount(input) {
   switch (input.occupancyType) {
-    case "lodging": return input.lodgingAboveGroundFloors || 0;
-    case "elderly": return input.elderlyAboveGroundFloors || 0;
-    case "medical": return input.medicalAboveGroundFloors || 0;
+    case "lodging": return input.lodgingAboveGroundFloors || input.aboveGroundFloors || 0;
+    case "elderly": return input.elderlyAboveGroundFloors || input.aboveGroundFloors || 0;
+    case "medical": return input.medicalAboveGroundFloors || input.aboveGroundFloors || 0;
     default: return input.aboveGroundFloors || 0;
   }
 }
 
-function renderExtraItems(input) {
-  const section = document.getElementById("extra-items-section");
-  const list = document.getElementById("extra-items-list");
-  if (!section || !list) return;
-
+function buildExtraItems(input, options = {}) {
   const items = [];
-
   const facilityNames = { lodging: "숙박시설", elderly: "노유자시설", medical: "의료시설" };
   const floors = getFloorCount(input);
+  const allowRefugeElevator = options.allowRefugeElevator === true;
+  const requirePermitDateForRefugeElevator = options.requirePermitDateForRefugeElevator === true;
+  const refugeElevatorRequired = allowRefugeElevator
+    && floors >= 30
+    && (!requirePermitDateForRefugeElevator || (input.pd || 0) >= YD.D20181018);
 
   if (["lodging", "elderly", "medical"].includes(input.occupancyType)) {
     items.push({ name: "방염", reason: `${facilityNames[input.occupancyType]}은 방염 규정 적용 대상입니다.` });
@@ -2843,8 +2977,23 @@ function renderExtraItems(input) {
   }
   if (floors >= 11) {
     items.push({ name: "특별피난계단", reason: "11층 이상 건물에 설치 대상입니다. (피난계단 포함)" });
-    items.push({ name: "비상용 승강기", reason: "11층 이상 건물에 설치 대상입니다." });
+    if (refugeElevatorRequired) {
+      items.push({ name: "피난용승강기", reason: requirePermitDateForRefugeElevator
+        ? "2018년 10월 18일 이후 허가 건물이고 30층 이상이므로 피난용승강기 설치 대상입니다."
+        : "30층 이상 건물로 피난용승강기 설치 대상입니다." });
+    } else {
+      items.push({ name: "비상용 승강기", reason: "11층 이상 건물에 설치 대상입니다." });
+    }
   }
+  return items;
+}
+
+function renderExtraItemsToTarget(input, sectionId, listId, options = {}) {
+  const section = document.getElementById(sectionId);
+  const list = document.getElementById(listId);
+  if (!section || !list) return;
+
+  const items = buildExtraItems(input, options);
 
   list.innerHTML = "";
   items.forEach((item) => {
@@ -2855,6 +3004,17 @@ function renderExtraItems(input) {
   });
 
   section.classList.toggle("hidden", items.length === 0);
+}
+
+function renderExtraItems(input) {
+  renderExtraItemsToTarget(input, "extra-items-section", "extra-items-list", { allowRefugeElevator: true });
+}
+
+function renderYearExtraItems(input) {
+  renderExtraItemsToTarget(input, "year-extra-items-section", "year-extra-items-list", {
+    allowRefugeElevator: true,
+    requirePermitDateForRefugeElevator: true,
+  });
 }
 
 function renderVizBuilding(svgEl, above, below) {
@@ -4577,6 +4737,7 @@ document.getElementById("back-from-explorer").addEventListener("click", () => {
 const YD = {
   D19811106: 19811106,
   D19840701: 19840701,
+  D19840816: 19840816,
   D19820928: 19820928,
   D19900701: 19900701,
   D19910108: 19910108,
@@ -4587,6 +4748,7 @@ const YD = {
   D20010521: 20010521,
   D20020330: 20020330,
   D20040530: 20040530,
+  D20040604: 20040604,
   D20061207: 20061207,
   D20080229: 20080229,
   D20110707: 20110707,
@@ -4600,6 +4762,7 @@ const YD = {
   D20160101: 20160101,
   D20170128: 20170128,
   D20180128: 20180128,
+  D20181018: 20181018,
   D20180627: 20180627,
   D20190806: 20190806,
   D20220225: 20220225,
@@ -5501,7 +5664,7 @@ const yearSteps = [
     placeholder: "예: 0",
     min: 0,
     step: 0.1,
-    condition: (ya) => ya.yOccupancyType === "medical",
+    condition: (ya) => ya.yOccupancyType === "medical" && (parseFloat(ya.yTotalArea) || 0) >= 9000,
   },
   {
     key: "yMedicalParkingElecSet",
@@ -5542,7 +5705,7 @@ const yearSteps = [
     placeholder: "예: 0",
     min: 0,
     step: 0.1,
-    condition: (ya) => ya.yOccupancyType === "religious",
+    condition: (ya) => ya.yOccupancyType === "religious" && (parseFloat(ya.yTotalArea) || 0) >= 9000,
   },
   {
     key: "yReligiousParkingElecSet",
@@ -5980,6 +6143,14 @@ function yearRecalcF12() {
   yearState.answers.yReligiousFirstSecondFloorArea = s;
 }
 
+function yearRecalcElderlySmokeArea() {
+  const basementArea = parseFloat(yearState.answers.yBasementAreaSum) || 0;
+  const windowlessArea = yearState.answers.yHasWindowlessFloor === "yes"
+    ? (parseFloat(yearState.answers.yWindowlessArea) || 0)
+    : 0;
+  yearState.answers.yElderlyBasementAreaForSmoke = String(basementArea + windowlessArea);
+}
+
 function makeYearField(labelText, name, value, extra = {}) {
   const wrapper = document.createElement("div");
   wrapper.className = "calc-form-row";
@@ -5995,6 +6166,7 @@ function makeYearField(labelText, name, value, extra = {}) {
   input.addEventListener("input", (e) => {
     yearState.answers[name] = e.target.value;
     if (name === "yBasementAreaSum") yearRecalcF12();
+    if (name === "yBasementAreaSum" || name === "yWindowlessArea") yearRecalcElderlySmokeArea();
   });
   wrapper.appendChild(label);
   wrapper.appendChild(input);
@@ -6015,7 +6187,11 @@ function makeYearBinaryField(labelText, name) {
     btn.className = "choice-button";
     if (yearState.answers[name] === opt.value) btn.classList.add("selected");
     btn.innerHTML = `<strong>${opt.label}</strong>`;
-    btn.addEventListener("click", () => { yearState.answers[name] = opt.value; yearRenderCurrentStep(); });
+    btn.addEventListener("click", () => {
+      yearState.answers[name] = opt.value;
+      if (name === "yHasWindowlessFloor") yearRecalcElderlySmokeArea();
+      yearRenderCurrentStep();
+    });
     buttons.appendChild(btn);
   });
   wrapper.appendChild(buttons);
@@ -6051,6 +6227,7 @@ function yearRenderNumberStep(step) {
   input.min = String(step.min ?? 0);
   input.step = String(step.step ?? 1);
   input.placeholder = step.placeholder ?? "";
+  if (step.key === "yElderlyBasementAreaForSmoke") yearRecalcElderlySmokeArea();
   input.value = yearState.answers[step.key] ?? "";
   // 용도별 바닥면적 필드는 연면적을 초과할 수 없음
   const areaFields = ["yNeighborhoodArea", "yLodgingArea", "yElderlyArea", "yMedicalArea"];
@@ -6690,7 +6867,17 @@ function yearEvaluateLodgingBefore2004(inp) {
   results.push(makeResult(categories.alarm, "자동화재속보설비", "", autoDispatchReq ? "required" : "notRequired", autoDispatchReason, ""));
 
   // ── 피난기구 ──
-  if (preBefore1992) {
+  if (pd >= YD.D19840816) {
+    results.push(makeResult(categories.evacuation, "피난기구(복도 등)", "",
+      ag >= 3 ? "required" : "notRequired",
+      ag >= 3 ? "지상 3층~10층에 완강기등의 피난기구를 설치해야 합니다. 양방향 피난이 가능한 경우 제외 가능합니다."
+      : "3층 이상 층이 없어 설치 대상이 아닙니다.", ""));
+
+    results.push(makeResult(categories.evacuation, "간이완강기(객실 내부)", "",
+      ag >= 3 ? "required" : "notRequired",
+      ag >= 3 ? "3층 이상 각 객실마다 간이완강기를 설치해야 합니다. 양방향 피난이 가능해도 제외되지 않습니다."
+      : "3층 이상 층이 없어 설치 대상이 아닙니다.", ""));
+  } else if (preBefore1992) {
     const hasEligibleFloor = ag >= 3 || bf > 0;
     results.push(makeResult(categories.evacuation, "피난기구", "", hasEligibleFloor ? "required" : "review",
       "1992년 7월 28일 이전에는 수용인원 30인 이상인 숙박시설에서 피난층·2층·11층 이상의 층을 제외한 나머지 층에 설치합니다. (건축법상 특별피난계단이 없는 호텔·여관은 11층 이상에도 설치) 설치 여부는 수용인원 기준으로 판단하므로 실제 충족 여부는 소방법 시행규칙 [별표1] 수용인원산정법에 따라 직접 확인하세요.", ""));
@@ -8608,9 +8795,14 @@ function yearEvaluateLodging(inp) {
     inp.lodgingHasGasFacility ? "가스시설이 설치된 숙박시설입니다." : "가스시설이 없어 설치 대상이 아닙니다.", ""));
 
   // ── 피난기구 ──
-  results.push(makeResult(categories.evacuation, "피난기구(구조대·완강기 등)", "",
+  results.push(makeResult(categories.evacuation, "피난기구(복도 등)", "",
     ag >= 3 ? "required" : "notRequired",
-    ag >= 3 ? "숙박시설은 3층 이상 10층 이하 층에 피난기구를 설치해야 합니다." :
+    ag >= 3 ? "지상 3층~10층에 완강기등의 피난기구를 설치해야 합니다. 양방향 피난이 가능한 경우 제외 가능합니다." :
+    "3층 이상 층이 없어 설치 대상이 아닙니다.", ""));
+
+  results.push(makeResult(categories.evacuation, "간이완강기(객실 내부)", "",
+    ag >= 3 ? "required" : "notRequired",
+    ag >= 3 ? "3층 이상 각 객실마다 간이완강기를 설치해야 합니다. 양방향 피난이 가능해도 제외되지 않습니다." :
     "3층 이상 층이 없어 설치 대상이 아닙니다.", ""));
 
   // ── 인명구조기구 ──
@@ -9522,7 +9714,7 @@ function yearBuildLodgingExceptionItems(results, inp) {
   if (autoDetection && autoDetection.status === "required" && singleDetector && singleDetector.status === "required") {
     exceptionItems.push({ category: "설치 제외", name: "단독경보형 감지기", status: "review", reason: "자동화재탐지설비가 설치되면 단독경보형 감지기는 중복 설치가 불필요합니다." });
   }
-  if (emLight && emLight.status === "required" && portableLight && portableLight.status === "required") {
+  if (inp.pd >= YD.D20040604 && emLight && emLight.status === "required" && portableLight && portableLight.status === "required") {
     exceptionItems.push({ category: "설치 제외", name: "휴대용비상조명등", status: "review", reason: "숙박시설 복도에 비상조명등이 설치되면 객실에 설치하는 휴대용비상조명등의 설치는 제외될 수 있습니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
@@ -9681,6 +9873,7 @@ function yearShowResults() {
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
     document.getElementById("year-result-summary").innerHTML = summaryHtml;
     renderSimpleRequiredList(allRequiredItems, "year-required-list");
+    renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
     document.getElementById("year-question-card").classList.add("hidden");
@@ -9706,6 +9899,7 @@ function yearShowResults() {
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
     document.getElementById("year-result-summary").innerHTML = summaryHtml;
     renderSimpleRequiredList(allRequiredItems, "year-required-list");
+    renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
     document.getElementById("year-question-card").classList.add("hidden");
@@ -9731,6 +9925,7 @@ function yearShowResults() {
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
     document.getElementById("year-result-summary").innerHTML = summaryHtml;
     renderSimpleRequiredList(allRequiredItems, "year-required-list");
+    renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
     document.getElementById("year-question-card").classList.add("hidden");
@@ -9757,6 +9952,7 @@ function yearShowResults() {
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
     document.getElementById("year-result-summary").innerHTML = summaryHtml;
     renderSimpleRequiredList(allRequiredItems, "year-required-list");
+    renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
     document.getElementById("year-question-card").classList.add("hidden");
@@ -9795,6 +9991,7 @@ function yearShowResults() {
       `<div class="ib-title">소방법 분법 이전 (1981. 11. 6. ~ 2004. 5. 29.)</div>` +
       `해당 용도에 대한 분법 이전 기준은 현재 준비 중입니다.`;
     document.getElementById("year-required-list").innerHTML = "";
+    renderExtraItemsToTarget({}, "year-extra-items-section", "year-extra-items-list");
     document.getElementById("year-criteria-list").innerHTML = "";
     document.getElementById("year-exception-list").innerHTML = "";
     document.getElementById("year-question-card").classList.add("hidden");
@@ -9880,6 +10077,7 @@ function yearShowResults() {
 
   document.getElementById("year-result-summary").innerHTML = summaryHtml;
   renderSimpleRequiredList(requiredItems, "year-required-list");
+  renderYearExtraItems(inp);
   renderResultGroup("year-criteria-list", results, [...excludedNames], requiredItems.map((i) => i.name));
   renderResultGroup("year-exception-list", exceptionItems);
 
