@@ -10312,6 +10312,48 @@ document.getElementById("back-from-date").addEventListener("click", () => showSc
 document.getElementById("back-from-guide").addEventListener("click", () => showScreen("home"));
 document.getElementById("open-guide").addEventListener("click", () => showScreen("guide"));
 
+(function initIntroVideo() {
+  const INTRO_SEEN_KEY = "introVideoSeen";
+  const INTRO_DURATION_MS = 56000;
+  const overlay = document.getElementById("intro-video-overlay");
+  const frame = document.getElementById("intro-video-frame");
+  const closeBtn = document.getElementById("intro-video-close");
+  const openBtn = document.getElementById("open-intro-video");
+  let closeTimer = null;
+
+  if (!overlay || !frame || !closeBtn) return;
+
+  function openIntroVideo(markSeen) {
+    clearTimeout(closeTimer);
+    frame.src = "./video/intro.html";
+    overlay.classList.remove("hidden");
+    if (markSeen) localStorage.setItem(INTRO_SEEN_KEY, "true");
+    closeTimer = setTimeout(closeIntroVideo, INTRO_DURATION_MS);
+  }
+
+  function closeIntroVideo() {
+    clearTimeout(closeTimer);
+    closeTimer = null;
+    overlay.classList.add("hidden");
+    frame.src = "about:blank";
+  }
+
+  closeBtn.addEventListener("click", closeIntroVideo);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !overlay.classList.contains("hidden")) {
+      closeIntroVideo();
+    }
+  });
+
+  if (openBtn) {
+    openBtn.addEventListener("click", () => openIntroVideo(false));
+  }
+
+  if (!localStorage.getItem(INTRO_SEEN_KEY)) {
+    requestAnimationFrame(() => openIntroVideo(true));
+  }
+})();
+
 // 메일 링크: 모바일은 mailto 그대로, PC는 Gmail 웹 작성 페이지로
 (function initMailLink() {
   const mailLink = document.querySelector(".contact-right-link");
@@ -11167,7 +11209,7 @@ const RG_FACILITY_DESCS = {
   ],
   'ac03': [
     '<b>방식</b>: 살수설비가 습식(폐쇄형 헤드사용, 배관내부 물로 차있음)인지 건식(개방형 헤드사용, 배관내부 평상시 공기)인지 확인하여 기입합니다. 대부분 건식으로 설치됩니다.',
-    '<b>지하층과 판매시설, 가스시설 등</b> 중 살수설비가 설치된 법적기준(왜 설치했는지)을 확ㄴ인하여 기입합니다.',
+    '<b>지하층과 판매시설, 가스시설 등</b> 중 살수설비가 설치된 법적기준(왜 설치했는지)을 확인하여 기입합니다.',
     '<b>송수구가 설치된 장소와 송수구역 수</b>를 확인하여 기입합니다.',
   ],
   'ac04': [

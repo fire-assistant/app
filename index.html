@@ -50,6 +50,12 @@
   <!-- Google Tag Manager (noscript) -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MPVSSTJH" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
+
+  <div id="intro-video-overlay" class="intro-video-overlay hidden" aria-modal="true" role="dialog" aria-label="소개 영상">
+    <button id="intro-video-close" class="intro-video-close" type="button" aria-label="소개 영상 닫기">×</button>
+    <iframe id="intro-video-frame" class="intro-video-frame" title="소개 영상" allow="autoplay; fullscreen"></iframe>
+  </div>
+
   <section id="screen-home" class="screen active">
     <div class="home-header">
       <div class="home-header-left">
@@ -413,6 +419,7 @@
         <div class="guide-hero-kicker">HOW TO USE</div>
         <h2 class="guide-hero-title">7가지 도구, 이렇게 쓰세요</h2>
         <p class="guide-hero-desc">각 기능을 탭하면 사용법과 주의사항을 확인할 수 있습니다.</p>
+        <button id="open-intro-video" class="guide-intro-video-btn" type="button">소개 영상 보기</button>
       </div>
 
       <!-- Tool cards -->
