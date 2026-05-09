@@ -11826,3 +11826,230 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
     localStorage.setItem('lastPatchSeen', today);
   });
 })();
+
+// ── 홈 검색 기능 ─────────────────────────────────────────────────
+(function initHomeSearch() {
+  const SEARCH_ITEMS = [
+    {
+      icon: "🏗️", title: "소방시설 배치 배우기", desc: "건물 구조 입력 후 소방시설 배치 시각화",
+      keywords: ["배치", "배우기", "시각화", "단면도", "레이아웃"],
+      action: () => { showScreen("layoutLearn"); },
+    },
+    {
+      icon: "🧯", title: "소방시설탐색기 (간단한 버전)", desc: "현행 법령 기준으로 빠르게 설치 의무 도출",
+      keywords: ["탐색기", "소방시설", "간단", "의무", "설치", "소화기", "스프링클러"],
+      action: () => { showScreen("explorerSelect"); },
+    },
+    {
+      icon: "🔍", title: "소방시설탐색기 (자세한 버전)", desc: "건축허가일 기준 법령 적용 상세 결과",
+      keywords: ["탐색기", "자세한", "연도별", "건축허가", "법령", "소방시설"],
+      action: () => { showScreen("explorerSelect"); },
+    },
+    {
+      icon: "📅", title: "자체점검 제출기한 계산", desc: "점검 완료일로부터 15일 이내 제출기한",
+      keywords: ["자체점검", "제출기한", "점검", "날짜", "기한", "보고서"],
+      action: () => {
+        state.dateCalc.mode = "inspect_report";
+        renderDateCalculator();
+        showScreen("date");
+      },
+    },
+    {
+      icon: "📅", title: "소방안전관리자 선임기한 계산", desc: "해임·퇴직일로부터 선임 및 신고기한 계산",
+      keywords: ["소방안전관리자", "선임기한", "신고", "날짜", "해임", "퇴직", "기한"],
+      action: () => {
+        state.dateCalc.mode = "fire_safety_manager";
+        renderDateCalculator();
+        showScreen("date");
+      },
+    },
+    {
+      icon: "📅", title: "소방안전관리보조자 선임기한 계산", desc: "해임·퇴직일로부터 선임 및 신고기한 계산",
+      keywords: ["보조자", "소방안전관리보조자", "선임기한", "신고", "기한"],
+      action: () => {
+        state.dateCalc.mode = "fire_safety_assistant_manager";
+        renderDateCalculator();
+        showScreen("date");
+      },
+    },
+    {
+      icon: "🧮", title: "소방안전관리보조자 선임인원 계산", desc: "아파트 세대수·연면적으로 필요 인원 계산",
+      keywords: ["보조자", "인원", "선임인원", "계산기", "세대", "아파트", "연면적"],
+      action: () => {
+        state.dateCalc.mode = "fire_safety_assistant_manager";
+        renderDateCalculator();
+        showScreen("date");
+        setTimeout(() => {
+          const wrap = document.getElementById("date-content");
+          if (wrap) {
+            const staffingCard = wrap.querySelector(".assistant-staffing-card");
+            if (staffingCard) staffingCard.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 120);
+      },
+    },
+    {
+      icon: "📅", title: "위험물안전관리자 선임기한 계산", desc: "해임·퇴직일로부터 선임 및 신고기한 계산",
+      keywords: ["위험물", "위험물안전관리자", "선임기한", "기한", "신고"],
+      action: () => {
+        state.dateCalc.mode = "hazardous_material_manager";
+        renderDateCalculator();
+        showScreen("date");
+      },
+    },
+    {
+      icon: "📅", title: "부적합 조치기한 계산", desc: "보고일로부터 10일/20일 이행완료 기한",
+      keywords: ["부적합", "조치기한", "이행", "10일", "20일", "기한"],
+      action: () => {
+        state.dateCalc.mode = "noncompliance_action";
+        renderDateCalculator();
+        showScreen("date");
+      },
+    },
+    {
+      icon: "📋", title: "자체점검 보고서 읽는법", desc: "자체점검 실시결과 보고서 작성·읽기 안내",
+      keywords: ["보고서", "읽는법", "자체점검", "작성", "점검표"],
+      action: () => { showScreen("reportGuide"); },
+    },
+    {
+      icon: "⚙️", title: "소방시설 설명", desc: "소방시설별 개요·종류·구성·설치기준",
+      keywords: ["소방시설", "설명", "종류", "구성", "설치기준", "유도등", "감지기"],
+      action: () => { showScreen("facilities"); },
+    },
+    {
+      icon: "🏢", title: "작동·종합 대상 판독기", desc: "작동기능점검·종합정밀점검 대상 판정",
+      keywords: ["작동", "종합", "판독기", "점검", "작동기능점검", "종합정밀점검"],
+      action: () => {
+        inspectionRestart();
+        showScreen("inspection");
+      },
+    },
+    {
+      icon: "👥", title: "다중이용업소 판독기", desc: "업종별 다중이용업소 해당 여부 판정",
+      keywords: ["다중이용업소", "판독기", "업종", "해당여부", "노래방", "pc방", "식당"],
+      action: () => { multiuseRestart(); showScreen("multiuse"); },
+    },
+    {
+      icon: "🛡", title: "다중이용업소 안전시설 탐색", desc: "다중이용업소에 설치할 안전시설 확인",
+      keywords: ["다중이용업소", "안전시설", "설치", "탐색"],
+      action: () => {
+        explorerRuntime.mode = "multiuse-only";
+        applyExplorerModeUI();
+        showScreen("explorer");
+        restartMultiuseOnly();
+      },
+    },
+    {
+      icon: "🧮", title: "수용인원 계산기", desc: "용도별 법정 수용인원 산정",
+      keywords: ["수용인원", "계산기", "면적", "용도", "강의실", "숙박"],
+      action: () => { showScreen("occupancy"); },
+    },
+  ];
+
+  const input = document.getElementById("home-search-input");
+  const clearBtn = document.getElementById("home-search-clear");
+  const resultsList = document.getElementById("home-search-results");
+  let focusedIndex = -1;
+
+  function highlight(text, query) {
+    if (!query) return text;
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return text.replace(new RegExp(`(${escaped})`, "gi"), "<mark>$1</mark>");
+  }
+
+  function renderResults(query) {
+    const q = query.trim().toLowerCase();
+    if (!q) {
+      resultsList.classList.add("hidden");
+      return;
+    }
+
+    const matched = SEARCH_ITEMS.filter(item => {
+      const haystack = [item.title, item.desc, ...item.keywords].join(" ").toLowerCase();
+      return haystack.includes(q);
+    });
+
+    if (matched.length === 0) {
+      resultsList.innerHTML = `<li class="hsr-empty">검색 결과가 없습니다</li>`;
+    } else {
+      resultsList.innerHTML = matched.map((item, i) => `
+        <li class="hsr-item" data-index="${i}" tabindex="-1">
+          <span class="hsr-icon mc-${iconColor(item.icon)}">${item.icon}</span>
+          <span class="hsr-text">
+            <span class="hsr-title">${highlight(item.title, query.trim())}</span>
+            <span class="hsr-desc">${item.desc}</span>
+          </span>
+          <span class="hsr-arrow">›</span>
+        </li>
+      `).join("");
+
+      resultsList.querySelectorAll(".hsr-item").forEach((el, i) => {
+        el.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          navigate(matched[i]);
+        });
+      });
+    }
+
+    focusedIndex = -1;
+    resultsList.classList.remove("hidden");
+  }
+
+  function iconColor(icon) {
+    const map = { "🏗️": "blue", "🧯": "red", "🔍": "red", "📅": "blue", "📋": "amber",
+                  "⚙️": "purple", "🏢": "amber", "👥": "green", "🛡": "green", "🧮": "amber" };
+    return map[icon] || "red";
+  }
+
+  function navigate(item) {
+    input.value = "";
+    clearBtn.classList.add("hidden");
+    resultsList.classList.add("hidden");
+    input.blur();
+    item.action();
+  }
+
+  function moveFocus(dir) {
+    const items = resultsList.querySelectorAll(".hsr-item");
+    if (!items.length) return;
+    items[focusedIndex]?.classList.remove("focused");
+    focusedIndex = (focusedIndex + dir + items.length) % items.length;
+    items[focusedIndex].classList.add("focused");
+    items[focusedIndex].scrollIntoView({ block: "nearest" });
+  }
+
+  input.addEventListener("input", () => {
+    const val = input.value;
+    clearBtn.classList.toggle("hidden", !val);
+    renderResults(val);
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); moveFocus(1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); moveFocus(-1); }
+    else if (e.key === "Enter") {
+      const matched = SEARCH_ITEMS.filter(item => {
+        const q = input.value.trim().toLowerCase();
+        return [item.title, item.desc, ...item.keywords].join(" ").toLowerCase().includes(q);
+      });
+      if (focusedIndex >= 0 && matched[focusedIndex]) navigate(matched[focusedIndex]);
+      else if (matched.length === 1) navigate(matched[0]);
+    }
+    else if (e.key === "Escape") { resultsList.classList.add("hidden"); input.blur(); }
+  });
+
+  input.addEventListener("blur", () => {
+    setTimeout(() => resultsList.classList.add("hidden"), 150);
+  });
+
+  input.addEventListener("focus", () => {
+    if (input.value.trim()) renderResults(input.value);
+  });
+
+  clearBtn.addEventListener("click", () => {
+    input.value = "";
+    clearBtn.classList.add("hidden");
+    resultsList.classList.add("hidden");
+    input.focus();
+  });
+})();
