@@ -74,21 +74,10 @@
 
     <div class="menu-grid">
       <div class="menu-left">
-        <button id="open-layout-learn" class="menu-card" type="button">
-          <div class="menu-icon mc-blue">🏗️</div>
-          <div class="menu-text">
-            <div class="mt-num" style="display:flex;align-items:center;gap:6px;">
-              <span>01</span><span class="test-badge">테스트중</span>
-            </div>
-            <div class="mt-title">소방시설 배치 배우기</div>
-            <div class="mt-desc">건물 구조 입력 후 소방시설 배치 시각화</div>
-          </div>
-        </button>
-
         <button id="open-explorer" class="menu-card" type="button">
           <div class="menu-icon mc-red">🧯</div>
           <div class="menu-text">
-            <div class="mt-num">02</div>
+            <div class="mt-num">01</div>
             <div class="mt-title">소방시설탐색기</div>
             <div class="mt-desc">건물 정보 입력 후 의무 설치 소방시설 도출</div>
           </div>
@@ -97,7 +86,7 @@
         <button id="open-date-calculator" class="menu-card" type="button">
           <div class="menu-icon mc-blue">📅</div>
           <div class="menu-text">
-            <div class="mt-num">03</div>
+            <div class="mt-num">02</div>
             <div class="mt-title">날짜 계산기</div>
             <div class="mt-desc">자체점검·안전관리자·부적합 조치기한 계산</div>
           </div>
@@ -107,7 +96,7 @@
           <div class="menu-icon mc-amber">📋</div>
           <div class="menu-text">
             <div class="mt-num" style="display:flex;align-items:center;gap:6px;">
-              <span>04</span><span class="test-badge">테스트중</span>
+              <span>03</span><span class="test-badge">테스트중</span>
             </div>
             <div class="mt-title">자체점검 보고서 읽는법</div>
             <div class="mt-desc">자체점검 실시결과 보고서 작성·읽기 안내</div>
@@ -117,7 +106,7 @@
         <button id="open-facilities" class="menu-card" type="button">
           <div class="menu-icon mc-purple">⚙️</div>
           <div class="menu-text">
-            <div class="mt-num">05</div>
+            <div class="mt-num">04</div>
             <div class="mt-title">소방시설 설명</div>
             <div class="mt-desc">소방시설별 개요·종류·구성·설치기준</div>
           </div>
@@ -126,7 +115,7 @@
         <button id="open-inspection-decoder" class="menu-card" type="button">
           <div class="menu-icon mc-amber">🏢</div>
           <div class="menu-text">
-            <div class="mt-num">06</div>
+            <div class="mt-num">05</div>
             <div class="mt-title">작동·종합 대상 판독기</div>
             <div class="mt-desc">작동기능점검과 종합정밀점검 대상 판정</div>
           </div>
@@ -135,7 +124,7 @@
         <button id="open-multiuse-decoder" class="menu-card" type="button">
           <div class="menu-icon mc-green">👥</div>
           <div class="menu-text">
-            <div class="mt-num">07</div>
+            <div class="mt-num">06</div>
             <div class="mt-title">다중이용업소 판독기</div>
             <div class="mt-desc">업종별 다중이용업소 해당 여부 판정</div>
           </div>
@@ -144,9 +133,18 @@
         <button id="open-occupancy-calculator" class="menu-card" type="button">
           <div class="menu-icon mc-amber">🧮</div>
           <div class="menu-text">
-            <div class="mt-num">08</div>
+            <div class="mt-num">07</div>
             <div class="mt-title">수용인원 계산기</div>
             <div class="mt-desc">용도별 법정 수용인원 산정</div>
+          </div>
+        </button>
+
+        <button id="open-lab" class="menu-card" type="button">
+          <div class="menu-icon mc-blue">🧪</div>
+          <div class="menu-text">
+            <div class="mt-num">08</div>
+            <div class="mt-title">실험실</div>
+            <div class="mt-desc">앞으로 만들 기능들을 먼저 작업하고 시험하는 공간</div>
           </div>
         </button>
 
@@ -664,6 +662,28 @@
       <span class="tb-title">수용인원 계산기</span>
     </div>
     <div class="scroll-content" id="occupancy-content"></div>
+  </section>
+
+  <section id="screen-lab" class="screen">
+    <div class="topbar">
+      <button id="back-from-lab" class="back-btn" type="button">←</button>
+      <span class="tb-title">실험실</span>
+    </div>
+    <div class="scroll-content">
+      <section class="wq-card">
+        <p class="wq-label">LAB</p>
+        <h2 class="wq-title">실험 중인 기능</h2>
+        <p class="wq-sub">앞으로 만들 기능들을 먼저 다듬고 시험하는 공간입니다.</p>
+        <div class="choice-list" style="margin-top:16px;">
+          <button id="open-layout-learn" class="choice-button" type="button">
+            <div class="choice-label-wrap">
+              <strong>소방시설 배치 배우기</strong>
+            </div>
+            <span>건물 구조를 입력하고 소방시설 배치를 시각화합니다.</span>
+          </button>
+        </div>
+      </section>
+    </div>
   </section>
 
   <template id="result-item-template">

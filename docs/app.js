@@ -754,6 +754,7 @@ const screens = {
   guide: document.getElementById("screen-guide"),
   reportGuide: document.getElementById("screen-report-guide"),
   occupancy: document.getElementById("screen-occupancy"),
+  lab: document.getElementById("screen-lab"),
   facilities: document.getElementById("screen-facilities"),
   layoutLearn: document.getElementById("screen-layout-learn"),
 };
@@ -1084,6 +1085,7 @@ const screenLabels = {
   guide: "이용 안내",
   reportGuide: "자체점검 보고서 읽는법",
   occupancy: "수용인원 계산기",
+  lab: "실험실",
   facilities: "소방시설 설명",
   layoutLearn: "소방시설 배치 배우기",
 };
@@ -4717,6 +4719,7 @@ function renderOccupancyCalculator() {
 }
 
 screens.occupancy = document.getElementById("screen-occupancy");
+screens.lab = document.getElementById("screen-lab");
 screens.facilities = document.getElementById("screen-facilities");
 document.getElementById("open-occupancy-calculator").addEventListener("click", () => {
   gtag("event", "menu_click", { menu_name: "수용인원계산기" });
@@ -4728,12 +4731,18 @@ document.getElementById("open-occupancy-calculator").addEventListener("click", (
 });
 document.getElementById("back-from-occupancy").addEventListener("click", () => showScreen("home"));
 document.getElementById("back-from-inspection").addEventListener("click", () => showScreen("home"));
+document.getElementById("open-lab").addEventListener("click", () => {
+  gtag("event", "menu_click", { menu_name: "실험실" });
+  showScreen("lab");
+});
+document.getElementById("back-from-lab").addEventListener("click", () => showScreen("home"));
 
 document.getElementById("open-layout-learn").addEventListener("click", () => {
+  gtag("event", "menu_click", { menu_name: "소방시설배치배우기" });
   showScreen("layoutLearn");
   if (typeof window.initLayoutLearn === "function") window.initLayoutLearn();
 });
-document.getElementById("back-from-layout-learn").addEventListener("click", () => showScreen("home"));
+document.getElementById("back-from-layout-learn").addEventListener("click", () => showScreen("lab"));
 document.getElementById("back-from-explorer").addEventListener("click", () => {
   if (explorerRuntime.mode === "multiuse-only") showScreen("multiuseSelect");
   else showScreen("home");
@@ -11071,7 +11080,7 @@ const RG_FACILITY_DESCS = {
     '설치 위치(층, 호)를 층별로 기재합니다.',
   ],
   'w03': [
-    '설치장소 동명을 기재(동이 1개면 미기입 가능)하고, 전체층/일부층 중 해당하는 □에 ✔ 표시합니다.',
+    '설치장소 동명을 기재(건물이 1동이면 미기입 가능)하고, 전체층/일부층 중 해당하는 란에 ✔ 표시합니다.',
     '설치 층수 범위를 지상/지하로 구분하여 기재합니다. (예: 지상 1층~3층)',
     '옥내소화전의 설치개수가 가장 많은 층의 설치 개수를 기재합니다.',
   ],
@@ -11081,7 +11090,7 @@ const RG_FACILITY_DESCS = {
   ],
   'w05': [
     '간이스프링클러 종류와 설치장소(동명, 층 범위)를 기재합니다.',
-    '스프링클러설비(헤드) 설치 층수 범위를 지상/지하로 구분하여 기재합니다. (예: 지상 1층~3층)',
+    '간이스프링클러설비(헤드) 설치 층수 범위를 지상/지하로 구분하여 기재합니다. (예: 지상 1층~3층)',
   ],
   'w06': [
     '화재조기진압용 스프링클러는 랙식 창고 등 특수한 용도에 설치합니다.',
@@ -11091,7 +11100,9 @@ const RG_FACILITY_DESCS = {
     '옥외소화전이 설치 된 총 개수를 기재합니다.',
   ],
   'a03': [
-    '전용/겸용 여부를 확인하고 설치장소 동명, 전체층/일부층을 기재합니다.',
+    '<b>전용/겸용</b>: 비상방송설비 전용으로 쓰이는 장비인지, 일반 방송설비와 겸용해서 사용하는지 확인합니다.',
+    '겸용은 평상시에는 일반 BGM이나 안내 방송용 등 다른 방송설비와 공용으로 사용할 수 있으나, 화재 시에는 비상경보 외의 일반 방송이 즉시 차단되는 구조입니다.',
+    '<b>전층경보/우선경보</b>: 화재시 피난중 병목현상을 방지하기 위해 일정규모 이상의 건물에는 우선경보 방식을 사용하여 위험한 층에 있는 사람부터 대피할 수 있게 하는 방식입니다. 대부분의 작은 규모의 건물(11층 이하)에는 전층경보 방식을 사용합니다.', 
     '증폭기 설치장소(동명, 층)와 실명을 기재합니다.',
   ],
   'a05': [
@@ -11102,30 +11113,29 @@ const RG_FACILITY_DESCS = {
   ],
   'a06': [
     '자동화재속보설비가 설치된 위치(동명, 지상/지하 층수, 자동화재속보설비가 설치된 실명)를 기재합니다.',
-    '자동화재속보설비는 주로 수신기 바로 근처에 설치돼있지만, 해당건물에 일부의 용도(노유자 등)로 인해 설치된 경우 따로 설치된 경우도 있습니다(예시 : 수신기는 1층식당에 있는데, 자동화재속보설비는 3층 요양원에 설치된 경우)', 
+    '자동화재속보설비는 주로 수신기 바로 근처에 설치돼있지만, 해당건물에 일부의 용도(노유자 등)로 인해 설치된 경우에는 수신기가 있는 위치가 아닌 곳에 따로 설치된 경우도 있습니다(예시 : 수신기는 1층 식당에 있는데, 자동화재속보설비는 3층 요양원에 설치된 경우)', 
   ],
   'a08': [
     '단독형(검지부와 수신부 일체)은 소규모 건물, 분리형(김지부와 수신부 분리)은 비교적 대형건물에 사용합니다.',
-    '단독형일 경우, 수신기 설치장소는 기입하지 않아도 됩니다.',
     '가스 종류(LPG/LNG)를 확인하고 경계구역 수를 기재합니다.',
   ],
   'a10': [
     '시각경보기는 자동화재탐지설비 점검표 내에 함께 표시됩니다.',
-    '경보방식 항목에서 시각경보기 유/무 □에 ✔ 표시합니다.',
+    '경보방식 항목에서 시각경보기 유/무 란에 ✔ 표시합니다.',
   ],
   'e01': [
     '피난기구 종류(피난사다리/완강기/구조대 등)와 동별·층별 수량을 기재합니다.',
-    '건물의 용도, 규모 등에 의해 피난기구의 종류와 수량이 달라집니다.',
-    '대부분의 일반 건물에는 완강기를 설치(비용 적음)하고, 노유자시설에는 구조대, 다중이용업소에는 피난사다리가 많이 설치됩니다.',
+    '건물의 용도, 규모 등의 조건에 따라 피난기구의 종류와 수량이 달라집니다.',
+    '대부분의 일반 건물에는 완강기를 설치(상대적으로 비용 낮음)하고, 노유자시설에는 구조대(최근에는 승강식 피난기도 많이 설치중), 다중이용업소에는 피난사다리가 많이 설치됩니다.',
   ],
   'e02': [
-    '공기호흡기, 방열복, 공기안전매트, 인공소생기 중 설치된 것을 기재합니다.',
-    '인명구조기구가 설치된 위치(동명, 층)를 비고란에 기재합니다.',
-    '대상물의 용도에 따라 설치되는 인명구조기구가 다르고, 전체층 또는 일부층에 설치하는도 달라집니다.',
+    '<b>종류</b>: 공기호흡기, 방열복, 공기안전매트, 인공소생기 중 설치된 것을 기재합니다.',
+    '<b>설치장소</b>: 인명구조기구가 설치된 위치(동명, 층)를 비고란에 기재합니다.',
+    '<b>대상물의 용도</b>: 인명구조기구가 설치된 법적기준(왜 설치했는지)을 확인하여 기입합니다. 대상물의 용도에 따라 설치되는 인명구조기구가 다르고, 전체층 또는 일부층에 설치하는지도 달라집니다.',
   ],
   'e03': [
-    '피난구유도등, 통로유도등, 유도표지 등 해당 특정소방대상물에 설치된 유도등의 모든 종류를 기재합니다.',
-    '대부분의 작은 건물에는 피난구와 통로유도등이 설치돼있고 1992년 7월 28일이전어 설치된 건물에는 유도표지가 설치된 곳도 있습니다.(10층 이하 유도표지, 11층 이상 유도등)',
+    '피난구유도등, 통로유도등, 유도표지 등 해당 특정소방대상물에 설치된 모든 종류를 기재합니다.',
+    '대부분의 작은 건물에는 피난구유도등고 통로유도등이 설치돼있고 1992년 7월 28일 이전에 설치된 건물에는 유도표지가 설치된 곳도 있습니다.(10층 이하 유도표지 설치, 11층 이상 유도등 설치)',
   ],
   'e04': [
     '비상조명등이 설치된 장소(동명, 층)를 기재합니다.',
@@ -11148,16 +11158,16 @@ const RG_FACILITY_DESCS = {
   ],
   'ac02': [
     '<b>전용, 겸용</b>: 해당 특정소방대상물에 옥내소화전설비나 스프링클러설비 등 수계소화설비가 설치되어 있고, 규모가 엄청 큰 경우가 아니면 연결송수관 설비는 대부분 다른 수계소화설비와 배관을 겸용하여 설치합니다.',
-    '<b>설치장소</b>: 연결송수관 설비가 설치된 설치장소 동명과 층 범위를 기재합니다.',
+    '<b>설치장소</b>: 연결송수관 설비가 설치된 동명과 층 범위를 기재합니다.',
     '<b>방수구 위치 및 송수구 설치장소</b>: 방수구와 송수구가 설치된 장소를 확인하여 기입합니다.',
-    '연결송수관설비 방수구는 옥내소화전함 내에 있는 경우가 많으며, 배관이 직상으로 설치되기 때문에 층마다 같은 위치에 설치되는 경우가 많습니다.',
-    '<b>가압송수장치 설치장소</b>: 가압송수장치가 설치된 장소 및 전양정과 토출량 등을 기입합니다.',
-    '건물의 층수가 높을 경우(70m이상, 약 23층~24층 이상) 소방차의 압력만으로는 건물의 꼭대기층까지 물이 도달할 수 없습니다. 그래서 별도로 가압송수장치를 설치합니다.',
-    '<b>기동스위치 설치장소</b>: 가압송수장치를 기동시키는 스위치가 설치된 장소를 기입합니다. 주로 송수구 근처에 설치됩니다.',
+    '<b>방수구/<b>는 옥내소화전함 내에 있는 경우가 많으며, 배관이 직상으로 설치되기 때문에 층마다 같은 위치에 설치되는 경우가 많습니다.',
+    '<b>가압송수장치 설치장소</b>: 가압송수장치가 설치된 장소 및 전양정과 토출량(펌프 명판에 기재돼있음) 등을 기입합니다.',
+    '건물의 층수가 높을 경우(70m이상, 약 23층~24층 이상) 소방차의 압력만으로는 건물의 꼭대기 층까지 방수에 필요한 압력으로 물이 도달할 수 없습니다. 그래서 별도의 가압송수장치를 설치합니다.',
+    '<b>기동스위치 설치장소</b>: 가압송수장치를 기동시키는 스위치가 설치된 장소를 기입합니다.',
   ],
   'ac03': [
     '<b>방식</b>: 살수설비가 습식(폐쇄형 헤드사용, 배관내부 물로 차있음)인지 건식(개방형 헤드사용, 배관내부 평상시 공기)인지 확인하여 기입합니다. 대부분 건식으로 설치됩니다.',
-    '<b>지하층과 판매시설, 가스시설 등</b> 중 살수설비가 설치된 법적기준(왜 설치했는지)을 확인하여 기입합니다.',
+    '<b>지하층과 판매시설, 가스시설 등</b> 중 살수설비가 설치된 법적기준(왜 설치했는지)을 확ㄴ인하여 기입합니다.',
     '<b>송수구가 설치된 장소와 송수구역 수</b>를 확인하여 기입합니다.',
   ],
   'ac04': [
@@ -11286,9 +11296,8 @@ const RG_WATER_COMMON = [
   {
     id: '_wc_su', label: '수원', img: './image/inspection/수원.png',
     desc: [
-      '수원의 종류(수조/고가수조/압력수조)와 저수량(㎥)을 기재합니다.',
+      '<b>설비의 종류</b>: 수원을 사용하는 소방설비를 기재합니다.',
       '주수원과 보조수원으로 구분하여 각각 용량과 위치를 기재합니다.',
-      '고가수조 방식은 낙차(m)를, 압력수조 방식은 압력(㎫)을 기재합니다.',
     ],
   },
   {
@@ -11303,14 +11312,14 @@ const RG_WATER_COMMON = [
     id: '_wc_so', label: '송수구', img: './image/inspection/송수구.png',
     desc: [
       '송수구 설치 위치(동명, 층)와 단구형/쌍구형 구분을 기재합니다.',
-      '설치 개수와 구경(65㎜)을 확인하여 기재합니다.',
+      '<b>설치장소</b>: 송수구가 설치된 장소, 설치 개수를 확인하여 기재합니다. 주로 출입구 쪽에 있습니다.',
     ],
   },
   {
     id: '_wc_bi', label: '비상전원', img: './image/inspection/비상전원.png',
     desc: [
-      '비상전원 종류(자가발전설비/축전지설비/전기저장장치)에 해당하는 □에 ✔ 표시합니다.',
-      '설치장소(동명, 층, 실명)와 용량(㎾ 또는 ㎾h)을 기재합니다.',
+      '비상전원 종류(자가발전설비/비상전원수전설비/축전지설비/전기저장장치)에 해당하는 란에 ✔ 표시합니다.',
+      '<b>설치장소</b>: 동명, 층, 실명을 기재합니다.',
     ],
   },
 ];
@@ -12074,7 +12083,12 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
     {
       icon: "🏗️", title: "소방시설 배치 배우기", desc: "건물 구조 입력 후 소방시설 배치 시각화",
       keywords: ["배치", "배우기", "시각화", "단면도", "레이아웃"],
-      action: () => { showScreen("layoutLearn"); },
+      action: () => { showScreen("lab"); },
+    },
+    {
+      icon: "🧪", title: "실험실", desc: "앞으로 만들 기능들을 먼저 작업하고 시험하는 공간",
+      keywords: ["실험실", "테스트", "개발중", "소방시설 배치 배우기", "배치"],
+      action: () => { showScreen("lab"); },
     },
     {
       icon: "🧯", title: "소방시설탐색기 (간단한 버전)", desc: "현행 법령 기준으로 빠르게 설치 의무 도출",
@@ -12237,7 +12251,7 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
   }
 
   function iconColor(icon) {
-    const map = { "🏗️": "blue", "🧯": "red", "🔍": "red", "📅": "blue", "📋": "amber",
+    const map = { "🏗️": "blue", "🧪": "blue", "🧯": "red", "🔍": "red", "📅": "blue", "📋": "amber",
                   "⚙️": "purple", "🏢": "amber", "👥": "green", "🛡": "green", "🧮": "amber" };
     return map[icon] || "red";
   }

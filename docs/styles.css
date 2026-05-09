@@ -603,6 +603,11 @@ input:focus-visible {
   opacity: 0.85;
 }
 
+.choice-button .choice-label-wrap .test-badge {
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
 .choice-button.selected .choice-label-wrap .calc-mode-info {
   color: var(--red-soft);
   border-color: var(--red-soft);
