@@ -115,20 +115,8 @@ const steps = [
   { key: "totalArea", title: "건물 연면적은 얼마인가요?", help: "㎡ 단위로 입력하세요.", type: "number", onlyFor: "neighborhood", min: 0, step: 0.1, placeholder: "예: 1600" },
   { key: "neighborhoodArea", title: "근린생활시설 사용부분 바닥면적 합계는 얼마인가요?", help: "간이스프링클러설비 판단에 사용됩니다.", type: "number", onlyFor: "neighborhood", min: 0, step: 0.1, placeholder: "예: 1200" },
   { key: "aboveGroundFloors", title: "지상층수는 몇 층인가요?", help: "지하층을 제외한 지상층수를 입력해 주세요.", type: "number", onlyFor: "neighborhood", min: 0, step: 1, placeholder: "예: 6" },
-  { key: "basementFloors", title: "지하층수는 몇 층인가요?", help: "지하층 조건이 들어가는 설비를 판정합니다.", type: "number", onlyFor: "neighborhood", min: 0, step: 1, placeholder: "예: 1" },
-  { key: "basementAreaSum", title: "지하층 바닥면적 합계는 얼마인가요?", help: "지하층수와 함께 지하층 평균 면적을 계산합니다.", type: "number", onlyFor: "neighborhood", min: 0, step: 0.1, placeholder: "예: 180" },
-  {
-    key: "hasWindowlessFloor",
-    title: "무창층이 있나요?",
-    help: "무창층이 있으면 면적을 이어서 입력합니다.",
-    type: "choice",
-    onlyFor: "neighborhood",
-    options: [
-      { value: "yes", label: "있음", description: "무창층이 하나 이상 있는 경우" },
-      { value: "no", label: "없음", description: "무창층이 없는 경우" },
-    ],
-  },
-  { key: "windowlessArea", title: "무창층 바닥면적은 얼마인가요?", help: "무창층이 있으면 바닥면적 합계를 입력해 주세요.", type: "number", onlyFor: "neighborhood", min: 0, step: 0.1, placeholder: "예: 200" },
+  { key: "basementFloors", title: "지하층 정보를 입력해 주세요.", help: "지하층이 없으면 0을 입력하세요.", type: "compound", onlyFor: "neighborhood" },
+  { key: "hasWindowlessFloor", title: "무창층 정보를 입력해 주세요.", help: "무창층이란 채광·환기 조건 등을 충족하지 못하는 층입니다.", type: "compound", onlyFor: "neighborhood" },
   {
     key: "hasLargeTargetFloor",
     title: "지하층, 무창층, 또는 4층 이상 층 중 300㎡ 이상인 층이 있나요?",
@@ -253,20 +241,8 @@ const steps = [
   { key: "lodgingTotalArea", title: "건물 연면적은 얼마인가요?", help: "㎡ 단위로 입력하세요.", type: "number", onlyFor: "lodging", min: 0, step: 0.1, placeholder: "예: 2000" },
   { key: "lodgingArea", title: "숙박시설로 사용되는 바닥면적 합계는 얼마인가요?", help: "간이스프링클러·스프링클러 판단에 사용됩니다. 건물 전체를 해당 용도로 쓰는 경우에는 연면적과 동일하게 입력해주세요.", type: "number", onlyFor: "lodging", min: 0, step: 0.1, placeholder: "예: 450" },
   { key: "lodgingAboveGroundFloors", title: "지상층수는 몇 층인가요?", help: "지하층을 제외한 지상층수를 입력해 주세요.", type: "number", onlyFor: "lodging", min: 0, step: 1, placeholder: "예: 8" },
-  { key: "lodgingBasementFloors", title: "지하층수는 몇 층인가요?", help: "지하층 조건이 들어가는 설비를 판정합니다.", type: "number", onlyFor: "lodging", min: 0, step: 1, placeholder: "예: 1" },
-  { key: "lodgingBasementAreaSum", title: "지하층 바닥면적 합계는 얼마인가요?", help: "없으면 0을 입력하세요.", type: "number", onlyFor: "lodging", min: 0, step: 0.1, placeholder: "예: 200" },
-  {
-    key: "lodgingHasWindowlessFloor",
-    title: "무창층이 있나요?",
-    help: "무창층이 있으면 면적을 이어서 입력합니다.",
-    type: "choice",
-    onlyFor: "lodging",
-    options: [
-      { value: "yes", label: "있음", description: "무창층이 하나 이상 있는 경우" },
-      { value: "no", label: "없음", description: "무창층이 없는 경우" },
-    ],
-  },
-  { key: "lodgingWindowlessArea", title: "무창층 바닥면적은 얼마인가요?", help: "무창층이 있으면 바닥면적을 입력하세요.", type: "number", onlyFor: "lodging", min: 0, step: 0.1, placeholder: "예: 300" },
+  { key: "lodgingBasementFloors", title: "지하층 정보를 입력해 주세요.", help: "지하층이 없으면 0을 입력하세요.", type: "compound", onlyFor: "lodging" },
+  { key: "lodgingHasWindowlessFloor", title: "무창층 정보를 입력해 주세요.", help: "무창층이란 채광·환기 조건 등을 충족하지 못하는 층입니다.", type: "compound", onlyFor: "lodging" },
   {
     key: "lodgingHasLargeFloorFor1000",
     title: "지하층, 무창층 또는 4층 이상 층 중 바닥면적 1,000㎡ 이상인 층이 있나요?",
@@ -390,20 +366,8 @@ const steps = [
   { key: "elderlyTotalArea", title: "건물 연면적은 얼마인가요?", help: "㎡ 단위로 입력하세요.", type: "number", onlyFor: "elderly", min: 0, step: 0.1, placeholder: "예: 1200" },
   { key: "elderlyArea", title: "노유자시설로 사용되는 바닥면적 합계는 얼마인가요?", help: "스프링클러·간이스프링클러 판단에 사용됩니다. 건물 전체를 해당 용도로 쓰는 경우에는 연면적과 동일하게 입력해주세요.", type: "number", onlyFor: "elderly", min: 0, step: 0.1, placeholder: "예: 500" },
   { key: "elderlyAboveGroundFloors", title: "지상층수는 몇 층인가요?", help: "지하층을 제외한 지상층수를 입력해 주세요.", type: "number", onlyFor: "elderly", min: 0, step: 1, placeholder: "예: 4" },
-  { key: "elderlyBasementFloors", title: "지하층수는 몇 층인가요?", help: "없으면 0을 입력하세요.", type: "number", onlyFor: "elderly", min: 0, step: 1, placeholder: "예: 1" },
-  { key: "elderlyBasementAreaSum", title: "지하층 바닥면적 합계는 얼마인가요?", help: "없으면 0을 입력하세요.", type: "number", onlyFor: "elderly", min: 0, step: 0.1, placeholder: "예: 200" },
-  {
-    key: "elderlyHasWindowlessFloor",
-    title: "무창층이 있나요?",
-    help: "무창층이 있으면 면적을 이어서 입력합니다.",
-    type: "choice",
-    onlyFor: "elderly",
-    options: [
-      { value: "yes", label: "있음", description: "무창층이 하나 이상 있는 경우" },
-      { value: "no", label: "없음", description: "무창층이 없는 경우" },
-    ],
-  },
-  { key: "elderlyWindowlessArea", title: "무창층 바닥면적은 얼마인가요?", help: "무창층이 있으면 바닥면적을 입력하세요.", type: "number", onlyFor: "elderly", min: 0, step: 0.1, placeholder: "예: 200" },
+  { key: "elderlyBasementFloors", title: "지하층 정보를 입력해 주세요.", help: "지하층이 없으면 0을 입력하세요.", type: "compound", onlyFor: "elderly" },
+  { key: "elderlyHasWindowlessFloor", title: "무창층 정보를 입력해 주세요.", help: "무창층이란 채광·환기 조건 등을 충족하지 못하는 층입니다.", type: "compound", onlyFor: "elderly" },
   {
     key: "elderlyHasGrillWindow",
     title: "창살(화재 시 자동으로 열리지 않는 구조)이 설치돼 있나요?",
@@ -468,20 +432,8 @@ const steps = [
   { key: "medicalTotalArea", title: "건물 연면적은 얼마인가요?", help: "㎡ 단위로 입력하세요.", type: "number", onlyFor: "medical", min: 0, step: 0.1, placeholder: "예: 2000" },
   { key: "medicalArea", title: "의료시설로 사용되는 바닥면적 합계는 얼마인가요?", help: "스프링클러·간이스프링클러·자동화재탐지설비 판단에 사용됩니다. 건물 전체를 해당 용도로 쓰는 경우에는 연면적과 동일하게 입력해주세요.", type: "number", onlyFor: "medical", min: 0, step: 0.1, placeholder: "예: 1500" },
   { key: "medicalAboveGroundFloors", title: "지상층수는 몇 층인가요?", help: "지하층을 제외한 지상층수를 입력해 주세요.", type: "number", onlyFor: "medical", min: 0, step: 1, placeholder: "예: 5" },
-  { key: "medicalBasementFloors", title: "지하층수는 몇 층인가요?", help: "없으면 0을 입력하세요.", type: "number", onlyFor: "medical", min: 0, step: 1, placeholder: "예: 1" },
-  { key: "medicalBasementAreaSum", title: "지하층 바닥면적 합계는 얼마인가요?", help: "없으면 0을 입력하세요.", type: "number", onlyFor: "medical", min: 0, step: 0.1, placeholder: "예: 300" },
-  {
-    key: "medicalHasWindowlessFloor",
-    title: "무창층이 있나요?",
-    help: "무창층이 있으면 바닥면적을 이어서 입력합니다.",
-    type: "choice",
-    onlyFor: "medical",
-    options: [
-      { value: "yes", label: "있음", description: "무창층이 하나 이상 있는 경우" },
-      { value: "no", label: "없음", description: "무창층이 없는 경우" },
-    ],
-  },
-  { key: "medicalWindowlessArea", title: "무창층 바닥면적은 얼마인가요?", help: "무창층이 있으면 바닥면적을 입력하세요.", type: "number", onlyFor: "medical", min: 0, step: 0.1, placeholder: "예: 200" },
+  { key: "medicalBasementFloors", title: "지하층 정보를 입력해 주세요.", help: "지하층이 없으면 0을 입력하세요.", type: "compound", onlyFor: "medical" },
+  { key: "medicalHasWindowlessFloor", title: "무창층 정보를 입력해 주세요.", help: "무창층이란 채광·환기 조건 등을 충족하지 못하는 층입니다.", type: "compound", onlyFor: "medical" },
   {
     key: "medicalHasGrillWindow",
     title: "사람의 탈출을 막기 위한 고정식 창살이 설치돼 있나요?",
@@ -980,7 +932,6 @@ function getActiveSteps() {
     if (["isThirdClassNeighborhood", "permitBefore1992", "pre1992PermitRange", "thirdClassDetailUse"].includes(step.key)) return false;
     if (!step.onlyFor) return true;
     if (step.onlyFor !== state.answers.occupancyType) return false;
-    if (step.key === "windowlessArea") return state.answers.hasWindowlessFloor === "yes";
     if (step.key === "hasLargeTargetFloor") return toNumber(state.answers.totalArea) < 1500;
     if (step.key === "firstSecondFloorArea") return toNumber(state.answers.totalArea) >= 9000;
     if (step.key === "postpartumAreaRange") return state.answers.facilitySubtype === "postpartum";
@@ -996,7 +947,6 @@ function getActiveSteps() {
       return state.answers.hasMultiuseBusiness === "yes";
     }
     // 숙박시설 전용 조건
-    if (step.key === "lodgingWindowlessArea") return state.answers.lodgingHasWindowlessFloor === "yes";
     if (step.key === "lodgingHasLargeFloorFor1000") {
       // 이미 전층 스프링클러 대상이면 skip
       const la = toNumber(state.answers.lodgingArea);
@@ -1016,18 +966,17 @@ function getActiveSteps() {
       return state.answers.lodgingHasMultiuseBusiness === "yes";
     }
     // 노유자시설 전용 조건
-    if (step.key === "elderlyWindowlessArea") return state.answers.elderlyHasWindowlessFloor === "yes";
     if (step.key === "elderlyHasGrillWindow") {
       return state.answers.elderlySubtype === "general"
         && toNumber(state.answers.elderlyArea) < 300;
     }
     if (step.key === "elderlyHasFloor500Plus") return state.answers.elderlySubtype === "general";
     if (step.key === "elderlyHas24HourStaff") {
+      if (state.answers.elderlySubtype === "living") return true;
       return state.answers.elderlySubtype === "general"
         && state.answers.elderlyHasFloor500Plus === "yes";
     }
     // 의료시설 전용 조건
-    if (step.key === "medicalWindowlessArea") return state.answers.medicalHasWindowlessFloor === "yes";
     if (step.key === "medicalHasGrillWindow") {
       const sub = state.answers.medicalSubtype;
       const ma = toNumber(state.answers.medicalArea);
@@ -1102,6 +1051,13 @@ function renderChoiceStep(step) {
   return wrapper;
 }
 
+const AUTO_FILL_PAIRS = {
+  totalArea: "neighborhoodArea",
+  lodgingTotalArea: "lodgingArea",
+  elderlyTotalArea: "elderlyArea",
+  medicalTotalArea: "medicalArea",
+};
+
 function renderNumberStep(step) {
   const input = document.createElement("input");
   input.className = "calc-input";
@@ -1112,6 +1068,8 @@ function renderNumberStep(step) {
   input.value = state.answers[step.key] ?? "";
   input.addEventListener("input", (event) => {
     state.answers[step.key] = event.target.value;
+    const fillKey = AUTO_FILL_PAIRS[step.key];
+    if (fillKey) state.answers[fillKey] = event.target.value;
   });
   return input;
 }
@@ -1218,6 +1176,70 @@ function renderCompoundStep(step) {
       makeField("기계식 주차 가능 대수", "medicalMechanicalParkingCapacity", state.answers.medicalMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }),
       makeField("전기실·발전실·변전실·전산실 최대 바닥면적(㎡)", "medicalElectricalRoomArea", state.answers.medicalElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }),
     ].forEach((field) => wrapper.appendChild(field));
+    return wrapper;
+  }
+
+  if (step.key === "basementFloors") {
+    [
+      makeField("지하층수", "basementFloors", state.answers.basementFloors, { min: 0, step: 1, placeholder: "없으면 0" }),
+      makeField("지하층 바닥면적 합계(㎡)", "basementAreaSum", state.answers.basementAreaSum, { min: 0, step: 0.1, placeholder: "없으면 0" }),
+    ].forEach((field) => wrapper.appendChild(field));
+    return wrapper;
+  }
+
+  if (step.key === "lodgingBasementFloors") {
+    [
+      makeField("지하층수", "lodgingBasementFloors", state.answers.lodgingBasementFloors, { min: 0, step: 1, placeholder: "없으면 0" }),
+      makeField("지하층 바닥면적 합계(㎡)", "lodgingBasementAreaSum", state.answers.lodgingBasementAreaSum, { min: 0, step: 0.1, placeholder: "없으면 0" }),
+    ].forEach((field) => wrapper.appendChild(field));
+    return wrapper;
+  }
+
+  if (step.key === "elderlyBasementFloors") {
+    [
+      makeField("지하층수", "elderlyBasementFloors", state.answers.elderlyBasementFloors, { min: 0, step: 1, placeholder: "없으면 0" }),
+      makeField("지하층 바닥면적 합계(㎡)", "elderlyBasementAreaSum", state.answers.elderlyBasementAreaSum, { min: 0, step: 0.1, placeholder: "없으면 0" }),
+    ].forEach((field) => wrapper.appendChild(field));
+    return wrapper;
+  }
+
+  if (step.key === "medicalBasementFloors") {
+    [
+      makeField("지하층수", "medicalBasementFloors", state.answers.medicalBasementFloors, { min: 0, step: 1, placeholder: "없으면 0" }),
+      makeField("지하층 바닥면적 합계(㎡)", "medicalBasementAreaSum", state.answers.medicalBasementAreaSum, { min: 0, step: 0.1, placeholder: "없으면 0" }),
+    ].forEach((field) => wrapper.appendChild(field));
+    return wrapper;
+  }
+
+  if (step.key === "hasWindowlessFloor") {
+    wrapper.appendChild(makeBinaryChoiceField("무창층이 있나요?", "hasWindowlessFloor"));
+    if (state.answers.hasWindowlessFloor === "yes") {
+      wrapper.appendChild(makeField("무창층 바닥면적(㎡)", "windowlessArea", state.answers.windowlessArea, { min: 0, step: 0.1, placeholder: "예: 200" }));
+    }
+    return wrapper;
+  }
+
+  if (step.key === "lodgingHasWindowlessFloor") {
+    wrapper.appendChild(makeBinaryChoiceField("무창층이 있나요?", "lodgingHasWindowlessFloor"));
+    if (state.answers.lodgingHasWindowlessFloor === "yes") {
+      wrapper.appendChild(makeField("무창층 바닥면적(㎡)", "lodgingWindowlessArea", state.answers.lodgingWindowlessArea, { min: 0, step: 0.1, placeholder: "예: 200" }));
+    }
+    return wrapper;
+  }
+
+  if (step.key === "elderlyHasWindowlessFloor") {
+    wrapper.appendChild(makeBinaryChoiceField("무창층이 있나요?", "elderlyHasWindowlessFloor"));
+    if (state.answers.elderlyHasWindowlessFloor === "yes") {
+      wrapper.appendChild(makeField("무창층 바닥면적(㎡)", "elderlyWindowlessArea", state.answers.elderlyWindowlessArea, { min: 0, step: 0.1, placeholder: "예: 200" }));
+    }
+    return wrapper;
+  }
+
+  if (step.key === "medicalHasWindowlessFloor") {
+    wrapper.appendChild(makeBinaryChoiceField("무창층이 있나요?", "medicalHasWindowlessFloor"));
+    if (state.answers.medicalHasWindowlessFloor === "yes") {
+      wrapper.appendChild(makeField("무창층 바닥면적(㎡)", "medicalWindowlessArea", state.answers.medicalWindowlessArea, { min: 0, step: 0.1, placeholder: "예: 200" }));
+    }
     return wrapper;
   }
 
@@ -4568,6 +4590,7 @@ const YD = {
   D20061207: 20061207,
   D20080229: 20080229,
   D20110707: 20110707,
+  D20120205: 20120205, // 노유자 생활시설 구분 신설 (2012년 2월)
   D20120215: 20120215, // 정신의료기관 간이스프링클러 신설 (2012년 2월)
   D20120914: 20120914,
   D20130109: 20130109,
@@ -4837,8 +4860,8 @@ const yearSteps = [
     title: "해당 근린생활시설이 일반목욕장(욕탕)입니까?",
     help: "일반목욕장은 자동화재탐지설비 기준 면적이 다릅니다(600㎡ → 1,000㎡).",
     options: [
-      { value: "general", label: "일반 근린생활시설", description: "상가, 식당, 사무실, 의원 등" },
       { value: "bathhouse", label: "일반목욕장(욕탕)", description: "목욕장으로 쓰이는 경우" },
+      { value: "general", label: "일반 근린생활시설", description: "상가, 식당, 사무실, 의원 등" },
     ],
     condition: (ya) => ya.yOccupancyType === "neighborhood",
   },
@@ -4906,7 +4929,7 @@ const yearSteps = [
     placeholder: "예: 0",
     min: 0,
     step: 0.1,
-    condition: (ya) => ya.yOccupancyType === "neighborhood",
+    condition: (ya) => ya.yOccupancyType === "neighborhood" && (parseFloat(ya.yTotalArea) || 0) >= 9000,
   },
   {
     key: "yParkingElecSet",
@@ -5085,7 +5108,7 @@ const yearSteps = [
     placeholder: "예: 0",
     min: 0,
     step: 0.1,
-    condition: (ya) => ya.yOccupancyType === "lodging",
+    condition: (ya) => ya.yOccupancyType === "lodging" && (parseFloat(ya.yTotalArea) || 0) >= 9000,
   },
   {
     key: "yLodgingParkingElecSet",
@@ -5285,7 +5308,7 @@ const yearSteps = [
       { value: "general", label: "일반 노유자시설", description: "숙식을 제공하지 않는 시설 — 노인복지관·아동센터·주간보호센터 등" },
       { value: "living", label: "노유자 생활시설", description: "숙식을 함께 제공하는 시설 — 양로원·노인요양원·아동복지시설 등" },
     ],
-    condition: (ya, pd) => ya.yOccupancyType === "elderly" && pd >= YD.D20080229,
+    condition: (ya, pd) => ya.yOccupancyType === "elderly" && pd >= YD.D20120205,
   },
   {
     key: "yElderlyArea",
@@ -5351,7 +5374,10 @@ const yearSteps = [
       { value: "yes", label: "있음", description: "24시간 화재 감시 가능한 근무자가 상주함" },
       { value: "no", label: "없음", description: "24시간 상주 근무자가 없음" },
     ],
-    condition: (ya, pd) => ya.yOccupancyType === "elderly" && pd >= YD.D20120914,
+    condition: (ya, pd) => ya.yOccupancyType === "elderly" && (
+      (ya.yElderlySubtype === "general" && pd >= YD.D20140708) ||
+      (ya.yElderlySubtype === "living" && pd >= YD.D20221201)
+    ),
   },
   {
     key: "yElderlyFirstSecondFloorArea",
@@ -5361,7 +5387,7 @@ const yearSteps = [
     placeholder: "예: 0",
     min: 0,
     step: 0.1,
-    condition: (ya) => ya.yOccupancyType === "elderly",
+    condition: (ya) => ya.yOccupancyType === "elderly" && (parseFloat(ya.yTotalArea) || 0) >= 9000,
   },
   {
     key: "yElderlyParkingElecSet",
