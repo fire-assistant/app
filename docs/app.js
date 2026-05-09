@@ -2959,11 +2959,18 @@ function buildExtraItems(input, options = {}) {
   const floors = getFloorCount(input);
   const allowRefugeElevator = options.allowRefugeElevator === true;
   const requirePermitDateForRefugeElevator = options.requirePermitDateForRefugeElevator === true;
+  const usePermitBasedLodgingFlameproof = options.usePermitBasedLodgingFlameproof === true;
   const refugeElevatorRequired = allowRefugeElevator
     && floors >= 30
     && (!requirePermitDateForRefugeElevator || (input.pd || 0) >= YD.D20181018);
 
-  if (["lodging", "elderly", "medical"].includes(input.occupancyType)) {
+  if (input.occupancyType === "lodging" && usePermitBasedLodgingFlameproof) {
+    if ((input.pd || 0) >= YD.D20010101) {
+      items.push({ name: "방염", reason: "2001년 1월 1일 이후 허가된 모든 숙박시설은 방염 규정 적용 대상입니다." });
+    } else if (floors >= 3) {
+      items.push({ name: "방염", reason: "2001년 1월 1일 이전 허가된 숙박시설은 3층 이상일 때 방염 규정 적용 대상입니다." });
+    }
+  } else if (["lodging", "elderly", "medical"].includes(input.occupancyType)) {
     items.push({ name: "방염", reason: `${facilityNames[input.occupancyType]}은 방염 규정 적용 대상입니다.` });
   } else if (input.occupancyType === "neighborhood" && floors >= 11) {
     items.push({ name: "방염", reason: "11층 이상 건물은 방염 규정 적용 대상입니다." });
@@ -3014,6 +3021,7 @@ function renderYearExtraItems(input) {
   renderExtraItemsToTarget(input, "year-extra-items-section", "year-extra-items-list", {
     allowRefugeElevator: true,
     requirePermitDateForRefugeElevator: true,
+    usePermitBasedLodgingFlameproof: true,
   });
 }
 
@@ -4745,6 +4753,7 @@ const YD = {
   D19940720: 19940720,
   D19970927: 19970927,
   D19990729: 19990729,
+  D20010101: 20010101,
   D20010521: 20010521,
   D20020330: 20020330,
   D20040530: 20040530,
@@ -6143,12 +6152,16 @@ function yearRecalcF12() {
   yearState.answers.yReligiousFirstSecondFloorArea = s;
 }
 
-function yearRecalcElderlySmokeArea() {
+function yearRecalcSmokeAreaTargets() {
   const basementArea = parseFloat(yearState.answers.yBasementAreaSum) || 0;
   const windowlessArea = yearState.answers.yHasWindowlessFloor === "yes"
     ? (parseFloat(yearState.answers.yWindowlessArea) || 0)
     : 0;
-  yearState.answers.yElderlyBasementAreaForSmoke = String(basementArea + windowlessArea);
+  const total = String(basementArea + windowlessArea);
+  yearState.answers.ySmokeControlArea = total;
+  yearState.answers.yLodgingBasementAreaForSmoke = total;
+  yearState.answers.yElderlyBasementAreaForSmoke = total;
+  yearState.answers.yMedicalBasementAreaForSmoke = total;
 }
 
 function makeYearField(labelText, name, value, extra = {}) {
@@ -6166,7 +6179,7 @@ function makeYearField(labelText, name, value, extra = {}) {
   input.addEventListener("input", (e) => {
     yearState.answers[name] = e.target.value;
     if (name === "yBasementAreaSum") yearRecalcF12();
-    if (name === "yBasementAreaSum" || name === "yWindowlessArea") yearRecalcElderlySmokeArea();
+    if (name === "yBasementAreaSum" || name === "yWindowlessArea") yearRecalcSmokeAreaTargets();
   });
   wrapper.appendChild(label);
   wrapper.appendChild(input);
@@ -6189,7 +6202,7 @@ function makeYearBinaryField(labelText, name) {
     btn.innerHTML = `<strong>${opt.label}</strong>`;
     btn.addEventListener("click", () => {
       yearState.answers[name] = opt.value;
-      if (name === "yHasWindowlessFloor") yearRecalcElderlySmokeArea();
+      if (name === "yHasWindowlessFloor") yearRecalcSmokeAreaTargets();
       yearRenderCurrentStep();
     });
     buttons.appendChild(btn);
@@ -6227,7 +6240,9 @@ function yearRenderNumberStep(step) {
   input.min = String(step.min ?? 0);
   input.step = String(step.step ?? 1);
   input.placeholder = step.placeholder ?? "";
-  if (step.key === "yElderlyBasementAreaForSmoke") yearRecalcElderlySmokeArea();
+  if (["ySmokeControlArea", "yLodgingBasementAreaForSmoke", "yElderlyBasementAreaForSmoke", "yMedicalBasementAreaForSmoke"].includes(step.key)) {
+    yearRecalcSmokeAreaTargets();
+  }
   input.value = yearState.answers[step.key] ?? "";
   // 용도별 바닥면적 필드는 연면적을 초과할 수 없음
   const areaFields = ["yNeighborhoodArea", "yLodgingArea", "yElderlyArea", "yMedicalArea"];
