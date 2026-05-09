@@ -1,3 +1,5 @@
+history.scrollRestoration = 'manual';
+
 // ── 개발자 모드 (GA 추적 비활성화) ───────────────────────────────────────
 // 본인 기기에서 콘솔에 한 번만 실행: localStorage.setItem('devMode', 'true')
 if (localStorage.getItem('devMode') === 'true') {
