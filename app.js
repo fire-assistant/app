@@ -924,17 +924,24 @@ function sanitizeAssistantNumericInput(value) {
 const simpleAfter2004StepOrder = new Map([
   "occupancyType",
 
+  // 공통 건축물 정보
   "totalArea",
   "aboveGroundFloors",
   "basementFloors",
   "hasWindowlessFloor",
-  "hasLargeTargetFloor",
   "neighborhoodArea",
+
+  // 용도 세부 질문
   "facilitySubtype",
   "postpartumAreaRange",
   "has24HourStaff",
+
+  // 조건 보정 질문
+  "hasLargeTargetFloor",
   "firstSecondFloorArea",
   "detailSet",
+
+  // 다중이용업소 질문
   "hasMultiuseBusiness",
   "multiuseSimpleSprinklerCheck",
   "multiuseOnSecondToTenthFloor",
@@ -944,16 +951,25 @@ const simpleAfter2004StepOrder = new Map([
   "multiuseHasRooms",
   "multiuseHasEvacuationRoute",
 
+  // 공통 건축물 정보 - 숙박시설
   "lodgingTotalArea",
   "lodgingAboveGroundFloors",
   "lodgingBasementFloors",
   "lodgingHasWindowlessFloor",
   "lodgingArea",
-  "lodgingHasLargeFloorFor1000",
-  "lodgingHasGasFacility",
+
+  // 용도 세부 질문 - 숙박시설
   "lodgingIsTouristHotel",
+
+  // 조건 보정 질문 - 숙박시설
+  "lodgingHasLargeFloorFor1000",
   "lodgingFirstSecondFloorArea",
   "lodgingDetailSet",
+
+  // 가스시설 질문 - 숙박시설
+  "lodgingHasGasFacility",
+
+  // 다중이용업소 질문 - 숙박시설
   "lodgingHasMultiuseBusiness",
   "lodgingMultiuseSimpleSprinklerCheck",
   "lodgingMultiuseOnSecondToTenthFloor",
@@ -963,31 +979,44 @@ const simpleAfter2004StepOrder = new Map([
   "lodgingMultiuseHasRooms",
   "lodgingMultiuseHasEvacuationRoute",
 
+  // 공통 건축물 정보 - 노유자시설
   "elderlyTotalArea",
   "elderlyAboveGroundFloors",
   "elderlyBasementFloors",
   "elderlyHasWindowlessFloor",
-  "elderlySubtype",
   "elderlyArea",
+
+  // 용도 세부 질문 - 노유자시설
+  "elderlySubtype",
   "elderlyHasGrillWindow",
-  "elderlyHasGasFacility",
   "elderlyHasFloor500Plus",
   "elderlyHas24HourStaff",
+
+  // 조건 보정 질문 - 노유자시설
   "elderlyFirstSecondFloorArea",
   "elderlyDetailSet",
 
+  // 가스시설 질문 - 노유자시설
+  "elderlyHasGasFacility",
+
+  // 공통 건축물 정보 - 의료시설
   "medicalTotalArea",
   "medicalAboveGroundFloors",
   "medicalBasementFloors",
   "medicalHasWindowlessFloor",
-  "medicalSubtype",
   "medicalArea",
+
+  // 용도 세부 질문 - 의료시설
+  "medicalSubtype",
   "medicalHasGrillWindow",
-  "medicalHasGasFacility",
+
+  // 조건 보정 질문 - 의료시설
   "medicalFirstSecondFloorArea",
   "medicalDetailSet",
-].map((key, index) => [key, index]));
 
+  // 가스시설 질문 - 의료시설
+  "medicalHasGasFacility",
+].map((key, index) => [key, index]));
 function sortBySimpleAfter2004Order(activeSteps) {
   return [...activeSteps].sort((a, b) => {
     const ai = simpleAfter2004StepOrder.get(a.key) ?? Number.MAX_SAFE_INTEGER;
@@ -1186,7 +1215,6 @@ function syncDerivedFirstSecondFloorAreas(changedKey) {
     state.answers[targetKey] = calculateFirstSecondFloorArea(targetKey);
   });
 }
-
 function renderNumberStep(step) {
   const input = document.createElement("input");
   input.className = "calc-input";
@@ -6039,6 +6067,127 @@ const yearSteps = [
   },
 ];
 
+const yearStepOrder = new Map([
+  // 시작 질문
+  "yEraChoice",
+  "yPermitDate",
+  "yOccupancyType",
+
+  // 공통 건축물 정보
+  "yTotalArea",
+  "yAboveGroundFloors",
+  "yBasementSet",
+  "yWindowlessSet",
+  "yNeighborhoodArea",
+  "yLodgingArea",
+  "yElderlyArea",
+  "yMedicalArea",
+
+  // 용도 세부 질문
+  "yBefore2004FacilitySubtype",
+  "yFacilitySubtype",
+  "yIsPostpartum",
+  "yPostpartumAreaRange",
+  "yIsClinicWithInpatient",
+  "yHasHemodialysis",
+  "yHas24HourStaff",
+  "yLodgingIsLiving",
+  "yLodgingIsTouristHotel",
+  "yBefore2004LodgingIsTouristHotel",
+  "yElderlySubtype",
+  "yElderlyHasGrillWindow",
+  "yElderlyHasFloor500Plus",
+  "yElderlyHas24HourStaff",
+  "yMedicalSubtype",
+  "yBefore2004MedicalSubtype",
+  "yReligiousOccupancy100Plus",
+  "yReligiousIsWoodStructure",
+  "yReligiousIsSacrificialBuilding",
+  "yReligiousHasStage",
+  "yReligiousStageArea",
+
+  // 조건 보정 질문
+  "yHasLargeTargetFloor",
+  "yHasLargeFloorFor1000",
+  "yElderlyHasLargeTargetFloor",
+  "yReligiousHasLargeTargetFloor",
+  "yBefore2004HasLargeFloor450",
+  "yBefore2004SprinklerFloor",
+  "yBefore2004HasDetFloor300",
+  "yBefore2004LargeFloor1000",
+  "yBefore2004LodgingHasLargeFloor450",
+  "yBefore2004LodgingSprinklerFloor",
+  "yBefore2004LodgingAutoDetFloor300",
+  "yBefore2004LodgingHasLargeFloor300",
+  "yBefore2004LodgingHasLargeFloor1000",
+  "yBefore2004LodgingHasFloor1500",
+  "yBefore2004MedicalHasLargeFloor450",
+  "yBefore2004MedicalHasLargeFloor300",
+  "yBefore2004MedicalSprinklerFloor",
+  "yBefore2004MedicalAutoDetFloor300",
+  "yBefore2004MedicalHasLargeFloor1000",
+  "yBefore2004MedicalHasFloor1500",
+  "yBefore2004ElderlyHasLargeFloor450",
+  "yBefore2004ElderlySprinklerFloor",
+  "yBefore2004ElderlyAutoDetFloor300",
+  "yBefore2004ElderlyHasLargeFloor300",
+  "yBefore2004ElderlyLargeFloor1000",
+  "yBefore2004ElderlyHasFloor500Plus",
+  "yBefore2004ReligiousHasLargeFloor600",
+  "yLodgingHasLargeFloorFor1000",
+  "yLodgingFirstSecondFloorArea",
+  "yElderlyFirstSecondFloorArea",
+  "yMedicalFirstSecondFloorArea",
+  "yReligiousFirstSecondFloorArea",
+  "yFirstSecondFloorArea",
+  "yParkingElecSet",
+  "yLodgingParkingElecSet",
+  "yElderlyParkingElecSet",
+  "yMedicalParkingElecSet",
+  "yReligiousParkingElecSet",
+  "yBefore2004LodgingParkingElecSet",
+  "yBefore2004MedicalParkingElecSet",
+  "yBefore2004ElderlyParkingElecSet",
+  "yBefore2004ReligiousParkingElecSet",
+  "ySmokeControlArea",
+  "yLodgingBasementAreaForSmoke",
+  "yElderlyBasementAreaForSmoke",
+  "yMedicalBasementAreaForSmoke",
+  "yHasSmallUndergroundParking",
+
+  // 가스시설 질문
+  "yLodgingHasGasFacility",
+  "yElderlyHasGasFacility",
+  "yMedicalHasGasFacility",
+  "yReligiousHasGasFacility",
+
+  // 다중이용업소 질문
+  "yHasMultiuseBusiness",
+  "yMultiuseSimpleSprinklerCheck",
+  "yMultiuseOnSecondToTenthFloor",
+  "yMultiuseOnGroundOrRefugeFloor",
+  "yMultiuseUsesAV",
+  "yMultiuseHasGasFacility",
+  "yMultiuseHasRooms",
+  "yMultiuseHasEvacuationRoute",
+  "yLodgingHasMultiuseBusiness",
+  "yLodgingMultiuseSimpleSprinklerCheck",
+  "yLodgingMultiuseOnSecondToTenthFloor",
+  "yLodgingMultiuseOnGroundOrRefugeFloor",
+  "yLodgingMultiuseUsesAV",
+  "yLodgingMultiuseHasGasFacility",
+  "yLodgingMultiuseHasRooms",
+  "yLodgingMultiuseHasEvacuationRoute",
+].map((key, index) => [key, index]));
+
+function sortByYearStepOrder(activeSteps) {
+  return [...activeSteps].sort((a, b) => {
+    const ai = yearStepOrder.get(a.key) ?? Number.MAX_SAFE_INTEGER;
+    const bi = yearStepOrder.get(b.key) ?? Number.MAX_SAFE_INTEGER;
+    if (ai !== bi) return ai - bi;
+    return yearSteps.indexOf(a) - yearSteps.indexOf(b);
+  });
+}
 function yearGetActiveSteps() {
   const ya = yearState.answers;
   const pd = yPermitDateInt();
@@ -6046,8 +6195,9 @@ function yearGetActiveSteps() {
   const hemApplicable = pd >= YD.D20241231 && ya.yHasHemodialysis === "yes";
   const postpartumApplicable = pd >= YD.D20220225 && ya.yIsPostpartum === "yes";
   const autoDispatch = clinicApplicable || hemApplicable || postpartumApplicable;
-  return yearSteps.filter((step) => {
+  const activeSteps = yearSteps.filter((step) => {
     if (step.key === "yEraChoice") return true;
+    if (["yPermitDate", "yOccupancyType"].includes(step.key)) return !!ya.yEraChoice;
 
     // ── 분법 이전 근린생활시설 ──
     if (ya.yEraChoice === "before2004" && ya.yOccupancyType === "neighborhood") {
@@ -6146,6 +6296,7 @@ function yearGetActiveSteps() {
     if (ya.yEraChoice !== "after2004") return false;
     return !step.condition || step.condition(ya, pd, autoDispatch);
   });
+  return sortByYearStepOrder(activeSteps);
 }
 
 function yearRecalcF12() {
@@ -10314,7 +10465,7 @@ document.getElementById("open-guide").addEventListener("click", () => showScreen
 
 (function initIntroVideo() {
   const INTRO_SEEN_KEY = "introVideoSeen";
-  const INTRO_DURATION_MS = 56000;
+  const INTRO_DURATION_MS = 105000;
   const overlay = document.getElementById("intro-video-overlay");
   const frame = document.getElementById("intro-video-frame");
   const closeBtn = document.getElementById("intro-video-close");
@@ -10323,9 +10474,14 @@ document.getElementById("open-guide").addEventListener("click", () => showScreen
 
   if (!overlay || !frame || !closeBtn) return;
 
+  window.addEventListener("message", (e) => {
+    if (e.data && e.data.type === "INTRO_DONE") closeIntroVideo();
+  });
+
   function openIntroVideo(markSeen) {
     clearTimeout(closeTimer);
-    frame.src = "./video/intro.html";
+    try { localStorage.removeItem("fire-intro:t"); } catch {}
+    frame.src = "./video/chat streaming.html";
     overlay.classList.remove("hidden");
     if (markSeen) localStorage.setItem(INTRO_SEEN_KEY, "true");
     closeTimer = setTimeout(closeIntroVideo, INTRO_DURATION_MS);
@@ -12078,12 +12234,12 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
       var isOn = localStorage.getItem('devMode') === 'true';
       if (isOn) {
         localStorage.removeItem('devMode');
-        showToast('개발자 모드 비활성화됨 — 페이지를 새로고침합니다');
-        setTimeout(function() { location.reload(); }, 1200);
+        window['ga-disable-G-LKQZX5YS2H'] = false;
+        showToast('개발자 모드 비활성화됨 — GA 추적 켜짐');
       } else {
         localStorage.setItem('devMode', 'true');
+        window['ga-disable-G-LKQZX5YS2H'] = true;
         showToast('개발자 모드 활성화됨 — GA 추적 꺼짐');
-        setTimeout(function() { location.reload(); }, 1200);
       }
     }
   });
