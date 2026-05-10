@@ -122,22 +122,19 @@
   }
 
   .avatar {
-    width: 36px;
-    height: 36px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    background:
-      linear-gradient(
-        135deg,
-        oklch(0.78 0.09 80),
-        oklch(0.6 0.12 35)
-      );
-    display: grid;
-    place-items: center;
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
+    overflow: hidden;
     flex-shrink: 0;
-    box-shadow: 0 0 0 2px oklch(1 0 0) inset;
+    background: oklch(0.96 0.01 80);
+  }
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 10%;
+    image-rendering: -webkit-optimize-contrast;
   }
 
   .peer-meta {
@@ -377,7 +374,7 @@
     position: fixed;
     inset: 0;
     z-index: 0;
-    background: #050505;
+    background: var(--bg);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s linear;
@@ -556,7 +553,7 @@
 <body>
   <div class="stage" id="stage">
   <div class="next-frame" id="nextFrame">
-    <iframe id="introFrame" title="intro" loading="eager" srcdoc="<body style='margin:0;background:#050505;height:100vh;'></body>"></iframe>
+    <iframe id="introFrame" title="intro" loading="eager" srcdoc="<body style='margin:0;background:#f7f6f3;height:100vh;'></body>"></iframe>
   </div>
   <div class="app">
     <section class="phone" aria-label="채팅 미리보기">
@@ -565,7 +562,7 @@
           <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
         </button>
         <div class="peer">
-          <div class="avatar" aria-hidden="true">김</div>
+          <div class="avatar" aria-hidden="true"><img src="ilgu.png" alt="김일구 반장님" /></div>
           <div class="peer-meta">
             <div class="peer-name">김일구 반장님</div>
             <div class="peer-status">활동 중</div>
@@ -837,14 +834,12 @@
 
       // After conversation ends, glitch transition into the next screen
       try {
-        await sleep(3000, token);
+        await sleep(1000, token);
       } catch {
         return;
       }
       if (token === runToken) {
         await runGlitchTransition(token);
-        // Hold pure black for 1 second after glitch ends
-        try { await sleep(1000, token); } catch { return; }
         if (token !== runToken) return;
         // Now load intro.html fresh from 0 (replaces the black srcdoc)
         try { localStorage.removeItem("fire-intro:t"); } catch {}
@@ -944,9 +939,10 @@
 
     async function runGlitchTransition(token) {
       stage.classList.add("transition-on");
+      counterEl.style.opacity = "0";
 
       const startTs = performance.now();
-      const totalMs = 2400; // length of glitch sequence
+      const totalMs = 5200; // longer for very gradual build-up
       let counterValue = -2153.934;
       let lastFrame = startTs;
       let raf;
@@ -958,17 +954,30 @@
         const elapsed = now - startTs;
         const p = Math.min(1, elapsed / totalMs);
 
-        // Easing curve: hold low, rise sharply, peak, then settle
+        // 지...지직..지지직...지지지지지직: short quiet intro, then noticeable build
         const intensity =
-          p < 0.15
-            ? p / 0.15 * 0.3
-            : p < 0.55
-            ? 0.3 + ((p - 0.15) / 0.4) * 0.7
-            : p < 0.85
-            ? 1 - ((p - 0.55) / 0.3) * 0.4 // sustain peak with slight drop
-            : Math.max(0, 0.6 - ((p - 0.85) / 0.15) * 0.6);
+          p < 0.2  ? (p / 0.2) * 0.13                          // 0 → 0.13 (sparse but visible)
+          : p < 0.6  ? 0.13 + ((p - 0.2) / 0.4) * 0.27        // 0.13 → 0.40 (building)
+          :             0.40 + ((p - 0.6) / 0.4) * 0.60;       // 0.40 → 1.0 (full blast)
 
-        const holeProb = 0.12 + intensity * 0.55;
+        // fire probability: rare at start, every frame at end
+        const fireProb = Math.min(0.97, intensity * 2.2);
+        const fires = Math.random() < fireProb;
+
+        if (!fires) {
+          // rest frame — clear everything
+          stage.style.setProperty("--glitch-transform", "none");
+          stage.style.setProperty("--glitch-filter", "none");
+          stage.style.removeProperty("--glitch-mask");
+          fxEl.style.setProperty("--fx-noise", "0");
+          fxEl.style.setProperty("--fx-scan",  "0");
+          fxEl.style.setProperty("--fx-tear",  "0");
+          fxEl.style.setProperty("--fx-flash", "0");
+          if (p < 1) { raf = requestAnimationFrame(tick); }
+          return;
+        }
+
+        const holeProb = 0.05 + intensity * 0.55;
 
         // Random chunky shake
         const shakeX =
@@ -1016,7 +1025,8 @@
           Math.random() < 0.04 * intensity ? 0.7 : 0
         );
 
-        // Counter ticking — descending fast
+        // Counter ticking — descending fast, visible only from midpoint
+        if (p >= 0.5) counterEl.style.opacity = "";
         const dt = (now - lastFrame) / 1000;
         lastFrame = now;
         counterValue -= 25 + Math.random() * 90 * intensity;
