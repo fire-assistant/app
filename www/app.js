@@ -1,5 +1,9 @@
 history.scrollRestoration = 'manual';
 
+if (new URLSearchParams(location.search).has('reset-intro')) {
+  try { localStorage.removeItem('introVideoSeen'); } catch {}
+}
+
 // ── 개발자 모드 (GA 추적 비활성화) ───────────────────────────────────────
 // 본인 기기에서 콘솔에 한 번만 실행: localStorage.setItem('devMode', 'true')
 if (localStorage.getItem('devMode') === 'true') {
@@ -673,7 +677,6 @@ const CALC_MODES = {
     infoTitle: "선임신고 시 확인사항",
     introBody: "해임·퇴직일로부터 30일 이내에 선임하고, 선임일로부터 14일 이내에 소방서에 신고해야 합니다.",
     infoBody: "소방안전관리보조자는 소방안전관리자를 보조하여 소방안전관리 업무를 수행합니다. 선임신고서에 '관계인' 서명이 필요하며, 소방안전관리보조자 자격을 갖춘 자를 선임해야 합니다.",
-    assistantCalculator: true,
     tableTitle: "선임 구분별 제출 서류",
     tableHead: ["구분", "제출 서류"],
     tableBody: [
@@ -768,6 +771,7 @@ const questionElements = {
 
 const explorerRuntime = {
   mode: "default", // "default" | "year"
+  from: "home",   // 뒤로가기 대상 추적
 };
 
 const explorerTitleEl = document.getElementById("explorer-title");
@@ -781,7 +785,7 @@ function applyExplorerModeUI() {
     explorerTitleEl.textContent = "다중이용업소 안전시설 탐색";
     explorerModeBadgeEl.classList.add("hidden");
   } else {
-    explorerTitleEl.textContent = isYearMode ? "소방시설탐색기 (연도별)" : "소방시설탐색기";
+    explorerTitleEl.textContent = isYearMode ? "소방시설 탐색기 (연도별)" : "소방시설 탐색기";
     explorerModeBadgeEl.classList.toggle("hidden", !isYearMode);
   }
 }
@@ -1104,18 +1108,18 @@ function getActiveSteps() {
 
 const screenLabels = {
   home: "홈",
-  explorerSelect: "소방시설탐색기",
-  explorer: "소방시설탐색기",
-  explorerYear: "소방시설탐색기",
-  date: "날짜 계산기",
+  explorerSelect: "소방시설 탐색기",
+  explorer: "소방시설 탐색기",
+  explorerYear: "소방시설 탐색기",
+  date: "법정기한 계산기",
   inspection: "작동·종합 대상 판독기",
-  multiuseSelect: "다중이용업소 판독기",
-  multiuse: "다중이용업소 해당 여부 판독기",
+  multiuseSelect: "다중이용업소 탐색기",
+  multiuse: "다중이용업소 탐색기",
   guide: "이용 안내",
-  reportGuide: "자체점검 보고서 읽는법",
-  occupancy: "수용인원 계산기",
+  reportGuide: "자체점검 가이드",
+  occupancy: "유틸리티 도구함",
   lab: "실험실",
-  facilities: "소방시설 설명",
+  facilities: "소방시설 도감",
   layoutLearn: "소방시설 배치 배우기",
 };
 
@@ -2766,18 +2770,12 @@ function showExplorerCard(view) {
   if (vizCard) vizCard.classList.toggle("hidden", view !== "viz");
 }
 
-function renderMultiuseEntryButton(input) {
-  const button = document.getElementById("open-multiuse-safety");
-  if (!button) return;
-  const multiuse = evaluateMultiuseFacilities(input);
-  button.classList.toggle("hidden", !input.hasMultiuseBusiness || (multiuse.requiredItems.length === 0 && multiuse.extraSafetyItems.length === 0));
+function renderMultiuseEntryButton(_input) {
+  // 다중이용업소 안전시설은 탐색기 결과에서 제거됨 (실험실에서 접근)
 }
 
-function renderLodgingMultiuseEntryButton(input) {
-  const button = document.getElementById("open-multiuse-safety");
-  if (!button) return;
-  const multiuse = evaluateLodgingMultiuseFacilities(input);
-  button.classList.toggle("hidden", !input.lodgingHasMultiuseBusiness || (multiuse.requiredItems.length === 0 && multiuse.extraSafetyItems.length === 0));
+function renderLodgingMultiuseEntryButton(_input) {
+  // 다중이용업소 안전시설은 탐색기 결과에서 제거됨 (실험실에서 접근)
 }
 
 function renderMultiuseSafetyCard(input) {
@@ -4514,6 +4512,7 @@ document.getElementById("multiuse-select-decoder").addEventListener("click", () 
 });
 document.getElementById("multiuse-select-safety").addEventListener("click", () => {
   explorerRuntime.mode = "multiuse-only";
+  explorerRuntime.from = "multiuseSelect";
   applyExplorerModeUI();
   showScreen("explorer");
   restartMultiuseOnly();
@@ -4523,9 +4522,13 @@ document.getElementById("back-from-multiuse").addEventListener("click", () => sh
 // ── 수용인원 계산기 ──────────────────────────────────────────
 
 const occupancyState = {
+  tool: "occupancy", // "occupancy" | "staffing"
   step: "category",  // "category" | "lodging_sub" | "assembly_sub" | "input"
   type: "lodging_bed",
   values: {},
+  staffingTargetType: "apartment",
+  staffingHouseholds: "",
+  staffingArea: "",
 };
 
 function getOccupancyBackStep(type) {
@@ -4601,9 +4604,113 @@ function getOccupancyFields(type) {
 
 function renderOccupancyCalculator() {
   const root = document.getElementById("occupancy-content");
+  const tool = occupancyState.tool || "occupancy";
+  const prevActiveId = document.activeElement?.id;
 
+  const tabsHTML = `
+    <div style="display:flex;gap:8px;padding:4px 0 8px;">
+      <button class="calc-mode-btn${tool === "occupancy" ? " active" : ""}" type="button" data-util-tool="occupancy">수용인원 계산기</button>
+      <button class="calc-mode-btn${tool === "staffing" ? " active" : ""}" type="button" data-util-tool="staffing">보조자 선임인원</button>
+    </div>
+  `;
+
+  function attachTabListeners() {
+    root.querySelectorAll("[data-util-tool]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        occupancyState.tool = btn.dataset.utilTool;
+        if (occupancyState.tool === "occupancy") occupancyState.step = "category";
+        renderOccupancyCalculator();
+      });
+    });
+  }
+
+  // ── 보조자 선임인원 탭 ────────────────────────────────────────────────
+  if (tool === "staffing") {
+    const targetType = occupancyState.staffingTargetType;
+    const staffingValue = targetType === "apartment" ? occupancyState.staffingHouseholds : occupancyState.staffingArea;
+    const staffingResult = getAssistantStaffingResult(targetType, staffingValue);
+    const isApartment = targetType === "apartment";
+    const inputLabel = isApartment ? "세대수" : "연면적";
+    const inputPlaceholder = isApartment ? "예: 601" : "예: 30001";
+    const helperText = isApartment
+      ? "해당 아파트의 세대수를 300으로 나누고 소수점은 버립니다."
+      : "기숙사, 의료시설, 노유자시설, 수련시설, 숙박시설을 제외한 대상 기준입니다.<br>해당 특정소방대상물의 연면적을 15,000으로 나누고 소수점은 버립니다.";
+    const exampleText = isApartment
+      ? "예시: 299세대 0명 / 599세대 1명 / 601세대 2명"
+      : "예시: 14,999㎡ 0명 / 29,999㎡ 1명 / 30,001㎡ 2명";
+    const resultMarkup = staffingResult
+      ? `
+        <div class="assistant-staffing-result">
+          <div class="assistant-staffing-count">${staffingResult.count}<span>명</span></div>
+          <div class="assistant-staffing-meta">${staffingResult.targetLabel} / ${staffingResult.inputLabel} ${staffingResult.inputValue.toLocaleString()}${staffingResult.unitLabel}</div>
+          <div class="assistant-staffing-formula">계산식: ⌊${staffingResult.inputValue.toLocaleString()} ÷ ${staffingResult.divisor.toLocaleString()}⌋ = ${staffingResult.count}명</div>
+        </div>
+      `
+      : `<div class="assistant-staffing-empty">대상 구분과 값을 입력하면 선임인원이 바로 계산됩니다.</div>`;
+
+    root.innerHTML = `
+      ${tabsHTML}
+      <section class="calc-card assistant-staffing-card">
+        <h3 class="calc-title">소방안전관리보조자 선임인원 계산기</h3>
+        <p class="calc-copy">선임대상·선임인원 기준에 따라 계산합니다.</p>
+        <div class="assistant-staffing-toggle">
+          <button class="calc-mode-btn${targetType === "apartment" ? " active" : ""}" type="button" data-staffing-target="apartment">아파트</button>
+          <button class="calc-mode-btn${targetType === "other" ? " active" : ""}" type="button" data-staffing-target="other">그 외</button>
+        </div>
+        <div class="calc-form-row">
+          <label>${inputLabel}</label>
+          <input id="utility-staffing-value" class="calc-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="${inputPlaceholder}" value="${staffingValue}">
+        </div>
+        <p class="assistant-staffing-help">${helperText}</p>
+        ${resultMarkup}
+        <div class="assistant-staffing-examples">${exampleText}</div>
+      </section>
+      <section class="calc-card">
+        <div class="info-box amber">
+          <div class="ib-title">선임 대상</div>
+          <b>가.</b> 300세대 이상인 아파트<br>
+          <b>나.</b> 연면적 1만5천㎡ 이상인 특정소방대상물(아파트·연립주택 제외)<br>
+          <b>다.</b> 가·나 외 특정소방대상물 중 다음 어느 하나에 해당하는 것<br>
+          &nbsp;&nbsp;1) 공동주택 중 기숙사<br>&nbsp;&nbsp;2) 의료시설<br>&nbsp;&nbsp;3) 노유자 시설<br>&nbsp;&nbsp;4) 수련시설<br>
+          &nbsp;&nbsp;5) 숙박시설(바닥면적 합계 1,500㎡ 미만이고 관계인이 24시간 상시 근무하는 경우 제외)
+        </div>
+        <div class="info-box blue">
+          <div class="ib-title">선임 인원</div>
+          <b>가.</b> 아파트(300세대 이상): 1명. 초과되는 300세대마다 1명 이상 추가 선임<br>
+          <b>나.</b> 연면적 1만5천㎡ 이상: 1명. 초과되는 연면적 1만5천㎡마다 1명 추가 선임<br>
+          <b>다.</b> 그 밖의 대상: 1명. 야간·휴일에 이용되지 않는 것이 확인된 경우 선임 제외 가능
+        </div>
+      </section>
+    `;
+
+    attachTabListeners();
+    root.querySelectorAll("[data-staffing-target]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        occupancyState.staffingTargetType = btn.dataset.staffingTarget;
+        occupancyState.staffingHouseholds = "";
+        occupancyState.staffingArea = "";
+        renderOccupancyCalculator();
+      });
+    });
+    const staffingInput = root.querySelector("#utility-staffing-value");
+    if (staffingInput) {
+      staffingInput.addEventListener("input", (e) => {
+        const key = occupancyState.staffingTargetType === "apartment" ? "staffingHouseholds" : "staffingArea";
+        occupancyState[key] = sanitizeAssistantNumericInput(e.target.value);
+        renderOccupancyCalculator();
+      });
+      if (prevActiveId === "utility-staffing-value") {
+        staffingInput.focus();
+        staffingInput.setSelectionRange(staffingInput.value.length, staffingInput.value.length);
+      }
+    }
+    return;
+  }
+
+  // ── 수용인원 탭 ────────────────────────────────────────────────────────
   if (occupancyState.step === "category") {
     root.innerHTML = `
+      ${tabsHTML}
       <section class="wq-card occ-full-card">
         <p class="wq-label">STEP 1</p>
         <h2 class="wq-title">용도 선택</h2>
@@ -4616,6 +4723,7 @@ function renderOccupancyCalculator() {
         </div>
       </section>
     `;
+    attachTabListeners();
     root.querySelectorAll("[data-occ-cat]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const cat = btn.dataset.occCat;
@@ -4636,6 +4744,7 @@ function renderOccupancyCalculator() {
 
   if (occupancyState.step === "lodging_sub") {
     root.innerHTML = `
+      ${tabsHTML}
       <section class="wq-card occ-full-card">
         <p class="wq-label">STEP 2</p>
         <h2 class="wq-title">숙박시설</h2>
@@ -4647,6 +4756,7 @@ function renderOccupancyCalculator() {
         <button class="btn btn-ghost" style="width:100%;margin-top:12px;" data-occ-back>← 이전으로</button>
       </section>
     `;
+    attachTabListeners();
     root.querySelectorAll("[data-occ-type]").forEach((btn) => {
       btn.addEventListener("click", () => {
         occupancyState.type = btn.dataset.occType;
@@ -4664,6 +4774,7 @@ function renderOccupancyCalculator() {
 
   if (occupancyState.step === "assembly_sub") {
     root.innerHTML = `
+      ${tabsHTML}
       <section class="wq-card occ-full-card">
         <p class="wq-label">STEP 2</p>
         <h2 class="wq-title">강당·문화집회·운동·종교시설</h2>
@@ -4676,6 +4787,7 @@ function renderOccupancyCalculator() {
         <button class="btn btn-ghost" style="width:100%;margin-top:12px;" data-occ-back>← 이전으로</button>
       </section>
     `;
+    attachTabListeners();
     root.querySelectorAll("[data-occ-type]").forEach((btn) => {
       btn.addEventListener("click", () => {
         occupancyState.type = btn.dataset.occType;
@@ -4699,6 +4811,7 @@ function renderOccupancyCalculator() {
   const inputStep = ["lodging_bed", "lodging_no_bed", "assembly_free", "assembly_fixed", "assembly_bench"].includes(type) ? 3 : 2;
 
   root.innerHTML = `
+    ${tabsHTML}
     <section class="wq-card occ-full-card">
       <p class="wq-label">STEP ${inputStep}</p>
       <h2 class="wq-title">${typeInfo.label}</h2>
@@ -4713,6 +4826,7 @@ function renderOccupancyCalculator() {
     </section>
   `;
 
+  attachTabListeners();
   root.querySelector("[data-occ-back]").addEventListener("click", () => {
     occupancyState.step = getOccupancyBackStep(type);
     renderOccupancyCalculator();
@@ -4750,7 +4864,8 @@ screens.occupancy = document.getElementById("screen-occupancy");
 screens.lab = document.getElementById("screen-lab");
 screens.facilities = document.getElementById("screen-facilities");
 document.getElementById("open-occupancy-calculator").addEventListener("click", () => {
-  gtag("event", "menu_click", { menu_name: "수용인원계산기" });
+  gtag("event", "menu_click", { menu_name: "유틸리티도구함" });
+  occupancyState.tool = "occupancy";
   occupancyState.step = "category";
   occupancyState.type = "lodging_bed";
   occupancyState.values = {};
@@ -4758,13 +4873,24 @@ document.getElementById("open-occupancy-calculator").addEventListener("click", (
   showScreen("occupancy");
 });
 document.getElementById("back-from-occupancy").addEventListener("click", () => showScreen("home"));
-document.getElementById("back-from-inspection").addEventListener("click", () => showScreen("home"));
+document.getElementById("back-from-inspection").addEventListener("click", () => {
+  rgState.mode = 'select';
+  renderReportGuide();
+  showScreen('reportGuide');
+});
 document.getElementById("open-lab").addEventListener("click", () => {
   gtag("event", "menu_click", { menu_name: "실험실" });
   showScreen("lab");
 });
 document.getElementById("back-from-lab").addEventListener("click", () => showScreen("home"));
 
+document.getElementById("lab-open-multiuse-safety").addEventListener("click", () => {
+  explorerRuntime.mode = "multiuse-only";
+  explorerRuntime.from = "lab";
+  applyExplorerModeUI();
+  showScreen("explorer");
+  restartMultiuseOnly();
+});
 document.getElementById("open-layout-learn").addEventListener("click", () => {
   gtag("event", "menu_click", { menu_name: "소방시설배치배우기" });
   showScreen("layoutLearn");
@@ -4772,7 +4898,7 @@ document.getElementById("open-layout-learn").addEventListener("click", () => {
 });
 document.getElementById("back-from-layout-learn").addEventListener("click", () => showScreen("lab"));
 document.getElementById("back-from-explorer").addEventListener("click", () => {
-  if (explorerRuntime.mode === "multiuse-only") showScreen("multiuseSelect");
+  if (explorerRuntime.mode === "multiuse-only") showScreen(explorerRuntime.from === "lab" ? "lab" : "multiuseSelect");
   else showScreen("home");
 });
 // =============================================
@@ -10256,16 +10382,10 @@ function yearShowResults() {
   renderResultGroup("year-criteria-list", results, [...excludedNames], requiredItems.map((i) => i.name));
   renderResultGroup("year-exception-list", exceptionItems);
 
-  // 다중이용업소 버튼 표시 여부
+  // 다중이용업소 버튼 표시 여부 (탐색기 결과에서 제거됨)
   const yearMultiuseBtn = document.getElementById("year-open-multiuse-safety");
   if (yearMultiuseBtn) {
-    if (inp.occupancyType === "neighborhood" && inp.hasMultiuseBusiness) {
-      const mu = evaluateMultiuseFacilities(inp);
-      yearMultiuseBtn.classList.toggle("hidden", mu.requiredItems.length === 0 && (mu.extraSafetyItems || []).length === 0);
-    } else if (inp.occupancyType === "lodging" && inp.lodgingHasMultiuseBusiness) {
-      const mu = evaluateLodgingMultiuseFacilities(inp);
-      yearMultiuseBtn.classList.toggle("hidden", mu.requiredItems.length === 0 && (mu.extraSafetyItems || []).length === 0);
-    } else {
+    {
       yearMultiuseBtn.classList.add("hidden");
     }
   }
@@ -10464,7 +10584,7 @@ document.getElementById("back-from-guide").addEventListener("click", () => showS
 document.getElementById("open-guide").addEventListener("click", () => showScreen("guide"));
 
 (function initIntroVideo() {
-  const INTRO_SEEN_KEY = "introVideoSeen";
+  const INTRO_SEEN_KEY = "introVideoSeen_v3";
   const INTRO_DURATION_MS = 105000;
   const overlay = document.getElementById("intro-video-overlay");
   const frame = document.getElementById("intro-video-frame");
@@ -10678,7 +10798,7 @@ function renderHomeReminders() {
         <div class="reminder-panel-header">
           <span class="reminder-panel-title">📌 제출기한 알림판</span>
         </div>
-        <div class="reminder-empty">날짜 계산기에서 결과를 확인한 후<br>'메인화면에 표시' 버튼으로<br>추가할 수 있습니다.</div>
+        <div class="reminder-empty">법정기한 계산기에서 결과를 확인한 후<br>'메인화면에 표시' 버튼으로<br>추가할 수 있습니다.</div>
       </div>`;
     return;
   }
@@ -11470,6 +11590,7 @@ const RG_FACILITY_GROUPS = [
 ];
 
 const rgState = {
+  mode: 'select', // 'select' | 'guide'
   tab: 'page1',
   selected: new Set(),
   grade: null,   // 'special1' | 'grade2' | 'grade3' | 'custom'
@@ -11528,6 +11649,43 @@ const RG_WATER_COMMON = [
 
 function renderReportGuide(restoreScroll) {
   var root = document.getElementById('report-guide-content');
+
+  if (rgState.mode === 'select') {
+    root.innerHTML = '';
+    var selWrap = document.createElement('div');
+    selWrap.className = 'scroll-content';
+    selWrap.innerHTML = `
+      <section class="wq-card">
+        <p class="wq-label">자체점검 가이드</p>
+        <h2 class="wq-title">어떤 내용이 필요하세요?</h2>
+        <p class="wq-sub">목적에 맞는 항목을 선택하세요.</p>
+        <div class="choice-list" style="margin-top:16px;">
+          <button id="rg-sel-inspection" class="choice-button" type="button">
+            <strong>🏢 작동·종합 대상 판독기</strong>
+            <span>작동기능점검과 종합정밀점검 대상 여부를 판정합니다.</span>
+          </button>
+          <button id="rg-sel-guide" class="choice-button" type="button">
+            <div class="choice-label-wrap">
+              <strong>📋 자체점검 보고서 읽는법</strong>
+              <span class="test-badge">테스트중</span>
+            </div>
+            <span>자체점검 실시결과 보고서 작성·읽기 안내</span>
+          </button>
+        </div>
+      </section>
+    `;
+    root.appendChild(selWrap);
+    document.getElementById('rg-sel-inspection').addEventListener('click', function () {
+      inspectionRestart();
+      showScreen('inspection');
+    });
+    document.getElementById('rg-sel-guide').addEventListener('click', function () {
+      rgState.mode = 'guide';
+      rgState.tab = 'page1';
+      renderReportGuide();
+    });
+    return;
+  }
 
   // 현재 스크롤 위치 저장
   var savedScroll = 0;
@@ -12166,14 +12324,19 @@ function renderFacilityBlock(c, item, selectedIds) {
 }
 
 document.getElementById('open-report-guide').addEventListener('click', function () {
-  gtag("event", "menu_click", { menu_name: "자체점검보고서읽는법" });
-  rgState.tab = 'page1';
+  gtag("event", "menu_click", { menu_name: "자체점검가이드" });
+  rgState.mode = 'select';
   showScreen('reportGuide');
   renderReportGuide();
 });
 
 document.getElementById('back-from-report-guide').addEventListener('click', function () {
-  showScreen('home');
+  if (rgState.mode === 'guide') {
+    rgState.mode = 'select';
+    renderReportGuide();
+  } else {
+    showScreen('home');
+  }
 });
 
 document.getElementById('open-contact').addEventListener('click', function () {
@@ -12226,6 +12389,12 @@ document.getElementById('contact-confirm-ok').addEventListener('click', function
 document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최종 수정 ' + PATCH_NOTES.date;
 
 // ── 개발자 모드 숨겨진 토글 (버전 5번 탭) ────────────────────────────────
+function applyDevMode() {
+  var on = localStorage.getItem('devMode') === 'true';
+  document.getElementById('open-lab').style.display = on ? '' : 'none';
+}
+applyDevMode();
+
 (function () {
   var tapCount = 0;
   var tapTimer = null;
@@ -12239,12 +12408,13 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
       if (isOn) {
         localStorage.removeItem('devMode');
         window['ga-disable-G-LKQZX5YS2H'] = false;
-        showToast('개발자 모드 비활성화됨 — GA 추적 켜짐');
+        showToast('개발자 모드 OFF — 실험실 숨김');
       } else {
         localStorage.setItem('devMode', 'true');
         window['ga-disable-G-LKQZX5YS2H'] = true;
-        showToast('개발자 모드 활성화됨 — GA 추적 꺼짐');
+        showToast('개발자 모드 ON — 실험실 표시됨 🧪');
       }
+      applyDevMode();
     }
   });
 })();
@@ -12293,12 +12463,12 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
       action: () => { showScreen("lab"); },
     },
     {
-      icon: "🧯", title: "소방시설탐색기 (간단한 버전)", desc: "현행 법령 기준으로 빠르게 설치 의무 도출",
+      icon: "🧯", title: "소방시설 탐색기 (간단한 버전)", desc: "현행 법령 기준으로 빠르게 설치 의무 도출",
       keywords: ["탐색기", "소방시설", "간단", "의무", "설치", "소화기", "스프링클러"],
       action: () => { showScreen("explorerSelect"); },
     },
     {
-      icon: "🔍", title: "소방시설탐색기 (자세한 버전)", desc: "건축허가일 기준 법령 적용 상세 결과",
+      icon: "🔍", title: "소방시설 탐색기 (자세한 버전)", desc: "건축허가일 기준 법령 적용 상세 결과",
       keywords: ["탐색기", "자세한", "연도별", "건축허가", "법령", "소방시설"],
       action: () => { showScreen("explorerSelect"); },
     },
@@ -12333,16 +12503,9 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
       icon: "🧮", title: "소방안전관리보조자 선임인원 계산", desc: "아파트 세대수·연면적으로 필요 인원 계산",
       keywords: ["보조자", "인원", "선임인원", "계산기", "세대", "아파트", "연면적"],
       action: () => {
-        state.dateCalc.mode = "fire_safety_assistant_manager";
-        renderDateCalculator();
-        showScreen("date");
-        setTimeout(() => {
-          const wrap = document.getElementById("date-content");
-          if (wrap) {
-            const staffingCard = wrap.querySelector(".assistant-staffing-card");
-            if (staffingCard) staffingCard.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        }, 120);
+        occupancyState.tool = "staffing";
+        renderOccupancyCalculator();
+        showScreen("occupancy");
       },
     },
     {
@@ -12364,13 +12527,13 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
       },
     },
     {
-      icon: "📋", title: "자체점검 보고서 읽는법", desc: "자체점검 실시결과 보고서 작성·읽기 안내",
-      keywords: ["보고서", "읽는법", "자체점검", "작성", "점검표"],
+      icon: "📋", title: "자체점검 가이드", desc: "자체점검 실시결과 보고서 작성·읽기 안내",
+      keywords: ["보고서", "읽는법", "자체점검", "작성", "점검표", "가이드"],
       action: () => { showScreen("reportGuide"); },
     },
     {
-      icon: "⚙️", title: "소방시설 설명", desc: "소방시설별 개요·종류·구성·설치기준",
-      keywords: ["소방시설", "설명", "종류", "구성", "설치기준", "유도등", "감지기"],
+      icon: "📖", title: "소방시설 도감", desc: "소방시설별 개요·종류·구성·설치기준",
+      keywords: ["소방시설", "도감", "설명", "종류", "구성", "설치기준", "유도등", "감지기"],
       action: () => { showScreen("facilities"); },
     },
     {
@@ -12382,8 +12545,8 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
       },
     },
     {
-      icon: "👥", title: "다중이용업소 판독기", desc: "업종별 다중이용업소 해당 여부 판정",
-      keywords: ["다중이용업소", "판독기", "업종", "해당여부", "노래방", "pc방", "식당"],
+      icon: "👥", title: "다중이용업소 탐색기", desc: "업종별 다중이용업소 해당 여부 판정",
+      keywords: ["다중이용업소", "탐색기", "업종", "해당여부", "노래방", "pc방", "식당"],
       action: () => { multiuseRestart(); showScreen("multiuse"); },
     },
     {
@@ -12398,7 +12561,7 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
     },
     {
       icon: "🧮", title: "수용인원 계산기", desc: "용도별 법정 수용인원 산정",
-      keywords: ["수용인원", "계산기", "면적", "용도", "강의실", "숙박"],
+      keywords: ["수용인원", "계산기", "면적", "용도", "강의실", "숙박", "유틸리티", "도구함"],
       action: () => { showScreen("occupancy"); },
     },
   ];

@@ -15,6 +15,7 @@
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-MPVSSTJH');</script>
   <!-- End Google Tag Manager -->
   <!-- Google Analytics -->
+  <script>if(localStorage.getItem('devMode')==='true'){window['ga-disable-G-LKQZX5YS2H']=true;}</script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-LKQZX5YS2H"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-LKQZX5YS2H');</script>
   <!-- End Google Analytics -->
@@ -84,17 +85,26 @@
           <div class="menu-icon mc-red">🧯</div>
           <div class="menu-text">
             <div class="mt-num">01</div>
-            <div class="mt-title">소방시설탐색기</div>
+            <div class="mt-title">소방시설 탐색기</div>
             <div class="mt-desc">건물 정보 입력 후 의무 설치 소방시설 도출</div>
+          </div>
+        </button>
+
+        <button id="open-multiuse-decoder" class="menu-card" type="button">
+          <div class="menu-icon mc-green">👥</div>
+          <div class="menu-text">
+            <div class="mt-num">02</div>
+            <div class="mt-title">다중이용업소 탐색기</div>
+            <div class="mt-desc">해당 여부 판정·설치 안전시설 확인</div>
           </div>
         </button>
 
         <button id="open-date-calculator" class="menu-card" type="button">
           <div class="menu-icon mc-blue">📅</div>
           <div class="menu-text">
-            <div class="mt-num">02</div>
-            <div class="mt-title">날짜 계산기</div>
-            <div class="mt-desc">자체점검·안전관리자·부적합 조치기한 계산</div>
+            <div class="mt-num">03</div>
+            <div class="mt-title">법정기한 계산기</div>
+            <div class="mt-desc">자체점검·선임·부적합 조치기한 계산</div>
           </div>
         </button>
 
@@ -102,53 +112,35 @@
           <div class="menu-icon mc-amber">📋</div>
           <div class="menu-text">
             <div class="mt-num" style="display:flex;align-items:center;gap:6px;">
-              <span>03</span><span class="test-badge">테스트중</span>
+              <span>04</span><span class="test-badge">테스트중</span>
             </div>
-            <div class="mt-title">자체점검 보고서 읽는법</div>
-            <div class="mt-desc">자체점검 실시결과 보고서 작성·읽기 안내</div>
+            <div class="mt-title">자체점검 가이드</div>
+            <div class="mt-desc">자체점검 대상 판정·보고서 작성·읽기 안내</div>
           </div>
         </button>
 
         <button id="open-facilities" class="menu-card" type="button">
-          <div class="menu-icon mc-purple">⚙️</div>
-          <div class="menu-text">
-            <div class="mt-num">04</div>
-            <div class="mt-title">소방시설 설명</div>
-            <div class="mt-desc">소방시설별 개요·종류·구성·설치기준</div>
-          </div>
-        </button>
-
-        <button id="open-inspection-decoder" class="menu-card" type="button">
-          <div class="menu-icon mc-amber">🏢</div>
+          <div class="menu-icon mc-purple">📖</div>
           <div class="menu-text">
             <div class="mt-num">05</div>
-            <div class="mt-title">작동·종합 대상 판독기</div>
-            <div class="mt-desc">작동기능점검과 종합정밀점검 대상 판정</div>
-          </div>
-        </button>
-
-        <button id="open-multiuse-decoder" class="menu-card" type="button">
-          <div class="menu-icon mc-green">👥</div>
-          <div class="menu-text">
-            <div class="mt-num">06</div>
-            <div class="mt-title">다중이용업소 판독기</div>
-            <div class="mt-desc">업종별 다중이용업소 해당 여부 판정</div>
+            <div class="mt-title">소방시설 도감</div>
+            <div class="mt-desc">소방시설별 개요·종류·구성·설치기준</div>
           </div>
         </button>
 
         <button id="open-occupancy-calculator" class="menu-card" type="button">
           <div class="menu-icon mc-amber">🧮</div>
           <div class="menu-text">
-            <div class="mt-num">07</div>
-            <div class="mt-title">수용인원 계산기</div>
-            <div class="mt-desc">용도별 법정 수용인원 산정</div>
+            <div class="mt-num">06</div>
+            <div class="mt-title">유틸리티 도구함</div>
+            <div class="mt-desc">수용인원·소방안전관리보조자 선임인원 계산</div>
           </div>
         </button>
 
-        <button id="open-lab" class="menu-card" type="button">
+        <button id="open-lab" class="menu-card" type="button" style="display:none;">
           <div class="menu-icon mc-blue">🧪</div>
           <div class="menu-text">
-            <div class="mt-num">08</div>
+            <div class="mt-num">07</div>
             <div class="mt-title">실험실</div>
             <div class="mt-desc">앞으로 만들 기능들을 먼저 작업하고 시험하는 공간</div>
           </div>
@@ -157,6 +149,8 @@
       </div>
 
       <div class="menu-right" id="home-reminders"></div>
+      <!-- 숨김 버튼: JS 리스너용 (자체점검 가이드 통합 전까지 유지) -->
+      <button id="open-inspection-decoder" style="display:none;" type="button" aria-hidden="true"></button>
     </div>
 
     <div class="home-bottom-btns">
@@ -175,7 +169,7 @@
   <section id="screen-explorer-select" class="screen">
     <div class="topbar">
       <button id="back-from-explorer-select" class="back-btn" type="button">←</button>
-      <span class="tb-title">소방시설탐색기</span>
+      <span class="tb-title">소방시설 탐색기</span>
     </div>
     <div class="scroll-content">
       <section class="wq-card">
@@ -202,7 +196,7 @@
   <section id="screen-explorer-year" class="screen">
     <div class="topbar">
       <button id="back-from-explorer-year" class="back-btn" type="button">←</button>
-      <span class="tb-title">소방시설탐색기 (연도별)</span>
+      <span class="tb-title">소방시설 탐색기 (연도별)</span>
       <span class="test-badge" style="margin-left:8px;">테스트중</span>
     </div>
 
@@ -291,7 +285,7 @@
   <section id="screen-explorer" class="screen">
     <div class="topbar">
       <button id="back-from-explorer" class="back-btn" type="button">←</button>
-      <span id="explorer-title" class="tb-title">소방시설탐색기</span>
+      <span id="explorer-title" class="tb-title">소방시설 탐색기</span>
       <span id="explorer-mode-badge" class="test-badge hidden" style="margin-left:8px;">연도별_테스트중</span>
     </div>
 
@@ -402,7 +396,7 @@
   <section id="screen-report-guide" class="screen">
     <div class="topbar">
       <button id="back-from-report-guide" class="back-btn" type="button">←</button>
-      <span class="tb-title">자체점검 보고서 읽는법</span>
+      <span class="tb-title">자체점검 가이드</span>
     </div>
     <div id="report-guide-content" class="rg-outer"></div>
   </section>
@@ -418,7 +412,7 @@
       <div class="guide-hero">
         <div>
           <div class="guide-hero-kicker">HOW TO USE</div>
-          <h2 class="guide-hero-title">7가지 도구, 이렇게 쓰세요</h2>
+          <h2 class="guide-hero-title">6가지 도구, 이렇게 쓰세요</h2>
           <p class="guide-hero-desc">각 기능을 탭하면 사용법과 주의사항을 확인할 수 있습니다.</p>
         </div>
         <button id="open-intro-video" class="guide-intro-video-btn" type="button">소개 영상 보기</button>
@@ -427,13 +421,13 @@
       <!-- Tool cards -->
       <div class="guide-tool-list">
 
-        <!-- 01 소방시설탐색기 -->
+        <!-- 01 소방시설 탐색기 -->
         <details class="guide-tool-card">
           <summary class="guide-tool-summary">
             <div class="guide-tool-icon mc-red">🧯</div>
             <div class="guide-tool-meta">
               <span class="guide-tool-num">01</span>
-              <span class="guide-tool-title">소방시설탐색기</span>
+              <span class="guide-tool-title">소방시설 탐색기</span>
             </div>
             <span class="guide-tool-chevron">›</span>
           </summary>
@@ -444,101 +438,17 @@
               <div class="guide-step"><span class="gs-num">2</span><span>용도·연면적·층수·스프링클러 여부 등 질문에 순서대로 답하기</span></div>
               <div class="guide-step"><span class="gs-num">3</span><span>결과 화면에서 <strong>설치 필요 시설 목록</strong>과 <strong>설치 이유</strong> 확인</span></div>
             </div>
-            <div class="guide-tip">💡 다중이용업소에 해당하면 결과 하단 버튼으로 안전시설도 이어서 확인할 수 있습니다.</div>
+            <div class="guide-tip">💡 자체점검 실시결과 보고서를 받을 때, 해당 특정소방대상물에 설치해야 할 소방시설의 종류들이 뭔지 참고할 수 있습니다.</div>
           </div>
         </details>
 
-        <!-- 02 날짜 계산기 -->
-        <details class="guide-tool-card">
-          <summary class="guide-tool-summary">
-            <div class="guide-tool-icon mc-blue">📅</div>
-            <div class="guide-tool-meta">
-              <span class="guide-tool-num">02</span>
-              <span class="guide-tool-title">날짜 계산기</span>
-            </div>
-            <span class="guide-tool-chevron">›</span>
-          </summary>
-          <div class="guide-tool-body">
-            <p class="guide-tool-desc">자체점검 제출기한, 안전관리자 선임기한, 부적합 조치기한, 소방안전관리보조자 선임인원을 자동으로 계산합니다.</p>
-            <div class="guide-steps">
-              <div class="guide-step"><span class="gs-num">1</span><span>상단 탭에서 계산 유형 선택 — 자체점검 / 안전관리자 / 부적합조치 / 보조자인원</span></div>
-              <div class="guide-step"><span class="gs-num">2</span><span>기준일·점검일·선임해제일 등 필요한 날짜 입력</span></div>
-              <div class="guide-step"><span class="gs-num">3</span><span>결과 확인 후 <strong>"메인화면에 표시"</strong>로 알림판에 저장</span></div>
-            </div>
-            <div class="guide-tip">💡 알림판에 저장하면 D-7 이내 기한이 빨간색으로 강조됩니다.</div>
-          </div>
-        </details>
-
-        <!-- 03 자체점검 보고서 읽는법 -->
-        <details class="guide-tool-card">
-          <summary class="guide-tool-summary">
-            <div class="guide-tool-icon mc-amber">📋</div>
-            <div class="guide-tool-meta">
-              <span class="guide-tool-num">03 <span class="test-badge">테스트중</span></span>
-              <span class="guide-tool-title">자체점검 보고서 읽는법</span>
-            </div>
-            <span class="guide-tool-chevron">›</span>
-          </summary>
-          <div class="guide-tool-body">
-            <p class="guide-tool-desc">자체점검 실시결과 보고서를 페이지 단위로 안내합니다. 각 항목을 탭하면 작성 방법과 읽는 요령을 바로 확인할 수 있습니다.</p>
-            <div class="guide-steps">
-              <div class="guide-step"><span class="gs-num">1</span><span>상단 탭으로 페이지 이동 — 표지(1p)·대상물정보(2p)·소방시설선택(3p)·점검표(4~8p)</span></div>
-              <div class="guide-step"><span class="gs-num">2</span><span>각 항목을 탭하면 해당 칸의 <strong>작성 방법</strong>과 <strong>읽는 요령</strong> 표시</span></div>
-              <div class="guide-step"><span class="gs-num">3</span><span>3p에서 등급 또는 시설을 선택하면 해당 점검표 항목만 필터링</span></div>
-            </div>
-            <div class="guide-tip">💡 보고서를 처음 받았을 때 어디를 봐야 할지 모를 때 유용합니다.</div>
-          </div>
-        </details>
-
-        <!-- 04 소방시설 설명 -->
-        <details class="guide-tool-card">
-          <summary class="guide-tool-summary">
-            <div class="guide-tool-icon mc-purple">⚙️</div>
-            <div class="guide-tool-meta">
-              <span class="guide-tool-num">04</span>
-              <span class="guide-tool-title">소방시설 설명</span>
-            </div>
-            <span class="guide-tool-chevron">›</span>
-          </summary>
-          <div class="guide-tool-body">
-            <p class="guide-tool-desc">소방시설별 개요·종류·구성·설치기준을 한눈에 확인합니다. 탐색기 결과에서 모르는 시설이 나왔을 때 바로 찾아볼 수 있습니다.</p>
-            <div class="guide-steps">
-              <div class="guide-step"><span class="gs-num">1</span><span>목록에서 시설 선택 — 소화기·스프링클러·감지기·유도등 등</span></div>
-              <div class="guide-step"><span class="gs-num">2</span><span>개요·종류·구성요소 확인</span></div>
-              <div class="guide-step"><span class="gs-num">3</span><span>설치기준 탭에서 <strong>면적·층수별 설치 조건</strong> 확인</span></div>
-            </div>
-            <div class="guide-tip">💡 현재 테스트 중인 기능으로, 내용이 지속적으로 보완되고 있습니다.</div>
-          </div>
-        </details>
-
-        <!-- 05 작동·종합 대상 판독기 -->
-        <details class="guide-tool-card">
-          <summary class="guide-tool-summary">
-            <div class="guide-tool-icon mc-amber">🏢</div>
-            <div class="guide-tool-meta">
-              <span class="guide-tool-num">05</span>
-              <span class="guide-tool-title">작동·종합 대상 판독기</span>
-            </div>
-            <span class="guide-tool-chevron">›</span>
-          </summary>
-          <div class="guide-tool-body">
-            <p class="guide-tool-desc">스프링클러 설치 여부, 연면적, 층수 등 조건을 입력하면 작동기능점검 또는 종합정밀점검 대상인지 판정합니다.</p>
-            <div class="guide-steps">
-              <div class="guide-step"><span class="gs-num">1</span><span>용도·연면적·층수·스프링클러 여부 등 질문에 답하기</span></div>
-              <div class="guide-step"><span class="gs-num">2</span><span>판정 결과 확인 — 작동기능점검 / 종합정밀점검 / 해당 없음</span></div>
-              <div class="guide-step"><span class="gs-num">3</span><span>결과 하단에서 <strong>판정 근거 법령</strong>도 함께 확인</span></div>
-            </div>
-            <div class="guide-tip">💡 스프링클러 설치 여부가 판정 결과에 가장 큰 영향을 줍니다.</div>
-          </div>
-        </details>
-
-        <!-- 06 다중이용업소 판독기 -->
+        <!-- 02 다중이용업소 탐색기 -->
         <details class="guide-tool-card">
           <summary class="guide-tool-summary">
             <div class="guide-tool-icon mc-green">👥</div>
             <div class="guide-tool-meta">
-              <span class="guide-tool-num">06</span>
-              <span class="guide-tool-title">다중이용업소 판독기</span>
+              <span class="guide-tool-num">02</span>
+              <span class="guide-tool-title">다중이용업소 탐색기</span>
             </div>
             <span class="guide-tool-chevron">›</span>
           </summary>
@@ -553,24 +463,86 @@
           </div>
         </details>
 
-        <!-- 07 수용인원 계산기 -->
+        <!-- 03 법정기한 계산기 -->
         <details class="guide-tool-card">
           <summary class="guide-tool-summary">
-            <div class="guide-tool-icon mc-amber">🧮</div>
+            <div class="guide-tool-icon mc-blue">📅</div>
             <div class="guide-tool-meta">
-              <span class="guide-tool-num">07</span>
-              <span class="guide-tool-title">수용인원 계산기</span>
+              <span class="guide-tool-num">03</span>
+              <span class="guide-tool-title">법정기한 계산기</span>
             </div>
             <span class="guide-tool-chevron">›</span>
           </summary>
           <div class="guide-tool-body">
-            <p class="guide-tool-desc">건물 용도와 면적을 입력하면 소방관계법령에 따른 법정 수용인원을 자동 산정합니다. 용도별 산정 기준과 적용 공식도 함께 표시됩니다.</p>
+            <p class="guide-tool-desc">자체점검 제출기한, 안전관리자 선임기한, 부적합 조치기한을 자동으로 계산합니다.</p>
             <div class="guide-steps">
-              <div class="guide-step"><span class="gs-num">1</span><span>용도 선택 — 강의실·숙박·의료·판매·식당 등</span></div>
-              <div class="guide-step"><span class="gs-num">2</span><span>바닥면적(㎡) 입력</span></div>
+              <div class="guide-step"><span class="gs-num">1</span><span>상단 탭에서 계산 유형 선택 — 자체점검 / 안전관리자 / 부적합조치</span></div>
+              <div class="guide-step"><span class="gs-num">2</span><span>기준일·점검일·선임해제일 등 필요한 날짜 입력</span></div>
+              <div class="guide-step"><span class="gs-num">3</span><span>결과 확인 후 <strong>"메인화면에 표시"</strong>로 알림판에 저장</span></div>
+            </div>
+            <div class="guide-tip">💡 알림판에 저장하면 D-7 이내 기한이 빨간색으로 강조됩니다.</div>
+          </div>
+        </details>
+
+        <!-- 04 자체점검 가이드 -->
+        <details class="guide-tool-card">
+          <summary class="guide-tool-summary">
+            <div class="guide-tool-icon mc-amber">📋</div>
+            <div class="guide-tool-meta">
+              <span class="guide-tool-num">04 <span class="test-badge">테스트중</span></span>
+              <span class="guide-tool-title">자체점검 가이드</span>
+            </div>
+            <span class="guide-tool-chevron">›</span>
+          </summary>
+          <div class="guide-tool-body">
+            <p class="guide-tool-desc">자체점검 대상 여부 판정과 실시결과 보고서 읽기·작성 방법을 안내합니다.</p>
+            <div class="guide-steps">
+              <div class="guide-step"><span class="gs-num">1</span><span>상단 탭으로 페이지 이동 — 표지(1p)·대상물정보(2p)·소방시설선택(3p)·점검표(4~8p)</span></div>
+              <div class="guide-step"><span class="gs-num">2</span><span>각 항목을 탭하면 해당 칸의 <strong>작성 방법</strong>과 <strong>읽는 요령</strong> 표시</span></div>
+              <div class="guide-step"><span class="gs-num">3</span><span>3p에서 등급 또는 시설을 선택하면 해당 점검표 항목만 필터링</span></div>
+            </div>
+            <div class="guide-tip">💡 보고서를 처음 받았을 때 어디를 봐야 할지 모를 때 유용합니다.</div>
+          </div>
+        </details>
+
+        <!-- 05 소방시설 도감 -->
+        <details class="guide-tool-card">
+          <summary class="guide-tool-summary">
+            <div class="guide-tool-icon mc-purple">📖</div>
+            <div class="guide-tool-meta">
+              <span class="guide-tool-num">05</span>
+              <span class="guide-tool-title">소방시설 도감</span>
+            </div>
+            <span class="guide-tool-chevron">›</span>
+          </summary>
+          <div class="guide-tool-body">
+            <p class="guide-tool-desc">소방시설별 개요·종류·구성·설치기준을 한눈에 확인합니다. 탐색기 결과에서 모르는 시설이 나왔을 때 바로 찾아볼 수 있습니다.</p>
+            <div class="guide-steps">
+              <div class="guide-step"><span class="gs-num">1</span><span>목록에서 시설 선택 — 소화기·스프링클러·감지기·유도등 등</span></div>
+              <div class="guide-step"><span class="gs-num">2</span><span>개요·종류·구성요소 확인</span></div>
+              <div class="guide-step"><span class="gs-num">3</span><span>설치기준 탭에서 <strong>면적·층수별 설치 조건</strong> 확인</span></div>
+            </div>
+            <div class="guide-tip">💡 탐색기 결과에서 모르는 소방시설이 있으면 여기서 바로 찾아보세요.</div>
+          </div>
+        </details>
+
+        <!-- 06 유틸리티 도구함 -->
+        <details class="guide-tool-card">
+          <summary class="guide-tool-summary">
+            <div class="guide-tool-icon mc-amber">🧮</div>
+            <div class="guide-tool-meta">
+              <span class="guide-tool-num">06</span>
+              <span class="guide-tool-title">유틸리티 도구함</span>
+            </div>
+            <span class="guide-tool-chevron">›</span>
+          </summary>
+          <div class="guide-tool-body">
+            <p class="guide-tool-desc">수용인원 산정, 소방안전관리보조자 선임 필요인원 계산 등 현장에서 바로 쓸 수 있는 소형 계산 도구 모음입니다.</p>
+            <div class="guide-steps">
+              <div class="guide-step"><span class="gs-num">1</span><span>계산 유형 선택 — 수용인원 / 보조자 선임인원</span></div>
+              <div class="guide-step"><span class="gs-num">2</span><span>용도·면적·세대수 등 필요한 값 입력</span></div>
               <div class="guide-step"><span class="gs-num">3</span><span>산정 결과와 <strong>적용 기준 공식</strong> 확인</span></div>
             </div>
-            <div class="guide-tip">💡 수용인원은 자체점검 대상 판정·피난시설 기준에 활용됩니다.</div>
           </div>
         </details>
 
@@ -604,7 +576,7 @@
       <p class="section-label">메인화면 알림판</p>
       <div class="info-box blue">
         <div class="ib-title">📌 날짜 계산 결과 저장</div>
-        날짜 계산기에서 계산 후 <strong>"메인화면에 표시"</strong> 버튼을 누르면 메인화면 오른쪽 알림판에 기한이 표시됩니다. D-7 이내 기한은 빨간색으로 강조됩니다.
+        법정기한 계산기에서 계산 후 <strong>"메인화면에 표시"</strong> 버튼을 누르면 메인화면 오른쪽 알림판에 기한이 표시됩니다. D-7 이내 기한은 빨간색으로 강조됩니다.
       </div>
 
       <!-- 참고사항 -->
@@ -620,7 +592,7 @@
   <section id="screen-date" class="screen">
     <div class="topbar">
       <button id="back-from-date" class="back-btn" type="button">←</button>
-      <span class="tb-title">날짜 계산기</span>
+      <span class="tb-title">법정기한 계산기</span>
     </div>
     <div class="scroll-content" id="date-content"></div>
   </section>
@@ -636,7 +608,7 @@
   <section id="screen-multiuse-select" class="screen">
     <div class="topbar">
       <button id="back-from-multiuse-select" class="back-btn" type="button">←</button>
-      <span class="tb-title">다중이용업소 판독기</span>
+      <span class="tb-title">다중이용업소 탐색기</span>
     </div>
     <div class="scroll-content">
       <section class="wq-card">
@@ -689,6 +661,12 @@
               <strong>소방시설 배치 배우기</strong>
             </div>
             <span>건물 구조를 입력하고 소방시설 배치를 시각화합니다.</span>
+          </button>
+          <button id="lab-open-multiuse-safety" class="choice-button" type="button">
+            <div class="choice-label-wrap">
+              <strong>🛡 다중이용업소 안전시설 탐색</strong>
+            </div>
+            <span>다중이용업소에 설치해야 하는 소방·안전시설을 확인합니다.</span>
           </button>
         </div>
       </section>
@@ -759,7 +737,7 @@
   <section id="screen-facilities" class="screen">
     <div class="topbar">
       <button id="back-from-facilities" class="back-btn" type="button">←</button>
-      <span class="tb-title">소방시설 설명</span>
+      <span class="tb-title">소방시설 도감</span>
     </div>
     <div id="facilities-content" class="rg-outer"></div>
   </section>
