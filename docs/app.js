@@ -12078,12 +12078,12 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
       var isOn = localStorage.getItem('devMode') === 'true';
       if (isOn) {
         localStorage.removeItem('devMode');
-        window['ga-disable-G-LKQZX5YS2H'] = false;
-        showToast('개발자 모드 비활성화됨 — GA 추적 켜짐');
+        showToast('개발자 모드 비활성화됨 — 페이지를 새로고침합니다');
+        setTimeout(function() { location.reload(); }, 1200);
       } else {
         localStorage.setItem('devMode', 'true');
-        window['ga-disable-G-LKQZX5YS2H'] = true;
         showToast('개발자 모드 활성화됨 — GA 추적 꺼짐');
+        setTimeout(function() { location.reload(); }, 1200);
       }
     }
   });
