@@ -63,70 +63,17 @@
 
   .app {
     min-height: 100vh;
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    column-gap: clamp(12px, 2vw, 24px);
-    row-gap: 16px;
-    padding: clamp(20px, 3vw, 40px) clamp(16px, 3vw, 40px);
-    align-content: start;
-  }
-
-  .topbar {
-    grid-column: 1 / -1;
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 4px 4px 0;
-  }
-
-  .topbar h1 {
-    font-size: clamp(15px, 1.5vw, 17px);
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-  .topbar h1 small {
-    display: block;
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--ink-muted);
-    margin-top: 3px;
-    letter-spacing: 0;
-  }
-
-  .replay {
-    font: inherit;
-    font-size: 12.5px;
-    font-weight: 500;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    color: var(--ink);
-    padding: 7px 13px;
-    border-radius: 999px;
-    cursor: pointer;
-    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    transition: 0.15s ease;
-    user-select: none;
-  }
-  .replay:hover {
-    border-color: var(--ink);
-    background: oklch(1 0 0);
-  }
-  .replay svg {
-    width: 13px;
-    height: 13px;
+    justify-content: center;
+    padding: clamp(12px, 2vw, 28px);
   }
 
-  /* Phone container — sits on a 12-col responsive grid */
+  /* Phone container */
   .phone {
-    grid-column: 1 / -1;
-    align-self: center;
-    justify-self: center;
     width: 100%;
-    max-width: 420px;
-    height: min(820px, calc(100vh - 130px));
+    max-width: 720px;
+    height: min(960px, calc(100vh - 32px));
     background: var(--surface);
     border-radius: 32px;
     overflow: hidden;
@@ -134,22 +81,6 @@
     display: grid;
     grid-template-rows: auto 1fr auto;
     box-shadow: var(--shadow-card);
-  }
-
-  @media (min-width: 720px) {
-    .phone {
-      grid-column: 3 / 11;
-    }
-  }
-  @media (min-width: 1024px) {
-    .phone {
-      grid-column: 5 / 9;
-    }
-  }
-  @media (min-width: 1400px) {
-    .phone {
-      grid-column: 6 / 8;
-    }
   }
 
   .chat-header {
@@ -307,7 +238,7 @@
   }
 
   .bubble {
-    max-width: min(78%, 320px);
+    max-width: min(78%, 520px);
     padding: 9px 13px 10px;
     border-radius: 18px;
     font-size: 14.5px;
@@ -611,17 +542,10 @@
   @media (max-width: 520px) {
     .app {
       padding: 0;
-      gap: 0;
-      grid-template-rows: auto 1fr;
-    }
-    .topbar {
-      padding: 14px 16px 8px;
-      grid-column: 1 / -1;
     }
     .phone {
-      grid-column: 1 / -1;
       max-width: 100%;
-      height: calc(100vh - 64px);
+      height: 100vh;
       border-radius: 0;
       border: none;
       box-shadow: none;
@@ -635,27 +559,6 @@
     <iframe id="introFrame" title="intro" loading="eager" srcdoc="<body style='margin:0;background:#050505;height:100vh;'></body>"></iframe>
   </div>
   <div class="app">
-    <header class="topbar">
-      <h1>
-        텍스트 스트리밍
-        <small>채팅 메시지가 실시간으로 입력되는 애니메이션</small>
-      </h1>
-      <button class="replay" id="replay" aria-label="다시 재생">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M3 12a9 9 0 1 0 3-6.7" />
-          <path d="M3 4v5h5" />
-        </svg>
-        다시 재생
-      </button>
-    </header>
-
     <section class="phone" aria-label="채팅 미리보기">
       <header class="chat-header">
         <button class="icon-btn" aria-label="뒤로가기">
@@ -664,7 +567,7 @@
         <div class="peer">
           <div class="avatar" aria-hidden="true">김</div>
           <div class="peer-meta">
-            <div class="peer-name">김대리 · 안전팀</div>
+            <div class="peer-name">김일구 반장님</div>
             <div class="peer-status">활동 중</div>
           </div>
         </div>
@@ -838,8 +741,8 @@
 
     // ---------- Reading time ----------
     function readingDelay(text) {
-      // Korean reading: ~180ms / char baseline, w/ floor + ceiling
-      return Math.min(7200, Math.max(2400, text.length * 180));
+      // Korean reading: ~40ms / char baseline, w/ floor + ceiling
+      return Math.min(1200, Math.max(500, text.length * 40));
     }
 
     // ---------- Main loop ----------
@@ -853,7 +756,7 @@
 
       // Initial pause
       try {
-        await sleep(700, token);
+        await sleep(350, token);
       } catch {
         return;
       }
@@ -874,7 +777,7 @@
           scrollMessagesToBottom();
 
           const typingDuration = Math.min(
-            2400,
+            1600,
             700 + Math.min(msg.text.length, 40) * 28
           );
           try {
@@ -894,7 +797,7 @@
         } else {
           // Outgoing — type into composer
           try {
-            await sleep(900, token);
+            await sleep(150, token);
           } catch {
             return;
           }
@@ -904,7 +807,7 @@
             return;
           }
           try {
-            await sleep(450, token);
+            await sleep(250, token);
           } catch {
             return;
           }
@@ -934,7 +837,7 @@
 
       // After conversation ends, glitch transition into the next screen
       try {
-        await sleep(2200, token);
+        await sleep(3000, token);
       } catch {
         return;
       }
@@ -1188,10 +1091,13 @@
       fxEl.style.setProperty("--fx-flash", "0");
     }
 
-    document.getElementById("replay").addEventListener("click", () => {
-      resetStage();
-      play();
-    });
+    const replayBtn = document.getElementById("replay");
+    if (replayBtn) {
+      replayBtn.addEventListener("click", () => {
+        resetStage();
+        play();
+      });
+    }
 
     // Kick off
     play();
