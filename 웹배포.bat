@@ -30,6 +30,8 @@ if exist pdf.worker.min.js copy /Y pdf.worker.min.js  docs\pdf.worker.min.js  > 
 if exist report-guide.pdf  copy /Y report-guide.pdf   docs\report-guide.pdf   > nul  &  copy /Y report-guide.pdf   www\report-guide.pdf   > nul
 if exist image xcopy /Y /E /I image docs\image > nul
 if exist image xcopy /Y /E /I image www\image  > nul
+if exist video xcopy /Y /E /I video docs\video > nul
+if exist video xcopy /Y /E /I video www\video  > nul
 if not exist .nojekyll     type nul > .nojekyll
 if not exist docs\.nojekyll type nul > docs\.nojekyll
 if not exist www\.nojekyll  type nul > www\.nojekyll
@@ -61,6 +63,7 @@ git reset --soft origin/main
 git add docs/
 git add www/
 git add sw.js
+if exist video git add video/
 git add capacitor.config.json
 git add index.html styles.css app.js manifest.json
 if exist facilities.js     git add facilities.js
