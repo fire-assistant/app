@@ -942,7 +942,7 @@
       counterEl.style.opacity = "0";
 
       const startTs = performance.now();
-      const totalMs = 5200; // longer for very gradual build-up
+      const totalMs = 3200; // gradual start, faster ramp to max
       let counterValue = -2153.934;
       let lastFrame = startTs;
       let raf;
@@ -954,14 +954,16 @@
         const elapsed = now - startTs;
         const p = Math.min(1, elapsed / totalMs);
 
-        // 지...지직..지지직...지지지지지직: short quiet intro, then noticeable build
+        // 치직 → 정상 → 치직 → 심해짐
         const intensity =
-          p < 0.2  ? (p / 0.2) * 0.13                          // 0 → 0.13 (sparse but visible)
-          : p < 0.6  ? 0.13 + ((p - 0.2) / 0.4) * 0.27        // 0.13 → 0.40 (building)
-          :             0.40 + ((p - 0.6) / 0.4) * 0.60;       // 0.40 → 1.0 (full blast)
+          p < 0.12 ? (p / 0.12) * 0.45                         // 0 → 0.45 (첫 번째 치직)
+          : p < 0.24 ? 0.45 - ((p - 0.12) / 0.12) * 0.40      // 0.45 → 0.05 (정상 복귀)
+          : p < 0.38 ? 0.05 + ((p - 0.24) / 0.14) * 0.50      // 0.05 → 0.55 (두 번째 치직)
+          : p < 0.50 ? 0.55 - ((p - 0.38) / 0.12) * 0.48      // 0.55 → 0.07 (정상 복귀)
+          :             0.07 + ((p - 0.50) / 0.50) * 0.93;     // 0.07 → 1.0 (본격 심해짐)
 
         // fire probability: rare at start, every frame at end
-        const fireProb = Math.min(0.97, intensity * 2.2);
+        const fireProb = Math.min(0.97, intensity * 2.0);
         const fires = Math.random() < fireProb;
 
         if (!fires) {
@@ -1108,6 +1110,33 @@
         play();
       });
     }
+
+    // G key → show all messages instantly, then start glitch after 1s
+    document.addEventListener("keydown", async (e) => {
+      if (e.key !== "g" && e.key !== "G") return;
+      const token = ++runToken;
+      resetStage();
+
+      // Render all messages instantly
+      messagesEl.querySelectorAll(".row").forEach((n) => n.remove());
+      clearComposer();
+      let prevFrom = null;
+      conversation.forEach((msg) => {
+        const isFirstOfGroup = msg.from !== prevFrom;
+        const row = makeRow(msg.from, isFirstOfGroup);
+        const bubble = makeBubble();
+        bubble.textContent = msg.text;
+        row.appendChild(bubble);
+        messagesEl.appendChild(row);
+        prevFrom = msg.from;
+      });
+      scrollMessagesToBottom();
+
+      // Wait 1s then glitch
+      await sleep(1000, token).catch(() => {});
+      if (token !== runToken) return;
+      await runGlitchTransition(token);
+    });
 
     // Kick off
     play();
