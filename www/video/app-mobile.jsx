@@ -58,7 +58,7 @@ function IntroTextM() {
         </div>
         <div style={{
           fontSize: 168, fontWeight: 900, color: FG_M,
-          letterSpacing: '-0.04em', lineHeight: 0.92,
+          letterSpacing: '0.02em', lineHeight: 1.15,
         }}>
           예방업무는<br />복잡합니다.
         </div>
@@ -91,7 +91,7 @@ function IntroTextM() {
         </div>
         <div style={{
           fontSize: 144, fontWeight: 900, color: FG_M,
-          letterSpacing: '-0.04em', lineHeight: 0.95,
+          letterSpacing: '0.02em', lineHeight: 1.15,
         }}>
           이제, 쉽게<br />정리됩니다.
         </div>
@@ -112,7 +112,7 @@ function OutroM() {
   const ty = (1 - eased) * 30;
 
   const descProg = clamp((local - 0.6) / 0.8, 0, 1);
-  const dotsProg = clamp((local - 1.2) / 0.8, 0, 1);
+  const dotsProg = clamp((local - 2.4) / 0.6, 0, 1);
 
   return (
     <div style={{
@@ -137,7 +137,7 @@ function OutroM() {
         <div style={{
           fontFamily: 'JetBrains Mono, ui-monospace, monospace',
           fontSize: 26, letterSpacing: '0.42em', color: RED_M,
-          fontWeight: 500, marginBottom: 56,
+          fontWeight: 500, marginBottom: 28,
         }}>
           FIRE SAFETY ASSISTANT
         </div>
@@ -151,11 +151,11 @@ function OutroM() {
 
       <div style={{
         position: 'absolute',
-        left: '50%', top: 1280,
+        left: '50%', top: 1100,
         transform: 'translateX(-50%)',
         opacity: descProg,
         textAlign: 'center',
-        fontSize: 42, color: '#cfcbc4',
+        fontSize: 40, color: '#cfcbc4',
         fontWeight: 400, letterSpacing: '-0.005em',
         lineHeight: 1.45,
         whiteSpace: 'pre-line',
@@ -163,21 +163,52 @@ function OutroM() {
         법적기준과 서류제출 기한을{'\n'}한 화면에서 끝냅니다.
       </div>
 
-      <div style={{
-        position: 'absolute',
-        left: '50%', top: 1540,
-        transform: 'translateX(-50%)',
-        opacity: dotsProg,
-        display: 'flex', gap: 14,
-      }}>
-        {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} style={{
-            width: 48, height: 5,
-            background: RED_M,
-            opacity: clamp(dotsProg * 7 - i, 0, 1),
-          }} />
-        ))}
-      </div>
+      {/* Arcade-style CONTINUE? prompt */}
+      {(() => {
+        const blinkT = Math.max(0, local - 2.8);
+        const sel = Math.floor(blinkT * 1.4) % 2;
+        const cursorBlink = Math.sin(blinkT * 12) > -0.3 ? 1 : 0;
+        return (
+          <div style={{
+            position: 'absolute', left: '50%', top: 1240,
+            transform: 'translateX(-50%)',
+            opacity: dotsProg,
+            textAlign: 'center',
+            fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          }}>
+            <div style={{
+              fontSize: 60, fontWeight: 700, color: RED_M,
+              letterSpacing: '0.22em', marginBottom: 36,
+            }}>CONTINUE?</div>
+            <div style={{
+              fontSize: 48, fontWeight: 700,
+              letterSpacing: '0.16em',
+              display: 'flex', gap: 90, justifyContent: 'center',
+            }}>
+              <span style={{
+                color: sel === 0 ? RED_M : '#5a5550',
+                position: 'relative',
+              }}>
+                <span style={{
+                  position: 'absolute', left: -42, top: 0,
+                  opacity: sel === 0 ? cursorBlink : 0,
+                }}>▸</span>
+                YES
+              </span>
+              <span style={{
+                color: sel === 1 ? RED_M : '#5a5550',
+                position: 'relative',
+              }}>
+                <span style={{
+                  position: 'absolute', left: -42, top: 0,
+                  opacity: sel === 1 ? cursorBlink : 0,
+                }}>▸</span>
+                YES
+              </span>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

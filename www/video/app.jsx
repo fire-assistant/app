@@ -122,7 +122,7 @@ function Outro() {
 
   // Description fades in slightly later
   const descProg = clamp((local - 0.6) / 0.8, 0, 1);
-  const dotsProg = clamp((local - 1.2) / 0.8, 0, 1);
+  const dotsProg = clamp((local - 2.4) / 0.6, 0, 1);
 
   return (
     <div style={{
@@ -174,22 +174,52 @@ function Outro() {
         한 화면에서 끝냅니다.
       </div>
 
-      {/* 7-dot reminder */}
-      <div style={{
-        position: 'absolute',
-        left: '50%', top: 870,
-        transform: 'translateX(-50%)',
-        opacity: dotsProg,
-        display: 'flex', gap: 10,
-      }}>
-        {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} style={{
-            width: 36, height: 4,
-            background: RED,
-            opacity: clamp(dotsProg * 7 - i, 0, 1),
-          }} />
-        ))}
-      </div>
+      {/* Arcade-style CONTINUE? prompt */}
+      {(() => {
+        const blinkT = Math.max(0, local - 2.8);
+        const sel = Math.floor(blinkT * 1.4) % 2;
+        const cursorBlink = Math.sin(blinkT * 12) > -0.3 ? 1 : 0;
+        return (
+          <div style={{
+            position: 'absolute', left: '50%', top: 830,
+            transform: 'translateX(-50%)',
+            opacity: dotsProg,
+            textAlign: 'center',
+            fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          }}>
+            <div style={{
+              fontSize: 44, fontWeight: 700, color: RED,
+              letterSpacing: '0.22em', marginBottom: 26,
+            }}>CONTINUE?</div>
+            <div style={{
+              fontSize: 36, fontWeight: 700,
+              letterSpacing: '0.16em',
+              display: 'flex', gap: 70, justifyContent: 'center',
+            }}>
+              <span style={{
+                color: sel === 0 ? RED : '#5a5550',
+                position: 'relative',
+              }}>
+                <span style={{
+                  position: 'absolute', left: -32, top: 0,
+                  opacity: sel === 0 ? cursorBlink : 0,
+                }}>▸</span>
+                YES
+              </span>
+              <span style={{
+                color: sel === 1 ? RED : '#5a5550',
+                position: 'relative',
+              }}>
+                <span style={{
+                  position: 'absolute', left: -32, top: 0,
+                  opacity: sel === 1 ? cursorBlink : 0,
+                }}>▸</span>
+                YES
+              </span>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -84,13 +84,12 @@ function FeatureCardMobile({ feature }) {
       transform: `translateY(${exitY}px)`,
       fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif',
     }}>
-      {/* Vignette behind central title block to keep it readable above particles */}
+      {/* Vignette anchored to the left where the card content sits */}
       <div style={{
         position: 'absolute',
-        left: '50%', top: 880,
-        width: 1100, height: 700,
-        transform: 'translateX(-50%)',
-        background: 'radial-gradient(ellipse at 50% 50%, rgba(5,5,5,0.85) 0%, rgba(5,5,5,0.6) 50%, rgba(5,5,5,0) 80%)',
+        left: 0, top: 540,
+        width: 1100, height: 760,
+        background: 'radial-gradient(ellipse at 25% 50%, rgba(5,5,5,0.88) 0%, rgba(5,5,5,0.62) 50%, rgba(5,5,5,0) 80%)',
         opacity: titleEase * 0.95,
         pointerEvents: 'none',
       }} />
@@ -98,10 +97,9 @@ function FeatureCardMobile({ feature }) {
       {/* Big outlined number */}
       <div style={{
         position: 'absolute',
-        left: '50%', top: 360 + numY,
-        transform: 'translateX(-50%)',
+        left: 80, top: 600 + numY,
         opacity: numEase,
-        fontSize: 360,
+        fontSize: 320,
         fontWeight: 900,
         lineHeight: 0.85,
         letterSpacing: '-0.05em',
@@ -114,8 +112,7 @@ function FeatureCardMobile({ feature }) {
       {/* English label */}
       <div style={{
         position: 'absolute',
-        left: '50%', top: 880,
-        transform: 'translateX(-50%)',
+        left: 90, top: 900 + titleY * 0.5,
         opacity: labelProg * 0.92,
         fontFamily: 'JetBrains Mono, ui-monospace, monospace',
         fontSize: 24,
@@ -130,16 +127,14 @@ function FeatureCardMobile({ feature }) {
       {/* Korean title */}
       <div style={{
         position: 'absolute',
-        left: '50%', top: 950 + titleY,
-        transform: 'translateX(-50%)',
+        left: 90, top: 950 + titleY,
         opacity: titleEase,
-        fontSize: 120,
+        fontSize: 110,
         fontWeight: 900,
         letterSpacing: '-0.03em',
         color: FG_M,
         lineHeight: 1.0,
         whiteSpace: 'nowrap',
-        textAlign: 'center',
       }}>
         {feature.title}
       </div>
@@ -147,10 +142,9 @@ function FeatureCardMobile({ feature }) {
       {/* Underline accent */}
       <div style={{
         position: 'absolute',
-        left: '50%', top: 1130,
-        transform: 'translateX(-50%)',
+        left: 90, top: 1095,
         height: 6,
-        width: 200 * descProg,
+        width: 180 * descProg,
         background: RED_M,
         opacity: descProg,
       }} />
@@ -158,17 +152,15 @@ function FeatureCardMobile({ feature }) {
       {/* Description */}
       <div style={{
         position: 'absolute',
-        left: '50%', top: 1200 + descY,
-        transform: 'translateX(-50%)',
+        left: 90, top: 1135 + descY,
         opacity: descProg,
-        fontSize: 40,
+        fontSize: 38,
         fontWeight: 400,
         color: '#cfcbc4',
         lineHeight: 1.5,
         whiteSpace: 'pre-line',
         letterSpacing: '-0.005em',
-        textAlign: 'center',
-        maxWidth: 980,
+        maxWidth: 900,
       }}>
         {feature.desc}
       </div>

@@ -39,20 +39,17 @@ function buildMobileParticles() {
   const rng = mulberry32_m(20260510);
   const list = [];
 
-  // Settled positions: scatter across stage with a central exclusion band so
-  // the title text reads cleanly. Particles bias toward top and bottom thirds.
-  const exTop = MOBILE_H * 0.36;
-  const exBot = MOBILE_H * 0.66;
+  // Grid-based settled positions (4×8 cells) so tokens never overlap.
+  const COLS = 4;
+  const ROWS = 8;
+  const cellW = MOBILE_W / COLS;
+  const cellH = MOBILE_H / ROWS;
 
   for (let i = 0; i < PARTICLE_COUNT_M; i++) {
-    let ox, oy;
-    let tries = 0;
-    while (true) {
-      ox = 60 + rng() * (MOBILE_W - 120);
-      oy = 120 + rng() * (MOBILE_H - 240);
-      tries++;
-      if (oy < exTop || oy > exBot || tries > 25) break;
-    }
+    const col = i % COLS;
+    const row = Math.floor(i / COLS);
+    const ox = col * cellW + cellW * 0.5 + (rng() - 0.5) * cellW * 0.45;
+    const oy = row * cellH + cellH * 0.5 + (rng() - 0.5) * cellH * 0.45;
 
     // Chaos origin: polar around stage center, biased outward.
     const angle = rng() * Math.PI * 2;
