@@ -10584,7 +10584,7 @@ document.getElementById("back-from-guide").addEventListener("click", () => showS
 document.getElementById("open-guide").addEventListener("click", () => showScreen("guide"));
 
 (function initIntroVideo() {
-  const INTRO_SEEN_KEY = "introVideoSeen_v2";
+  const INTRO_SEEN_KEY = "introVideoSeen_v3";
   const INTRO_DURATION_MS = 105000;
   const overlay = document.getElementById("intro-video-overlay");
   const frame = document.getElementById("intro-video-frame");
