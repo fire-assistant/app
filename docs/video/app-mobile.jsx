@@ -2,7 +2,7 @@
 // Same timeline structure as PC but layout is vertical-centered with bigger
 // type. No per-column highlight (single-column layout).
 
-const TOTAL_M = 46;
+const TOTAL_M = 41;
 
 const SCHEDULE_M = [
   { start: 9.0,  end: 14.0 },
@@ -11,7 +11,6 @@ const SCHEDULE_M = [
   { start: 22.0, end: 26.0 },
   { start: 26.0, end: 30.0 },
   { start: 30.0, end: 34.0 },
-  { start: 34.0, end: 39.0 },
 ];
 
 function ActiveTrackerM({ children }) {
@@ -87,7 +86,7 @@ function IntroTextM() {
           fontSize: 22, letterSpacing: '0.4em', color: RED_M,
           fontWeight: 500, marginBottom: 36,
         }}>
-          7 TOOLS · ONE WORKBENCH
+          6 TOOLS · ONE WORKBENCH
         </div>
         <div style={{
           fontSize: 144, fontWeight: 900, color: FG_M,
@@ -102,7 +101,7 @@ function IntroTextM() {
 
 function OutroM() {
   const t = useTime();
-  const localStart = 39.0;
+  const localStart = 34.3;
   if (t < localStart - 0.4) return null;
 
   const local = t - localStart;
@@ -215,7 +214,7 @@ function OutroM() {
 
 function DataFieldDimWrapperM() {
   const t = useTime();
-  const dim = clamp((t - 39.0) / 0.8, 0, 1) * 0.55;
+  const dim = clamp((t - 34.3) / 0.8, 0, 1) * 0.55;
   return <DataFieldMobile dimGlobal={dim} />;
 }
 

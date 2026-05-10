@@ -235,16 +235,21 @@ const DIM = '#5a5550';
 const FAINT = '#2a2724';
 
 const COLUMN_TOKENS = [
+  // 0 — 소방시설 탐색기
   ['1,200㎡', 'F12', 'B2', '연면적', '스프링클러', '감지기', '옥내소화전', '유도등', '제연', '지상11층', '의무설치', 'SP', '500㎡↑', 'IND', '11F'],
+  // 1 — 다중이용업소 탐색기
+  ['노래연습장', 'PC방', '고시원', '음식점', '150㎡', '2층↑', '복층', '영업장', 'KARA', 'NET', 'F&B', 'MUL', '판정', '안전시설', 'M.U.'],
+  // 2 — 법정기한 계산기
   ['D-7', '2026.05.16', '30일', '선임 60일', '점검일', '제출 7일', 'D-14', '01.31', '06.30', '부적합', '조치기한', 'CAL', 'YYYY/MM', 'D-2', 'DUE'],
-  ['P.1', 'P.4', 'P.8', '별표 4', '제5조', '표지', '점검표', '대상물', '✓', '✕', '결과', '스프링클러', '수조', '항목', '제출'],
-  ['옥내소화전', '자탐', '비상방송설비', '구성', '기준', '소화기', '경보기', '비상조명', 'kW', 'L/min', 'Ø50', 'SPEC', 'Hz', 'φ', '소방서장'],
-  ['작동', '종합', '5,000㎡', '11F↑', '대상', 'INSP', 'OP', 'TOTAL', '연1회', '반기', 'SP설치', 'AUTO', 'COMP', '특정', '판정'],
-  ['노래연습장', 'PC방', '고시원', '음식점', '150㎡', '2층↑', '복층', '영업장', 'KARA', 'NET', 'F&B', 'MUL', '판정', '안전', 'M.U.'],
-  ['1.9㎡/人', '300人', '강의실', '숙박', '판매', '식당', '바닥면적', '수용', 'OCC', 'CAP', '÷1.9', '×0.5', '인', 'CALC', '名'],
+  // 3 — 자체점검 가이드
+  ['P.1', 'P.4', 'P.8', '별표 4', '제5조', '표지', '점검표', '대상물', '✓', '✕', '작동', '종합', '대상', '항목', '제출'],
+  // 4 — 소방시설 도감
+  ['옥내소화전', '자탐', '비상방송설비', '구성', '기준', '소화기', '경보기', '비상조명', 'kW', 'L/min', 'Ø50', 'SPEC', '유도등', '스프링클러', '소방서장'],
+  // 5 — 유틸리티 도구함
+  ['1.9㎡/人', '300人', '강의실', '숙박', '판매', '식당', '바닥면적', '수용인원', 'OCC', 'CAP', '보조자', '선임', '÷1.9', 'CALC', '名'],
 ];
 
-const COLUMNS = 7;
+const COLUMNS = 6;
 const PER_COL = 12;
 const STAGE_W = 1920;
 const STAGE_H = 1080;
@@ -397,13 +402,12 @@ function DataField({ activeFeature = -1, dimGlobal = 0 }) {
 
 // ── feature cards (PC) ──────────────────────────────────────────────────────
 const FEATURES = [
-  { num: '01', title: '소방시설탐색기', titleEn: 'FACILITY EXPLORER', desc: '건물 정보를 입력하면\n의무 설치 소방시설을 도출합니다.' },
-  { num: '02', title: '날짜 계산기', titleEn: 'DATE CALCULATOR', desc: '자체점검·선임·부적합 조치\n법정 기한을 자동 산정합니다.' },
-  { num: '03', title: '자체점검 보고서 읽는법', titleEn: 'REPORT GUIDE', desc: '실시결과 보고서 페이지마다\n작성·읽기 요령을 안내합니다.' },
-  { num: '04', title: '소방시설 설명', titleEn: 'FACILITY DETAIL', desc: '시설별 개요·종류·구성·기준을\n한눈에 정리해 보여줍니다.' },
-  { num: '05', title: '작동·종합 대상 판독기', titleEn: 'INSPECTION DECODER', desc: '작동기능점검·종합정밀점검\n대상 여부를 즉시 판정합니다.' },
-  { num: '06', title: '다중이용업소 판독기', titleEn: 'MULTI-USE DECODER', desc: '업종·면적·층수 조건으로\n다중이용업소를 판별합니다.' },
-  { num: '07', title: '수용인원 계산기', titleEn: 'OCCUPANCY CALCULATOR', desc: '용도별 법정 수용인원을\n바닥면적 입력만으로 산정합니다.' },
+  { num: '01', title: '소방시설 탐색기', titleEn: 'FACILITY EXPLORER', desc: '건물 정보를 입력하면\n의무 설치 소방시설을 도출합니다.' },
+  { num: '02', title: '다중이용업소 탐색기', titleEn: 'MULTI-USE EXPLORER', desc: '업종·면적·층수 조건으로\n다중이용업소 해당 여부를 판별합니다.' },
+  { num: '03', title: '법정기한 계산기', titleEn: 'DATE CALCULATOR', desc: '자체점검·선임·부적합 조치\n법정 기한을 자동 산정합니다.' },
+  { num: '04', title: '자체점검 가이드', titleEn: 'INSPECTION GUIDE', desc: '자체점검 대상 판정과\n보고서 작성·읽기 요령을 안내합니다.' },
+  { num: '05', title: '소방시설 도감', titleEn: 'FACILITY ATLAS', desc: '시설별 개요·종류·구성·기준을\n한눈에 정리해 보여줍니다.' },
+  { num: '06', title: '유틸리티 도구함', titleEn: 'UTILITY TOOLKIT', desc: '수용인원과 보조자 선임인원을\n바닥면적 입력만으로 산정합니다.' },
 ];
 
 function FeatureCard({ feature, colIndex }) {
@@ -493,7 +497,7 @@ function StepCounter({ active }) {
     }}>
       <span>{String(active + 1).padStart(2, '0')}</span>
       <div style={{ display: 'flex', gap: 6 }}>
-        {Array.from({ length: 7 }).map((_, i) => (
+        {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} style={{
             width: i === active ? 28 : 12, height: 3,
             background: i === active ? RED : '#3a3530',
@@ -501,13 +505,13 @@ function StepCounter({ active }) {
           }} />
         ))}
       </div>
-      <span>07</span>
+      <span>06</span>
     </div>
   );
 }
 
 // ── app composition ────────────────────────────────────────────────────────
-const TOTAL = 42;
+const TOTAL = 38;
 const SCHEDULE = [
   { start:  9.5, end: 13.0, col: 0 },
   { start: 13.0, end: 16.5, col: 1 },
@@ -515,7 +519,6 @@ const SCHEDULE = [
   { start: 20.0, end: 23.5, col: 3 },
   { start: 23.5, end: 27.0, col: 4 },
   { start: 27.0, end: 30.5, col: 5 },
-  { start: 30.5, end: 34.0, col: 6 },
 ];
 
 function ActiveColumnTracker({ children }) {
@@ -587,7 +590,7 @@ function IntroText() {
           fontFamily: 'JetBrains Mono, ui-monospace, monospace',
           fontSize: 14, letterSpacing: '0.4em', color: RED, fontWeight: 500,
           marginBottom: 22,
-        }}>7 TOOLS · ONE WORKBENCH</div>
+        }}>6 TOOLS · ONE WORKBENCH</div>
         <div style={{
           fontSize: 116, fontWeight: 900, color: FG,
           letterSpacing: '-0.04em', lineHeight: 0.92,
@@ -600,7 +603,7 @@ function IntroText() {
 
 function Outro() {
   const t = useTime();
-  const localStart = 34.3;
+  const localStart = 30.8;
   if (t < localStart - 0.4) return null;
   const local = t - localStart;
   const inProg = clamp(local / 0.9, 0, 1);
@@ -676,7 +679,7 @@ function Outro() {
 
 function DataFieldDimWrapper({ active }) {
   const t = useTime();
-  const outroDim = clamp((t - 34.3) / 0.8, 0, 1) * 0.55;
+  const outroDim = clamp((t - 30.8) / 0.8, 0, 1) * 0.55;
   const cardDim = clamp((t - 9.5) / 1.5, 0, 1) * 0.35;
   const dim = Math.max(outroDim, cardDim);
   return <DataField activeFeature={active} dimGlobal={dim} />;

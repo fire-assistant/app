@@ -10,7 +10,7 @@
 //  43.0 – 49.0s  feature 07 수용인원 계산기
 //  49.0 – 56.0s  outro: lockup
 
-const TOTAL = 46;
+const TOTAL = 41;
 
 const SCHEDULE = [
   { start: 9.0,  end: 14.0, col: 0 },
@@ -19,7 +19,6 @@ const SCHEDULE = [
   { start: 22.0, end: 26.0, col: 3 },
   { start: 26.0, end: 30.0, col: 4 },
   { start: 30.0, end: 34.0, col: 5 },
-  { start: 34.0, end: 39.0, col: 6 },
 ];
 
 function ActiveColumnTracker({ children }) {
@@ -94,7 +93,7 @@ function IntroText() {
           fontSize: 14, letterSpacing: '0.4em', color: RED, fontWeight: 500,
           marginBottom: 22,
         }}>
-          7 TOOLS · ONE WORKBENCH
+          6 TOOLS · ONE WORKBENCH
         </div>
         <div style={{
           fontSize: 116, fontWeight: 900, color: FG,
@@ -111,7 +110,7 @@ function IntroText() {
 // ── Outro lockup
 function Outro() {
   const t = useTime();
-  const localStart = 39.0;
+  const localStart = 34.3;
   if (t < localStart - 0.4) return null;
 
   const local = t - localStart;
@@ -257,7 +256,7 @@ function App() {
 function DataFieldDimWrapper({ active }) {
   const t = useTime();
   // Dim the data field during the outro
-  const dim = clamp((t - 39.0) / 0.8, 0, 1) * 0.55;
+  const dim = clamp((t - 34.3) / 0.8, 0, 1) * 0.55;
   return <DataField activeFeature={active} dimGlobal={dim} />;
 }
 

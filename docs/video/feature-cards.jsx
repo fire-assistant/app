@@ -5,51 +5,44 @@
 const FEATURES = [
   {
     num: '01',
-    title: '소방시설탐색기',
+    title: '소방시설 탐색기',
     titleEn: 'FACILITY EXPLORER',
     desc: '건물 정보를 입력하면\n의무 설치 소방시설을 도출합니다.',
     visual: 'building',
   },
   {
     num: '02',
-    title: '날짜 계산기',
+    title: '다중이용업소 탐색기',
+    titleEn: 'MULTI-USE EXPLORER',
+    desc: '업종·면적·층수 조건으로\n다중이용업소 해당 여부를 판별합니다.',
+    visual: 'people',
+  },
+  {
+    num: '03',
+    title: '법정기한 계산기',
     titleEn: 'DATE CALCULATOR',
     desc: '자체점검·선임·부적합 조치\n법정 기한을 자동 산정합니다.',
     visual: 'calendar',
   },
   {
-    num: '03',
-    title: '자체점검 보고서 읽는법',
-    titleEn: 'REPORT GUIDE',
-    desc: '실시결과 보고서 페이지마다\n작성·읽기 요령을 안내합니다.',
+    num: '04',
+    title: '자체점검 가이드',
+    titleEn: 'INSPECTION GUIDE',
+    desc: '자체점검 대상 판정과\n보고서 작성·읽기 요령을 안내합니다.',
     visual: 'report',
   },
   {
-    num: '04',
-    title: '소방시설 설명',
-    titleEn: 'FACILITY DETAIL',
+    num: '05',
+    title: '소방시설 도감',
+    titleEn: 'FACILITY ATLAS',
     desc: '시설별 개요·종류·구성·기준을\n한눈에 정리해 보여줍니다.',
     visual: 'spec',
   },
   {
-    num: '05',
-    title: '작동·종합 대상 판독기',
-    titleEn: 'INSPECTION DECODER',
-    desc: '작동기능점검·종합정밀점검\n대상 여부를 즉시 판정합니다.',
-    visual: 'decode',
-  },
-  {
     num: '06',
-    title: '다중이용업소 판독기',
-    titleEn: 'MULTI-USE DECODER',
-    desc: '업종·면적·층수 조건으로\n다중이용업소를 판별합니다.',
-    visual: 'people',
-  },
-  {
-    num: '07',
-    title: '수용인원 계산기',
-    titleEn: 'OCCUPANCY CALCULATOR',
-    desc: '용도별 법정 수용인원을\n바닥면적 입력만으로 산정합니다.',
+    title: '유틸리티 도구함',
+    titleEn: 'UTILITY TOOLKIT',
+    desc: '수용인원과 보조자 선임인원을\n바닥면적 입력만으로 산정합니다.',
     visual: 'occupancy',
   },
 ];
@@ -224,7 +217,7 @@ function StepCounter({ active }) {
     }}>
       <span>{String(active + 1).padStart(2, '0')}</span>
       <div style={{ display: 'flex', gap: 6 }}>
-        {Array.from({ length: 7 }).map((_, i) => (
+        {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} style={{
             width: i === active ? 28 : 12,
             height: 3,
@@ -233,7 +226,7 @@ function StepCounter({ active }) {
           }} />
         ))}
       </div>
-      <span>07</span>
+      <span>06</span>
     </div>
   );
 }
