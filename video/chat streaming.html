@@ -858,8 +858,16 @@
     const counterEl = document.getElementById("counter");
     const introFrame = document.getElementById("introFrame");
 
-    // Pick portrait mobile build vs landscape PC build by viewport
-    const isMobileIntro = window.matchMedia('(max-width: 900px), (orientation: portrait)').matches;
+    // Pick portrait mobile build vs landscape PC build.
+    // Use UA + parent-window viewport so iframe sizing doesn't fool detection.
+    const isMobileIntro = (() => {
+      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) return true;
+      try {
+        const topWin = window.top || window.parent || window;
+        if (topWin.matchMedia('(max-width: 900px)').matches) return true;
+      } catch {}
+      return window.matchMedia('(max-width: 900px)').matches;
+    })();
     const introFile = isMobileIntro ? "intro-mobile.html" : "intro.html";
     const introStorageKey = isMobileIntro ? "fire-intro-mobile:t" : "fire-intro:t";
 

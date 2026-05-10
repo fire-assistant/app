@@ -1,4 +1,4 @@
-const CACHE = 'fireapp-v146';
+const CACHE = 'fireapp-v147';
 
 const PRECACHE_FILES = [
   './index.html',
@@ -9,7 +9,7 @@ const PRECACHE_FILES = [
   './icon-512.png',
 ];
 
-const NETWORK_FIRST = ['index.html', 'app.js', 'styles.css', 'manifest.json', 'facilities-data.js', 'facilities.js', 'holidays.json'];
+const NETWORK_FIRST = ['index.html', 'app.js', 'styles.css', 'manifest.json', 'facilities-data.js', 'facilities.js', 'holidays.json', 'chat streaming.html', 'intro.html', 'intro-mobile.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
