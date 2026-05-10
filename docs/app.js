@@ -10481,8 +10481,12 @@ document.getElementById("open-guide").addEventListener("click", () => showScreen
   function openIntroVideo(markSeen) {
     clearTimeout(closeTimer);
     try { localStorage.removeItem("fire-intro:t"); } catch {}
-    frame.src = "./video/chat streaming.html";
+    // Show overlay BEFORE setting iframe src so iframe isn't loaded
+    // inside a display:none parent (which throttles its timers/RAF)
     overlay.classList.remove("hidden");
+    requestAnimationFrame(() => {
+      frame.src = "./video/chat streaming.html";
+    });
     if (markSeen) localStorage.setItem(INTRO_SEEN_KEY, "true");
     closeTimer = setTimeout(closeIntroVideo, INTRO_DURATION_MS);
   }
