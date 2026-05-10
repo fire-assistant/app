@@ -16,9 +16,595 @@
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel" data-presets="react" src="animations.jsx"></script>
-  <script type="text/babel" data-presets="react" src="data-field-mobile.jsx"></script>
-  <script type="text/babel" data-presets="react" src="feature-cards-mobile.jsx"></script>
-  <script type="text/babel" data-presets="react" src="app-mobile.jsx"></script>
+
+<script type="text/babel">
+// ── animations.jsx (inlined) ────────────────────────────────────────────────
+const Easing = {
+  linear: (t) => t,
+  easeInQuad:    (t) => t * t,
+  easeOutQuad:   (t) => t * (2 - t),
+  easeInOutQuad: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+  easeInCubic:    (t) => t * t * t,
+  easeOutCubic:   (t) => (--t) * t * t + 1,
+  easeInOutCubic: (t) => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
+  easeInQuart:    (t) => t * t * t * t,
+  easeOutQuart:   (t) => 1 - (--t) * t * t * t,
+  easeInSine:    (t) => 1 - Math.cos((t * Math.PI) / 2),
+  easeOutSine:   (t) => Math.sin((t * Math.PI) / 2),
+};
+
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+const TimelineContext = React.createContext({ time: 0, duration: 10, playing: false });
+const useTime = () => React.useContext(TimelineContext).time;
+const useTimeline = () => React.useContext(TimelineContext);
+
+const SpriteContext = React.createContext({ localTime: 0, progress: 0, duration: 0 });
+const useSprite = () => React.useContext(SpriteContext);
+
+function Sprite({ start = 0, end = Infinity, children, keepMounted = false }) {
+  const { time } = useTimeline();
+  const visible = time >= start && time <= end;
+  if (!visible && !keepMounted) return null;
+  const duration = end - start;
+  const localTime = Math.max(0, time - start);
+  const progress = duration > 0 && isFinite(duration)
+    ? clamp(localTime / duration, 0, 1) : 0;
+  const value = { localTime, progress, duration, visible };
+  return (
+    <SpriteContext.Provider value={value}>
+      {typeof children === 'function' ? children(value) : children}
+    </SpriteContext.Provider>
+  );
+}
+
+function Stage({
+  width = 1280, height = 720, duration = 10,
+  background = '#f6f4ef', loop = true, autoplay = true,
+  persistKey = 'animstage', children,
+}) {
+  const [time, setTime] = React.useState(() => {
+    try {
+      const v = parseFloat(localStorage.getItem(persistKey + ':t') || '0');
+      return isFinite(v) ? clamp(v, 0, duration) : 0;
+    } catch { return 0; }
+  });
+  const [playing, setPlaying] = React.useState(autoplay);
+  const [hoverTime, setHoverTime] = React.useState(null);
+  const [scale, setScale] = React.useState(1);
+
+  const stageRef = React.useRef(null);
+  const rafRef = React.useRef(null);
+  const lastTsRef = React.useRef(null);
+
+  React.useEffect(() => {
+    try { localStorage.setItem(persistKey + ':t', String(time)); } catch {}
+  }, [time, persistKey]);
+
+  React.useEffect(() => {
+    if (!stageRef.current) return;
+    const el = stageRef.current;
+    const measure = () => {
+      const barH = 44;
+      const s = Math.min(
+        el.clientWidth / width,
+        (el.clientHeight - barH) / height
+      );
+      setScale(Math.max(0.05, s));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener('resize', measure);
+    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
+  }, [width, height]);
+
+  React.useEffect(() => {
+    if (!playing) { lastTsRef.current = null; return; }
+    const step = (ts) => {
+      if (lastTsRef.current == null) lastTsRef.current = ts;
+      const dt = (ts - lastTsRef.current) / 1000;
+      lastTsRef.current = ts;
+      setTime((t) => {
+        let next = t + dt;
+        if (next >= duration) {
+          if (loop) next = next % duration;
+          else { next = duration; setPlaying(false); }
+        }
+        return next;
+      });
+      rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); lastTsRef.current = null; };
+  }, [playing, duration, loop]);
+
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.code === 'Space') { e.preventDefault(); setPlaying(p => !p); }
+      else if (e.code === 'ArrowLeft') setTime(t => clamp(t - (e.shiftKey ? 1 : 0.1), 0, duration));
+      else if (e.code === 'ArrowRight') setTime(t => clamp(t + (e.shiftKey ? 1 : 0.1), 0, duration));
+      else if (e.key === '0' || e.code === 'Home') setTime(0);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [duration]);
+
+  const displayTime = hoverTime != null ? hoverTime : time;
+  const ctxValue = React.useMemo(
+    () => ({ time: displayTime, duration, playing, setTime, setPlaying }),
+    [displayTime, duration, playing]
+  );
+
+  return (
+    <div ref={stageRef} style={{
+      position: 'absolute', inset: 0,
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      background: '#0a0a0a',
+    }}>
+      <div style={{
+        flex: 1, width: '100%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden', minHeight: 0,
+      }}>
+        <div style={{
+          width, height, background,
+          position: 'relative',
+          transform: `scale(${scale})`,
+          transformOrigin: 'center',
+          flexShrink: 0,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+          overflow: 'hidden',
+        }}>
+          <TimelineContext.Provider value={ctxValue}>
+            {children}
+          </TimelineContext.Provider>
+        </div>
+      </div>
+      <PlaybackBar
+        time={displayTime} duration={duration} playing={playing}
+        onPlayPause={() => setPlaying(p => !p)}
+        onReset={() => setTime(0)}
+        onSeek={(t) => setTime(t)}
+        onHover={(t) => setHoverTime(t)}
+      />
+    </div>
+  );
+}
+
+function PlaybackBar({ time, duration, playing, onPlayPause, onReset, onSeek, onHover }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+
+  const timeFromEvent = React.useCallback((e) => {
+    const rect = trackRef.current.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const x = clamp((cx - rect.left) / rect.width, 0, 1);
+    return x * duration;
+  }, [duration]);
+
+  const onTrackDown = (e) => { setDragging(true); onSeek(timeFromEvent(e)); onHover(null); };
+
+  React.useEffect(() => {
+    if (!dragging) return;
+    const onUp = () => setDragging(false);
+    const onMove = (e) => { if (trackRef.current) onSeek(timeFromEvent(e)); };
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchend', onUp);
+    window.addEventListener('touchmove', onMove);
+    return () => {
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('touchend', onUp);
+      window.removeEventListener('touchmove', onMove);
+    };
+  }, [dragging, timeFromEvent, onSeek]);
+
+  const pct = duration > 0 ? (time / duration) * 100 : 0;
+  const fmt = (t) => {
+    const total = Math.max(0, t);
+    const m = Math.floor(total / 60);
+    const s = Math.floor(total % 60);
+    const cs = Math.floor((total * 100) % 100);
+    return `${m}:${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
+  };
+  const mono = 'JetBrains Mono, ui-monospace, monospace';
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '8px 16px',
+      background: 'rgba(20,20,20,0.92)',
+      width: '100%', maxWidth: 680, alignSelf: 'center',
+      borderRadius: 8, color: '#f6f4ef',
+      userSelect: 'none', flexShrink: 0,
+    }}>
+      <button onClick={onReset} style={btnStyle}>↺</button>
+      <button onClick={onPlayPause} style={btnStyle}>{playing ? '❚❚' : '▶'}</button>
+      <div style={{ fontFamily: mono, fontSize: 12, width: 64, textAlign: 'right' }}>{fmt(time)}</div>
+      <div ref={trackRef}
+        onMouseDown={onTrackDown}
+        onTouchStart={onTrackDown}
+        style={{ flex: 1, height: 22, position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+      >
+        <div style={{ position: 'absolute', left: 0, right: 0, height: 4, background: 'rgba(255,255,255,0.12)', borderRadius: 2 }} />
+        <div style={{ position: 'absolute', left: 0, width: `${pct}%`, height: 4, background: 'oklch(72% 0.12 250)', borderRadius: 2 }} />
+        <div style={{ position: 'absolute', left: `${pct}%`, top: '50%', width: 12, height: 12, marginLeft: -6, marginTop: -6, background: '#fff', borderRadius: 6 }} />
+      </div>
+      <div style={{ fontFamily: mono, fontSize: 12, width: 64, color: 'rgba(246,244,239,0.55)' }}>{fmt(duration)}</div>
+    </div>
+  );
+}
+
+const btnStyle = {
+  width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+  background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 6, color: '#f6f4ef', cursor: 'pointer', padding: 0, fontSize: 12,
+};
+
+// ── data-field-mobile (inlined) ─────────────────────────────────────────────
+const RED_M = '#E63946';
+const FG_M  = '#f5f3ee';
+const DIM_M = '#5a5550';
+const MOBILE_W = 1080;
+const MOBILE_H = 1920;
+
+const MOBILE_TOKENS = [
+  '1,200㎡', 'F12', 'B2', '연면적', '스프링클러',
+  'D-7', '2026.05.16', '제출 7일', '별표 4', '제5조',
+  '점검표', '자탐', '소화기', 'kW', 'Ø50',
+  '작동', '종합', '5,000㎡', '11F↑', 'INSP',
+  '노래연습장', '고시원', '150㎡', '영업장',
+  '300人', '바닥면적', '수용', 'OCC',
+  '판정', 'CAL', '안전', 'SP',
+];
+
+const PARTICLE_COUNT_M = 32;
+const M_CHAOS_END = 4.5;
+
+function mulberry32_m(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function buildMobileParticles() {
+  const rng = mulberry32_m(20260510);
+  const list = [];
+  const COLS = 4;
+  const ROWS = 8;
+  const cellW = MOBILE_W / COLS;
+  const cellH = MOBILE_H / ROWS;
+
+  for (let i = 0; i < PARTICLE_COUNT_M; i++) {
+    const col = i % COLS;
+    const row = Math.floor(i / COLS);
+    const ox = col * cellW + cellW * 0.5 + (rng() - 0.5) * cellW * 0.45;
+    const oy = row * cellH + cellH * 0.5 + (rng() - 0.5) * cellH * 0.45;
+    const angle = rng() * Math.PI * 2;
+    const rNorm = Math.sqrt(rng());
+    const r = 280 + rNorm * 760;
+    const cx = MOBILE_W / 2 + Math.cos(angle) * r * 0.55;
+    const cy = MOBILE_H / 2 + Math.sin(angle) * r;
+    const driftRadius = 28 + rng() * 100;
+    const driftSpeed = 0.22 + rng() * 0.6;
+    const driftPhase = rng() * Math.PI * 2;
+    const driftPhase2 = rng() * Math.PI * 2;
+    const orderDelay = rng() * 1.2;
+    const transitionDur = 1.4 + rng() * 0.6;
+    const text = MOBILE_TOKENS[i % MOBILE_TOKENS.length];
+    const sizeRoll = rng();
+    const size = sizeRoll < 0.18 ? 38 : sizeRoll < 0.55 ? 26 : sizeRoll < 0.85 ? 20 : 16;
+    const isMono = rng() < 0.55;
+    const weight = sizeRoll < 0.18 ? 700 : (rng() < 0.4 ? 500 : 400);
+    const opacityCalm = 0.42 + rng() * 0.4;
+    const rotChaos = (rng() - 0.5) * 24;
+    list.push({ id: i, cx, cy, ox, oy, driftRadius, driftSpeed, driftPhase, driftPhase2, orderDelay, transitionDur, text, size, weight, isMono, opacityCalm, rotChaos });
+  }
+  return list;
+}
+
+const MOBILE_PARTICLES = buildMobileParticles();
+
+function DataFieldMobile({ dimGlobal = 0 }) {
+  const t = useTime();
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif' }}>
+      {MOBILE_PARTICLES.map((p) => {
+        const myStart = M_CHAOS_END + p.orderDelay;
+        const myEnd = myStart + p.transitionDur;
+        const dx = Math.cos(t * p.driftSpeed + p.driftPhase) * p.driftRadius;
+        const dy = Math.sin(t * p.driftSpeed * 0.8 + p.driftPhase2) * p.driftRadius * 0.6;
+        const chaosX = p.cx + dx;
+        const chaosY = p.cy + dy;
+        const breathe = Math.sin(t * 0.4 + p.driftPhase) * 1.2;
+        const breathe2 = Math.sin(t * 0.55 + p.driftPhase2) * 1.0;
+        const orderX = p.ox + breathe;
+        const orderY = p.oy + breathe2;
+        let progress = 0;
+        if (t >= myEnd) progress = 1;
+        else if (t > myStart) {
+          const local = (t - myStart) / p.transitionDur;
+          progress = Easing.easeInOutCubic(clamp(local, 0, 1));
+        }
+        const x = chaosX + (orderX - chaosX) * progress;
+        const y = chaosY + (orderY - chaosY) * progress;
+        const rot = p.rotChaos * (1 - progress);
+        const color = progress < 0.5 ? DIM_M : FG_M;
+        let opacity;
+        if (t < 0.4) opacity = (t / 0.4) * 0.7;
+        else if (progress < 1) opacity = 0.55 + progress * (p.opacityCalm - 0.55);
+        else opacity = p.opacityCalm;
+        opacity *= (1 - dimGlobal);
+        const fontFamily = p.isMono ? 'JetBrains Mono, ui-monospace, monospace' : 'Helvetica Neue, Helvetica, Arial, sans-serif';
+        return (
+          <div key={p.id} style={{
+            position: 'absolute', left: x, top: y,
+            transform: `translate(-50%, -50%) rotate(${rot}deg)`,
+            color, opacity, fontFamily,
+            fontSize: p.size, fontWeight: p.weight,
+            letterSpacing: p.isMono ? '0.04em' : '-0.005em',
+            whiteSpace: 'nowrap',
+            willChange: 'transform, opacity, color',
+          }}>{p.text}</div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── feature-cards-mobile (inlined) ──────────────────────────────────────────
+const FEATURES_MOBILE = [
+  { num: '01', title: '소방시설탐색기', titleEn: 'FACILITY EXPLORER', desc: '건물 정보를 입력하면\n의무 설치 소방시설을 도출합니다.' },
+  { num: '02', title: '날짜 계산기', titleEn: 'DATE CALCULATOR', desc: '자체점검·선임·부적합 조치\n법정 기한을 자동 산정합니다.' },
+  { num: '03', title: '보고서 읽는법', titleEn: 'REPORT GUIDE', desc: '실시결과 보고서 페이지마다\n작성·읽기 요령을 안내합니다.' },
+  { num: '04', title: '소방시설 설명', titleEn: 'FACILITY DETAIL', desc: '시설별 개요·종류·구성·기준을\n한눈에 정리해 보여줍니다.' },
+  { num: '05', title: '점검대상 판독기', titleEn: 'INSPECTION DECODER', desc: '작동기능점검·종합정밀점검\n대상 여부를 즉시 판정합니다.' },
+  { num: '06', title: '다중이용업소 판독기', titleEn: 'MULTI-USE DECODER', desc: '업종·면적·층수 조건으로\n다중이용업소를 판별합니다.' },
+  { num: '07', title: '수용인원 계산기', titleEn: 'OCCUPANCY CALCULATOR', desc: '용도별 법정 수용인원을\n바닥면적 입력만으로 산정합니다.' },
+];
+
+function FeatureCardMobile({ feature }) {
+  const { localTime, duration } = useSprite();
+  const numProg = clamp(localTime / 0.6, 0, 1);
+  const numEase = Easing.easeOutCubic(numProg);
+  const numY = (1 - numEase) * 30;
+  const labelStart = 0.32;
+  const labelProg = clamp((localTime - labelStart) / 0.5, 0, 1);
+  const titleStart = 0.45;
+  const titleProg = clamp((localTime - titleStart) / 0.55, 0, 1);
+  const titleEase = Easing.easeOutCubic(titleProg);
+  const titleY = (1 - titleEase) * 32;
+  const descStart = 0.85;
+  const descProg = clamp((localTime - descStart) / 0.6, 0, 1);
+  const descY = (1 - descProg) * 18;
+  const exitStart = duration - 0.55;
+  let exitOpacity = 1;
+  let exitY = 0;
+  if (localTime > exitStart) {
+    const e = clamp((localTime - exitStart) / 0.55, 0, 1);
+    const eased = Easing.easeInCubic(e);
+    exitOpacity = 1 - eased;
+    exitY = -eased * 40;
+  }
+  return (
+    <div style={{ position: 'absolute', inset: 0, opacity: exitOpacity, transform: `translateY(${exitY}px)`, fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif' }}>
+      <div style={{
+        position: 'absolute', left: 0, top: 540,
+        width: 1100, height: 760,
+        background: 'radial-gradient(ellipse at 25% 50%, rgba(5,5,5,0.88) 0%, rgba(5,5,5,0.62) 50%, rgba(5,5,5,0) 80%)',
+        opacity: titleEase * 0.95, pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'absolute', left: 80, top: 600 + numY,
+        opacity: numEase,
+        fontSize: 320, fontWeight: 900, lineHeight: 0.85, letterSpacing: '-0.05em',
+        color: 'transparent', WebkitTextStroke: `3px ${RED_M}`,
+      }}>{feature.num}</div>
+      <div style={{
+        position: 'absolute', left: 90, top: 900 + titleY * 0.5,
+        opacity: labelProg * 0.92,
+        fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+        fontSize: 24, letterSpacing: '0.36em', color: RED_M, fontWeight: 500,
+        whiteSpace: 'nowrap',
+      }}>{feature.titleEn}</div>
+      <div style={{
+        position: 'absolute', left: 90, top: 950 + titleY,
+        opacity: titleEase,
+        fontSize: 110, fontWeight: 900, letterSpacing: '-0.03em',
+        color: FG_M, lineHeight: 1.0, whiteSpace: 'nowrap',
+      }}>{feature.title}</div>
+      <div style={{
+        position: 'absolute', left: 90, top: 1095,
+        height: 6, width: 180 * descProg,
+        background: RED_M, opacity: descProg,
+      }} />
+      <div style={{
+        position: 'absolute', left: 90, top: 1135 + descY,
+        opacity: descProg,
+        fontSize: 38, fontWeight: 400, color: '#cfcbc4',
+        lineHeight: 1.5, whiteSpace: 'pre-line', letterSpacing: '-0.005em',
+        maxWidth: 900,
+      }}>{feature.desc}</div>
+    </div>
+  );
+}
+
+function StepCounterMobile({ active }) {
+  return (
+    <div style={{
+      position: 'absolute', left: '50%', bottom: 140,
+      transform: 'translateX(-50%)',
+      display: 'flex', gap: 16, alignItems: 'center',
+      fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+      fontSize: 22, letterSpacing: '0.18em', color: '#807a72',
+    }}>
+      <span>{String(active + 1).padStart(2, '0')}</span>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {Array.from({ length: 7 }).map((_, i) => (
+          <div key={i} style={{
+            width: i === active ? 40 : 18, height: 4,
+            background: i === active ? RED_M : '#3a3530',
+            transition: 'all 240ms ease',
+          }} />
+        ))}
+      </div>
+      <span>07</span>
+    </div>
+  );
+}
+
+// ── app-mobile (inlined) ────────────────────────────────────────────────────
+const TOTAL_M = 46;
+const SCHEDULE_M = [
+  { start: 9.0,  end: 14.0 },
+  { start: 14.0, end: 18.0 },
+  { start: 18.0, end: 22.0 },
+  { start: 22.0, end: 26.0 },
+  { start: 26.0, end: 30.0 },
+  { start: 30.0, end: 34.0 },
+  { start: 34.0, end: 39.0 },
+];
+
+function IntroTextM() {
+  const t = useTime();
+  const kickA = clamp((t - 0.4) / 0.7, 0, 1);
+  const kickAOut = clamp((t - 4.0) / 0.5, 0, 1);
+  const kickAOpacity = kickA * (1 - kickAOut);
+  const labelIn = clamp((t - 5.4) / 0.7, 0, 1);
+  const labelOut = clamp((t - 8.5) / 0.5, 0, 1);
+  const labelOpacity = labelIn * (1 - labelOut);
+  return (
+    <>
+      <div style={{
+        position: 'absolute', left: '50%', top: 720,
+        transform: 'translateX(-50%)', opacity: kickAOpacity,
+        textAlign: 'center', fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif',
+        pointerEvents: 'none', width: '100%',
+      }}>
+        <div style={{
+          fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          fontSize: 22, letterSpacing: '0.4em', color: RED_M,
+          fontWeight: 500, marginBottom: 36,
+        }}>FIRE SAFETY ASSISTANT</div>
+        <div style={{
+          fontSize: 168, fontWeight: 900, color: FG_M,
+          letterSpacing: '-0.04em', lineHeight: 0.92,
+        }}>예방업무는<br />복잡합니다.</div>
+        <div style={{
+          marginTop: 56, fontSize: 38, color: '#a8a39c',
+          letterSpacing: '-0.02em', fontWeight: 400, lineHeight: 1.5,
+        }}>면적 · 층수 · 용도 · 기한<br />법령 · 별표 · 점검 · 판정</div>
+      </div>
+      <div style={{
+        position: 'absolute', left: '50%', top: 780,
+        transform: 'translateX(-50%)', opacity: labelOpacity,
+        textAlign: 'center', fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif',
+        pointerEvents: 'none', width: '100%',
+      }}>
+        <div style={{
+          fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          fontSize: 22, letterSpacing: '0.4em', color: RED_M,
+          fontWeight: 500, marginBottom: 36,
+        }}>7 TOOLS · ONE WORKBENCH</div>
+        <div style={{
+          fontSize: 144, fontWeight: 900, color: FG_M,
+          letterSpacing: '-0.04em', lineHeight: 0.95,
+        }}>이제, 쉽게<br />정리됩니다.</div>
+      </div>
+    </>
+  );
+}
+
+function OutroM() {
+  const t = useTime();
+  const localStart = 39.0;
+  if (t < localStart - 0.4) return null;
+  const local = t - localStart;
+  const inProg = clamp(local / 0.9, 0, 1);
+  const eased = Easing.easeOutCubic(inProg);
+  const opacity = eased;
+  const ty = (1 - eased) * 30;
+  const descProg = clamp((local - 0.6) / 0.8, 0, 1);
+  const dotsProg = clamp((local - 1.2) / 0.8, 0, 1);
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif' }}>
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(ellipse at 50% 50%, rgba(5,5,5,0.92) 0%, rgba(5,5,5,0.78) 45%, rgba(5,5,5,0.5) 80%)',
+        opacity,
+      }} />
+      <div style={{
+        position: 'absolute', left: '50%', top: 660,
+        transform: `translate(-50%, ${ty}px)`, opacity, textAlign: 'center', width: '100%',
+      }}>
+        <div style={{
+          fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          fontSize: 26, letterSpacing: '0.42em', color: RED_M,
+          fontWeight: 500, marginBottom: 56,
+        }}>FIRE SAFETY ASSISTANT</div>
+        <div style={{
+          fontSize: 180, fontWeight: 900, color: FG_M,
+          letterSpacing: '-0.045em', lineHeight: 0.95,
+        }}>예방업무<br /><span style={{ color: RED_M }}>어시스턴트</span></div>
+      </div>
+      <div style={{
+        position: 'absolute', left: '50%', top: 1280,
+        transform: 'translateX(-50%)', opacity: descProg,
+        textAlign: 'center', fontSize: 42, color: '#cfcbc4',
+        fontWeight: 400, letterSpacing: '-0.005em', lineHeight: 1.45,
+        whiteSpace: 'pre-line',
+      }}>법적기준과 서류제출 기한을{'\n'}한 화면에서 끝냅니다.</div>
+      <div style={{
+        position: 'absolute', left: '50%', top: 1540,
+        transform: 'translateX(-50%)', opacity: dotsProg,
+        display: 'flex', gap: 14,
+      }}>
+        {Array.from({ length: 7 }).map((_, i) => (
+          <div key={i} style={{
+            width: 48, height: 5, background: RED_M,
+            opacity: clamp(dotsProg * 7 - i, 0, 1),
+          }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DataFieldDimWrapperM() {
+  const t = useTime();
+  const dim = clamp((t - 39.0) / 0.8, 0, 1) * 0.55;
+  return <DataFieldMobile dimGlobal={dim} />;
+}
+
+function AppM() {
+  return (
+    <Stage
+      width={MOBILE_W} height={MOBILE_H}
+      duration={TOTAL_M} background="#050505"
+      persistKey="fire-intro-mobile"
+    >
+      <DataFieldDimWrapperM />
+      <IntroTextM />
+      {SCHEDULE_M.map((s, i) => (
+        <Sprite key={i} start={s.start} end={s.end}>
+          <FeatureCardMobile feature={FEATURES_MOBILE[i]} />
+          <StepCounterMobile active={i} />
+        </Sprite>
+      ))}
+      <OutroM />
+    </Stage>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<AppM />);
+</script>
 </body>
 </html>
