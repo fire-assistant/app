@@ -311,8 +311,8 @@ function buildParticles() {
 }
 
 const PARTICLES = buildParticles();
-const CHAOS_END = 4.5;
-const ORDER_FULL = 6.8;
+const CHAOS_END = 6.0;
+const ORDER_FULL = 8.3;
 
 function ColumnDividers({ t, activeFeature }) {
   const lineOpacity = clamp((t - (CHAOS_END + 0.3)) / 1.6, 0, 1) * 0.18;
@@ -370,8 +370,8 @@ function DataField({ activeFeature = -1, dimGlobal = 0 }) {
         const baseColor = progress < 0.5 ? DIM : FG;
         const color = isActiveCol ? RED : baseColor;
         let opacity;
-        if (t < 0.4) opacity = (t / 0.4) * 0.7;
-        else if (progress < 1) opacity = 0.55 + progress * (p.opacityCalm - 0.55);
+        if (t < 0.4) opacity = (t / 0.4) * 0.85;
+        else if (progress < 1) opacity = 0.78 + progress * (p.opacityCalm - 0.78);
         else opacity = p.opacityCalm;
         if (isActiveCol) opacity = Math.min(1, opacity + 0.45);
         opacity *= (1 - dimGlobal);
@@ -507,15 +507,15 @@ function StepCounter({ active }) {
 }
 
 // ── app composition ────────────────────────────────────────────────────────
-const TOTAL = 46;
+const TOTAL = 42;
 const SCHEDULE = [
-  { start: 9.0,  end: 14.0, col: 0 },
-  { start: 14.0, end: 18.0, col: 1 },
-  { start: 18.0, end: 22.0, col: 2 },
-  { start: 22.0, end: 26.0, col: 3 },
-  { start: 26.0, end: 30.0, col: 4 },
-  { start: 30.0, end: 34.0, col: 5 },
-  { start: 34.0, end: 39.0, col: 6 },
+  { start:  9.5, end: 13.0, col: 0 },
+  { start: 13.0, end: 16.5, col: 1 },
+  { start: 16.5, end: 20.0, col: 2 },
+  { start: 20.0, end: 23.5, col: 3 },
+  { start: 23.5, end: 27.0, col: 4 },
+  { start: 27.0, end: 30.5, col: 5 },
+  { start: 30.5, end: 34.0, col: 6 },
 ];
 
 function ActiveColumnTracker({ children }) {
@@ -530,16 +530,19 @@ function ActiveColumnTracker({ children }) {
 function IntroText() {
   const t = useTime();
   const kickA = clamp((t - 0.4) / 0.7, 0, 1);
-  const kickAOut = clamp((t - 4.0) / 0.5, 0, 1);
+  const kickAOut = clamp((t - 3.5) / 0.5, 0, 1);
   const kickAOpacity = kickA * (1 - kickAOut);
-  const labelIn = clamp((t - 5.4) / 0.7, 0, 1);
-  const labelOut = clamp((t - 8.5) / 0.5, 0, 1);
+  const kickC = clamp((t - 4.0) / 0.6, 0, 1);
+  const kickCOut = clamp((t - 6.0) / 0.4, 0, 1);
+  const kickCOpacity = kickC * (1 - kickCOut);
+  const labelIn = clamp((t - 6.5) / 0.7, 0, 1);
+  const labelOut = clamp((t - 9.0) / 0.5, 0, 1);
   const labelOpacity = labelIn * (1 - labelOut);
   return (
     <>
       <div style={{
-        position: 'absolute', left: '50%', top: 480,
-        transform: 'translateX(-50%)', opacity: kickAOpacity,
+        position: 'absolute', left: '50%', top: '50%',
+        transform: `translate(-50%, -50%)`, opacity: kickAOpacity,
         textAlign: 'center', fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif',
         pointerEvents: 'none',
       }}>
@@ -549,8 +552,8 @@ function IntroText() {
           marginBottom: 22,
         }}>FIRE SAFETY ASSISTANT</div>
         <div style={{
-          fontSize: 132, fontWeight: 900, color: FG,
-          letterSpacing: '-0.04em', lineHeight: 0.92,
+          fontSize: 116, fontWeight: 900, color: FG,
+          letterSpacing: '-0.04em', lineHeight: 1.15,
         }}>예방업무는<br />복잡합니다.</div>
         <div style={{
           marginTop: 28, fontSize: 40, color: '#a8a39c',
@@ -558,8 +561,25 @@ function IntroText() {
         }}>면적 · 층수 · 용도 · 기한 · 법령 · 별표 · 점검 · 판정</div>
       </div>
       <div style={{
-        position: 'absolute', left: '50%', top: 470,
-        transform: 'translateX(-50%)', opacity: labelOpacity,
+        position: 'absolute', left: '50%', top: '50%',
+        transform: `translate(-50%, -50%)`, opacity: kickCOpacity,
+        textAlign: 'center', fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif',
+        pointerEvents: 'none',
+        whiteSpace: 'nowrap',
+      }}>
+        <div style={{
+          fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          fontSize: 14, letterSpacing: '0.4em', color: RED, fontWeight: 500,
+          marginBottom: 22,
+        }}>WITHOUT US</div>
+        <div style={{
+          fontSize: 116, fontWeight: 900, color: FG,
+          letterSpacing: '-0.04em', lineHeight: 1.0,
+        }}>이 사이트가 없다면 말이죠</div>
+      </div>
+      <div style={{
+        position: 'absolute', left: '50%', top: '50%',
+        transform: `translate(-50%, -50%)`, opacity: labelOpacity,
         textAlign: 'center', fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif',
         pointerEvents: 'none',
       }}>
@@ -580,7 +600,7 @@ function IntroText() {
 
 function Outro() {
   const t = useTime();
-  const localStart = 39.0;
+  const localStart = 34.3;
   if (t < localStart - 0.4) return null;
   const local = t - localStart;
   const inProg = clamp(local / 0.9, 0, 1);
@@ -656,7 +676,9 @@ function Outro() {
 
 function DataFieldDimWrapper({ active }) {
   const t = useTime();
-  const dim = clamp((t - 39.0) / 0.8, 0, 1) * 0.55;
+  const outroDim = clamp((t - 34.3) / 0.8, 0, 1) * 0.55;
+  const cardDim = clamp((t - 9.5) / 1.5, 0, 1) * 0.35;
+  const dim = Math.max(outroDim, cardDim);
   return <DataField activeFeature={active} dimGlobal={dim} />;
 }
 
