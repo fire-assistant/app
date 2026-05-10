@@ -26,6 +26,15 @@
       function _forceReload() {
         if (_reloading) return;
         _reloading = true;
+        try {
+          var o = document.getElementById('intro-video-overlay');
+          if (o && !o.classList.contains('hidden')) {
+            for (var i = localStorage.length - 1; i >= 0; i--) {
+              var k = localStorage.key(i);
+              if (k && k.indexOf('introVideoSeen') === 0) localStorage.removeItem(k);
+            }
+          }
+        } catch {}
         window.location.reload();
       }
       window.addEventListener('load', function() {
