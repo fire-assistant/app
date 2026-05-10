@@ -834,7 +834,7 @@
 
       // After conversation ends, glitch transition into the next screen
       try {
-        await sleep(1000, token);
+        await sleep(2000, token);
       } catch {
         return;
       }
@@ -1018,14 +1018,11 @@
         );
         stage.style.setProperty("--glitch-filter", filter);
 
-        // FX overlays
+        // FX overlays — confined to phone element
         fxEl.style.setProperty("--fx-noise", (intensity * 0.55).toFixed(2));
         fxEl.style.setProperty("--fx-scan", (intensity * 0.85).toFixed(2));
         fxEl.style.setProperty("--fx-tear", (intensity * 0.7).toFixed(2));
-        fxEl.style.setProperty(
-          "--fx-flash",
-          Math.random() < 0.04 * intensity ? 0.7 : 0
-        );
+        fxEl.style.setProperty("--fx-flash", Math.random() < 0.04 * intensity ? 0.7 : 0);
 
         // Counter ticking — descending fast, visible only from midpoint
         if (p >= 0.5) counterEl.style.opacity = "";
