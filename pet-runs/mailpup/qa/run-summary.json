@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "run_dir": "C:\\Users\\Kyu\\Desktop\\claude\\supply-fireapp\\pet-runs\\mailpup",
+  "spritesheet": "C:\\Users\\Kyu\\Desktop\\claude\\supply-fireapp\\pet-runs\\mailpup\\final\\spritesheet.webp",
+  "validation": "C:\\Users\\Kyu\\Desktop\\claude\\supply-fireapp\\pet-runs\\mailpup\\final\\validation.json",
+  "contact_sheet": "C:\\Users\\Kyu\\Desktop\\claude\\supply-fireapp\\pet-runs\\mailpup\\qa\\contact-sheet.png",
+  "review": "C:\\Users\\Kyu\\Desktop\\claude\\supply-fireapp\\pet-runs\\mailpup\\qa\\review.json",
+  "videos": null,
+  "package": "C:\\Users\\Kyu\\.codex\\pets\\mailpup"
+}

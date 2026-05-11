@@ -284,7 +284,7 @@
     {
       "id": "failed",
       "kind": "row-strip",
-      "status": "pending",
+      "status": "complete",
       "prompt_file": "prompts/rows/failed.md",
       "input_images": [
         {
@@ -315,7 +315,18 @@
         "base"
       ],
       "mirror_policy": {},
-      "recording_owner": "parent"
+      "recording_owner": "parent",
+      "source_path": "C:\\Users\\Kyu\\.codex\\generated_images\\019e16e1-7e3b-7390-8281-3fb39b84cea4\\ig_0a991ff12bd9b50f016a01c3081b3881919f5226339af0ef53.png",
+      "source_provenance": "built-in-imagegen",
+      "source_sha256": "b46274b5e7293a65867835f8fa36348c86793083902483b0e6560e13671a743a",
+      "output_sha256": "b46274b5e7293a65867835f8fa36348c86793083902483b0e6560e13671a743a",
+      "completed_at": "2026-05-11T11:54:20.928510+00:00",
+      "metadata": {
+        "width": 2172,
+        "height": 724,
+        "mode": "RGB",
+        "format": "PNG"
+      }
     },
     {
       "id": "waiting",
@@ -367,7 +378,7 @@
     {
       "id": "running",
       "kind": "row-strip",
-      "status": "pending",
+      "status": "complete",
       "prompt_file": "prompts/rows/running.md",
       "input_images": [
         {
@@ -398,12 +409,23 @@
         "base"
       ],
       "mirror_policy": {},
-      "recording_owner": "parent"
+      "recording_owner": "parent",
+      "source_path": "C:\\Users\\Kyu\\.codex\\generated_images\\019e16e1-bb97-73d1-8405-5cad3aeb27b6\\ig_076e7e5f34668b19016a01c31579b88191bb2efc39f46ae388.png",
+      "source_provenance": "built-in-imagegen",
+      "source_sha256": "265f4ff2aa657b1d0e872c56db7b5fc5911442a919c4dacfa5375ac9d1adbf75",
+      "output_sha256": "265f4ff2aa657b1d0e872c56db7b5fc5911442a919c4dacfa5375ac9d1adbf75",
+      "completed_at": "2026-05-11T11:54:56.159326+00:00",
+      "metadata": {
+        "width": 2172,
+        "height": 724,
+        "mode": "RGB",
+        "format": "PNG"
+      }
     },
     {
       "id": "review",
       "kind": "row-strip",
-      "status": "pending",
+      "status": "complete",
       "prompt_file": "prompts/rows/review.md",
       "input_images": [
         {
@@ -434,7 +456,18 @@
         "base"
       ],
       "mirror_policy": {},
-      "recording_owner": "parent"
+      "recording_owner": "parent",
+      "source_path": "C:\\Users\\Kyu\\.codex\\generated_images\\019e16df-019a-7271-8a12-8997408eea26\\ig_0770c17c9a064cc8016a01c262decc8191a08df0b0a4432877.png",
+      "source_provenance": "built-in-imagegen",
+      "source_sha256": "2fb051fe34ee8b9a7b9c921f326f3c25577202dc7e574b1c79282382a5f43705",
+      "output_sha256": "2fb051fe34ee8b9a7b9c921f326f3c25577202dc7e574b1c79282382a5f43705",
+      "completed_at": "2026-05-11T11:51:16.237863+00:00",
+      "metadata": {
+        "width": 2172,
+        "height": 724,
+        "mode": "RGB",
+        "format": "PNG"
+      }
     }
   ],
   "canonical_identity_reference": {
