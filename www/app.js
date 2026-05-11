@@ -12397,14 +12397,19 @@ document.getElementById('contact-confirm-ok').addEventListener('click', function
 })();
 
 // home-meta를 PATCH_NOTES와 동기화
-document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최종 수정 ' + PATCH_NOTES.date;
+function renderHomeMeta() {
+  var on = localStorage.getItem('devMode') === 'true';
+  document.getElementById('home-meta').innerHTML =
+    PATCH_NOTES.version + ' / 최종 수정 ' + PATCH_NOTES.date +
+    (on ? ' <span class="home-meta-dev">DEV MODE</span>' : '');
+}
+renderHomeMeta();
 
 // ── 개발자 모드 숨겨진 토글 (버전 5번 탭) ────────────────────────────────
 function applyDevMode() {
   var on = localStorage.getItem('devMode') === 'true';
   document.getElementById('open-lab').style.display = on ? '' : 'none';
-  var devIndicator = document.getElementById('home-dev-indicator');
-  if (devIndicator) devIndicator.classList.toggle('hidden', !on);
+  renderHomeMeta();
 }
 applyDevMode();
 
