@@ -4620,9 +4620,9 @@ function renderOccupancyCalculator() {
   const prevActiveId = document.activeElement?.id;
 
   const tabsHTML = `
-    <div style="display:flex;gap:8px;padding:4px 0 8px;">
-      <button class="calc-mode-btn${tool === "occupancy" ? " active" : ""}" type="button" data-util-tool="occupancy">수용인원 계산기</button>
-      <button class="calc-mode-btn${tool === "staffing" ? " active" : ""}" type="button" data-util-tool="staffing">보조자 선임인원</button>
+    <div class="utility-tool-tabs">
+      <button class="utility-tool-tab${tool === "occupancy" ? " active" : ""}" type="button" data-util-tool="occupancy">수용인원 계산기</button>
+      <button class="utility-tool-tab${tool === "staffing" ? " active" : ""}" type="button" data-util-tool="staffing">보조자 선임인원</button>
     </div>
   `;
 
@@ -10768,9 +10768,29 @@ function persistReminders(reminders) {
   localStorage.setItem(REMINDERS_KEY, JSON.stringify(reminders));
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function deleteReminderById(id) {
   persistReminders(loadReminders().filter((r) => r.id !== id));
   renderHomeReminders();
+}
+
+function bindReminderPanelEvents(container) {
+  container.querySelectorAll("[data-reminder-id]").forEach((btn) => {
+    btn.addEventListener("click", () => deleteReminderById(btn.dataset.reminderId));
+  });
+
+  const addBtn = container.querySelector("#open-manual-reminder");
+  if (addBtn) {
+    addBtn.addEventListener("click", openManualReminderModal);
+  }
 }
 
 function daysUntil(dateStr) {
@@ -10787,6 +10807,7 @@ const REMINDER_TYPE_LABELS = {
   fire_safety_assistant_manager: "소방안전관리보조자 선임",
   hazardous_material_manager: "위험물안전관리자 선임",
   noncompliance_action: "부적합 조치기한",
+  manual: "직접 입력",
 };
 
 const REMINDER_BASE_LABELS = {
@@ -10795,6 +10816,7 @@ const REMINDER_BASE_LABELS = {
   fire_safety_assistant_manager: "해임·퇴직일",
   hazardous_material_manager: "해임·퇴직일",
   noncompliance_action: "보고일",
+  manual: "등록일",
 };
 
 function renderHomeReminders() {
@@ -10808,9 +10830,11 @@ function renderHomeReminders() {
       <div class="reminder-panel">
         <div class="reminder-panel-header">
           <span class="reminder-panel-title">📌 제출기한 알림판</span>
+          <button class="reminder-add-btn" id="open-manual-reminder" type="button" aria-label="직접 알림 추가">+</button>
         </div>
-        <div class="reminder-empty">법정기한 계산기에서 결과를 확인한 후<br>'메인화면에 표시' 버튼으로<br>추가할 수 있습니다.</div>
+        <div class="reminder-empty">법정기한 계산기에서 결과를 추가하거나<br>오른쪽 + 버튼으로<br>직접 알림을 등록할 수 있습니다.</div>
       </div>`;
+    bindReminderPanelEvents(container);
     return;
   }
 
@@ -10849,9 +10873,10 @@ function renderHomeReminders() {
     return `
       <div class="${cardClass}">
         <button class="reminder-delete-btn" type="button" data-reminder-id="${r.id}" aria-label="삭제">×</button>
-        <div class="reminder-card-name">${r.objectName}</div>
-        <span class="reminder-card-type">${REMINDER_TYPE_LABELS[r.type] || r.type}</span>
+        <div class="reminder-card-name">${escapeHtml(r.objectName)}</div>
+        <span class="reminder-card-type">${escapeHtml(REMINDER_TYPE_LABELS[r.type] || r.type)}</span>
         <div class="reminder-card-dates">${datesHtml}</div>
+        ${r.note ? `<div class="reminder-manual-note">${escapeHtml(r.note)}</div>` : ""}
         ${warningHtml}
       </div>`;
   }).join("");
@@ -10860,56 +10885,115 @@ function renderHomeReminders() {
     <div class="reminder-panel">
       <div class="reminder-panel-header">
         <span class="reminder-panel-title">📌 제출기한 알림판</span>
-        <span class="reminder-count">${reminders.length}건</span>
+        <div class="reminder-header-actions">
+          <span class="reminder-count">${reminders.length}건</span>
+          <button class="reminder-add-btn" id="open-manual-reminder" type="button" aria-label="직접 알림 추가">+</button>
+        </div>
       </div>
       <div class="reminder-list">${cards}</div>
     </div>`;
 
-  container.querySelectorAll("[data-reminder-id]").forEach((btn) => {
-    btn.addEventListener("click", () => deleteReminderById(btn.dataset.reminderId));
-  });
+  bindReminderPanelEvents(container);
 }
 
 // Modal
 let pendingReminderData = null;
+let pendingReminderIsManual = false;
 
 function initReminderModal() {
   const modal = document.getElementById("reminder-modal");
   const nameInput = document.getElementById("reminder-object-name");
+  const manualDateInput = document.getElementById("manual-reminder-date");
+  const manualNoteInput = document.getElementById("manual-reminder-note");
 
   document.getElementById("reminder-cancel-btn").addEventListener("click", () => {
     modal.classList.add("hidden");
     pendingReminderData = null;
+    pendingReminderIsManual = false;
   });
 
   document.getElementById("reminder-confirm-btn").addEventListener("click", () => {
     const name = nameInput.value.trim();
     if (!name) { nameInput.focus(); return; }
     if (pendingReminderData) {
+      const payload = { ...pendingReminderData, objectName: name, id: Date.now().toString() };
+      if (pendingReminderIsManual) {
+        const manualDate = manualDateInput.value;
+        if (!manualDate) { manualDateInput.focus(); return; }
+        payload.deadline = manualDate;
+        payload.note = manualNoteInput.value.trim();
+      }
       const reminders = loadReminders();
-      reminders.unshift({ ...pendingReminderData, objectName: name, id: Date.now().toString() });
+      reminders.unshift(payload);
       persistReminders(reminders);
       renderHomeReminders();
       showToast("메인화면 알림판에 추가되었습니다.");
     }
     modal.classList.add("hidden");
     pendingReminderData = null;
+    pendingReminderIsManual = false;
   });
 
   modal.addEventListener("click", (e) => {
-    if (e.target === modal) { modal.classList.add("hidden"); pendingReminderData = null; }
+    if (e.target === modal) {
+      modal.classList.add("hidden");
+      pendingReminderData = null;
+      pendingReminderIsManual = false;
+    }
   });
 
   nameInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") document.getElementById("reminder-confirm-btn").click();
   });
+
+  manualDateInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("reminder-confirm-btn").click();
+  });
+
+  manualNoteInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      document.getElementById("reminder-confirm-btn").click();
+    }
+  });
 }
 
-function showAddReminderModal(data) {
+function showAddReminderModal(data, options = {}) {
   pendingReminderData = data;
-  document.getElementById("reminder-object-name").value = "";
-  document.getElementById("reminder-modal").classList.remove("hidden");
+  pendingReminderIsManual = Boolean(options.manual);
+
+  const modal = document.getElementById("reminder-modal");
+  const title = modal.querySelector(".reminder-modal-title");
+  const desc = modal.querySelector(".reminder-modal-desc");
+  const nameInput = document.getElementById("reminder-object-name");
+  const nameLabel = nameInput.closest(".calc-form-row")?.querySelector("label");
+  const manualFields = document.getElementById("manual-reminder-fields");
+  const manualDateInput = document.getElementById("manual-reminder-date");
+  const manualNoteInput = document.getElementById("manual-reminder-note");
+
+  if (title) title.textContent = pendingReminderIsManual ? "직접 알림 추가" : "메인화면에 표시";
+  if (desc) {
+    desc.textContent = pendingReminderIsManual
+      ? "알림판에 표시할 제목, 날짜, 내용을 입력하세요."
+      : "대상물 이름을 입력하면 메인화면 알림판에 추가됩니다.";
+  }
+  if (nameLabel) nameLabel.textContent = pendingReminderIsManual ? "제목" : "대상물 이름";
+
+  nameInput.value = "";
+  nameInput.placeholder = pendingReminderIsManual ? "예: 소방서 제출, 현장 방문" : "예: 홍길동빌딩";
+  manualDateInput.value = pendingReminderIsManual ? todayString() : "";
+  manualNoteInput.value = "";
+  manualFields.classList.toggle("hidden", !pendingReminderIsManual);
+  modal.classList.remove("hidden");
   setTimeout(() => document.getElementById("reminder-object-name").focus(), 50);
+}
+
+function openManualReminderModal() {
+  showAddReminderModal({
+    type: "manual",
+    baseDate: todayString(),
+    deadline: todayString(),
+    secondDeadline: null,
+  }, { manual: true });
 }
 
 initReminderModal();

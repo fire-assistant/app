@@ -67,7 +67,7 @@ function IntroTextM() {
           letterSpacing: '-0.02em', fontWeight: 400,
           lineHeight: 1.5,
         }}>
-          면적 · 층수 · 용도 · 기한<br />법령 · 별표 · 점검 · 판정
+          면적 · 층수 · 용도 · 기한<br />법령 · 시설 · 점검 · 판정
         </div>
       </div>
 

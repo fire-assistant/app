@@ -649,7 +649,7 @@
   <section id="screen-occupancy" class="screen">
     <div class="topbar">
       <button id="back-from-occupancy" class="back-btn" type="button">←</button>
-      <span class="tb-title">수용인원 계산기</span>
+      <span class="tb-title">유틸리티 도구함</span>
     </div>
     <div class="scroll-content" id="occupancy-content"></div>
   </section>
@@ -735,6 +735,16 @@
       <div class="calc-form-row">
         <label>대상물 이름</label>
         <input id="reminder-object-name" class="calc-input" type="text" placeholder="예: 홍길동빌딩" maxlength="50">
+      </div>
+      <div id="manual-reminder-fields" class="hidden">
+        <div class="calc-form-row">
+          <label>알림 날짜</label>
+          <input id="manual-reminder-date" class="calc-input" type="date">
+        </div>
+        <div class="calc-form-row">
+          <label>내용</label>
+          <textarea id="manual-reminder-note" class="calc-input" rows="3" placeholder="예: 서류 준비, 방문 예정, 개인 메모 등" maxlength="120"></textarea>
+        </div>
       </div>
       <div class="w-nav" style="margin-top:16px;">
         <button id="reminder-cancel-btn" class="btn btn-ghost" type="button">취소</button>

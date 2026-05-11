@@ -74,7 +74,7 @@ function IntroText() {
           fontSize: 40, color: '#a8a39c', letterSpacing: '-0.05em',
           fontWeight: 400,
         }}>
-          면적 · 층수 · 용도 · 기한 · 법령 · 별표 · 점검 · 판정
+          면적 · 층수 · 용도 · 기한 · 법령 · 시설 · 점검 · 판정
         </div>
       </div>
 
