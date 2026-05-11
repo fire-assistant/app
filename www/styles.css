@@ -3964,7 +3964,38 @@ html[data-theme="light"] .fac-photo-source-badge {
 
 @media (max-width: 600px) {
   .fac-intro-comp-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .fac-intro-comp-card {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    min-height: 96px;
+  }
+
+  .fac-intro-comp-photo {
+    width: 96px;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .fac-intro-comp-info {
+    padding: 10px 12px;
+    gap: 5px;
+  }
+
+  .fac-intro-comp-name {
+    font-size: 0.86rem;
+  }
+
+  .fac-intro-comp-desc {
+    font-size: 0.74rem;
+    line-height: 1.45;
+  }
+
+  .fac-intro-comp-note {
+    margin-top: 2px;
   }
 }
 
