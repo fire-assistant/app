@@ -1123,6 +1123,19 @@ const screenLabels = {
   layoutLearn: "소방시설 배치 배우기",
 };
 
+function showIlguLoading(callback) {
+  const overlay = document.getElementById("ilgu-loading-overlay");
+  overlay.classList.remove("hidden", "fading");
+  setTimeout(() => {
+    overlay.classList.add("fading");
+    setTimeout(() => {
+      overlay.classList.add("hidden");
+      overlay.classList.remove("fading");
+      callback();
+    }, 300);
+  }, 3800);
+}
+
 function showScreen(name) {
   Object.entries(screens).forEach(([key, element]) => {
     element.classList.toggle("active", key === name);
@@ -2893,8 +2906,7 @@ function showResults() {
     renderMultiuseSafetyCard(input);
     const backBtn = document.getElementById("back-to-main-result");
     if (backBtn) backBtn.textContent = "이전 질문으로";
-    showExplorerCard("multiuse-result");
-    scrollToTop();
+    showIlguLoading(() => { showExplorerCard("multiuse-result"); scrollToTop(); });
     return;
   }
   if (!["neighborhood", "lodging", "elderly", "medical"].includes(state.answers.occupancyType)) {
@@ -10703,8 +10715,7 @@ document.getElementById("open-multiuse-safety").addEventListener("click", () => 
   }
   const backBtn = document.getElementById("back-to-main-result");
   if (backBtn) backBtn.textContent = "기본 결과로";
-  showExplorerCard("multiuse-result");
-  scrollToTop();
+  showIlguLoading(() => { showExplorerCard("multiuse-result"); scrollToTop(); });
 });
 document.getElementById("back-to-main-result").addEventListener("click", () => {
   if (explorerRuntime.mode === "multiuse-only") {
