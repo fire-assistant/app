@@ -12766,3 +12766,294 @@ applyDevMode();
     input.focus();
   });
 })();
+
+(function initIlguAssistant() {
+  const SHEET = "./assets/pets/mailpup/spritesheet.webp";
+  const CELL_W = 96;
+  const CELL_H = 104;
+  const states = {
+    idle: { row: 0, frames: 6, ms: 260 },
+    waving: { row: 3, frames: 4, ms: 220 },
+    jumping: { row: 4, frames: 5, ms: 190 },
+    failed: { row: 5, frames: 8, ms: 220 },
+    waiting: { row: 6, frames: 6, ms: 260 },
+    running: { row: 7, frames: 6, ms: 160 },
+    review: { row: 8, frames: 6, ms: 240 },
+  };
+  const text = {
+    kicker: "ILGU ASSISTANT",
+    title: "\uc77c\uad6c \ub3c4\uc6b0\ubbf8",
+    intro: "\ud544\uc694\ud560 \ub54c\ub9cc \uc870\uc6a9\ud788 \ub3c4\uc640\ub4dc\ub9b4\uac8c\uc694. \ud648 \uba54\ub274 \uce74\ub4dc \uc704\ub85c \ub4dc\ub798\uadf8\ud558\uba74 \uc9e7\uc740 \uc124\uba85\uc744 \ubcfc \uc218 \uc788\uc5b4\uc694.",
+    search: "\uae30\ub2a5 \ucc3e\uae30",
+    guide: "\uc0ac\uc6a9 \uc548\ub0b4",
+    contact: "\ubb38\uc758\ud558\uae30",
+    hide: "\uc228\uae30\uae30",
+    open: "\ubc14\ub85c \uc5f4\uae30",
+    close: "\ub2eb\uae30",
+    droppedTitle: "\uc774 \uae30\ub2a5\uc740 \uc774\ub807\uac8c \uc368\uc694",
+  };
+  const helpById = {
+    "open-explorer": { title: "\uc18c\ubc29\uc2dc\uc124 \ud0d0\uc0c9\uae30", body: "\uac74\ubb3c \uc815\ubcf4\ub97c \uc785\ub825\ud574 \ud544\uc694\ud55c \uc18c\ubc29\uc2dc\uc124\uc744 \ube60\ub974\uac8c \ud655\uc778\ud558\ub294 \uacf5\uac04\uc774\uc5d0\uc694." },
+    "open-multiuse-decoder": { title: "\ub2e4\uc911\uc774\uc6a9\uc5c5\uc18c \ud0d0\uc0c9\uae30", body: "\uc5c5\uc885\uacfc \uc0c1\ud669\uc744 \ub530\ub77c \ub2e4\uc911\uc774\uc6a9\uc5c5\uc18c \ud574\ub2f9 \uc5ec\ubd80\uc640 \ud544\uc694 \uc548\uc804\uc2dc\uc124\uc744 \ud655\uc778\ud574\uc694." },
+    "open-date-calculator": { title: "\ubc95\uc815\uae30\ud55c \uacc4\uc0b0\uae30", body: "\uc790\uccb4\uc810\uac80, \uc120\uc784, \ubd80\uc801\ud569 \uc870\uce58\ucc98\ub7fc \ub0a0\uc9dc \uae30\uc900\uc774 \uc911\uc694\ud55c \uae30\ud55c\uc744 \uacc4\uc0b0\ud574\uc694." },
+    "open-report-guide": { title: "\uc790\uccb4\uc810\uac80 \uac00\uc774\ub4dc", body: "\uc790\uccb4\uc810\uac80 \ubcf4\uace0\uc11c\ub97c \uc5b4\ub5bb\uac8c \uc77d\uace0 \uc791\uc131\ud560\uc9c0 \ud55c \ubc88\uc5d0 \ubcf4\ub294 \uc548\ub0b4\uc5d0\uc694." },
+    "open-facilities": { title: "\uc18c\ubc29\uc2dc\uc124 \uc0ac\uc804", body: "\uc18c\ubc29\uc2dc\uc124\uc758 \uc885\ub958, \uad6c\uc131, \uc124\uce58 \uae30\uc900\uc744 \uae30\ub2a5\ubcc4\ub85c \ud655\uc778\ud558\ub294 \uc790\ub8cc\uc2e4\uc774\uc5d0\uc694." },
+    "open-occupancy-calculator": { title: "\uc720\ud2f8\ub9ac\ud2f0 \uacf5\uad6c\ud568", body: "\uc218\uc6a9\uc778\uc6d0\uacfc \uc18c\ubc29\uc548\uc804\uad00\ub9ac\ubcf4\uc870\uc790 \ud544\uc694 \uc778\uc6d0\ucc98\ub7fc \uc791\uc740 \uacc4\uc0b0\uc744 \ubaa8\uc544\ub454 \uacf3\uc774\uc5d0\uc694." },
+    "open-lab": { title: "\uc2e4\ud5d8\uc2e4", body: "\uc544\uc9c1 \uc900\ube44 \uc911\uc778 \uae30\ub2a5\uc744 \uba3c\uc800 \ub9cc\uc838\ubcf4\ub294 \uacf5\uac04\uc774\uc5d0\uc694." },
+    "open-install-guide": { title: "\ubc14\ub85c\uac00\uae30 \ucd94\uac00", body: "\uc790\uc8fc \uc4f0\ub294 \uae30\uae30\uc5d0 \uc571\ucc98\ub7fc \uc5f4 \uc218 \uc788\uac8c \ud648 \ud654\uba74\uc774\ub098 \ubc14\ud0d5\ud654\uba74\uc5d0 \ucd94\uac00\ud558\ub294 \uc548\ub0b4\uc5d0\uc694." },
+    "open-guide": { title: "\uc0ac\uc6a9 \uc548\ub0b4", body: "\uc0ac\uc774\ud2b8\uc758 \uae30\ubcf8 \uc0ac\uc6a9\ubc95\uacfc \uc8fc\uc694 \uae30\ub2a5\uc744 \uc9e7\uac8c \ud655\uc778\ud560 \uc218 \uc788\uc5b4\uc694." },
+    "open-contact": { title: "\uac1c\ubc1c\uc790\uc5d0\uac8c \ubb38\uc758", body: "\uc624\ub958, \uac1c\uc120 \uc81c\uc548, \ucd94\uac00\ud558\uace0 \uc2f6\uc740 \uae30\ub2a5\uc744 \uba54\uc77c\ub85c \ubcf4\ub0b4\ub294 \uc785\uad6c\uc5d0\uc694." },
+  };
+
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const shouldShowAtStart = localStorage.getItem("ilguAssistantDisabled") !== "true" &&
+    (isStandalone || localStorage.getItem("ilguAssistantVisible") === "true");
+
+  window.addEventListener("appinstalled", function () {
+    localStorage.setItem("ilguAssistantVisible", "true");
+    localStorage.removeItem("ilguAssistantDisabled");
+  });
+
+  if (document.getElementById("ilgu-assistant")) return;
+
+  const root = document.createElement("div");
+  root.id = "ilgu-assistant";
+  root.className = "ilgu-assistant";
+  root.innerHTML =
+    '<div class="ilgu-assistant-panel" role="dialog" aria-live="polite">' +
+      '<div class="ilgu-panel-kicker">' + text.kicker + '</div>' +
+      '<h2 class="ilgu-panel-title"></h2>' +
+      '<p class="ilgu-panel-text"></p>' +
+      '<div class="ilgu-panel-actions"></div>' +
+    '</div>' +
+    '<button class="ilgu-pet-button" type="button" aria-label="Ilgu assistant">' +
+      '<span class="ilgu-pet-sprite"></span>' +
+    '</button>';
+  document.body.appendChild(root);
+
+  const sprite = root.querySelector(".ilgu-pet-sprite");
+  const button = root.querySelector(".ilgu-pet-button");
+  const panelTitle = root.querySelector(".ilgu-panel-title");
+  const panelText = root.querySelector(".ilgu-panel-text");
+  const panelActions = root.querySelector(".ilgu-panel-actions");
+  let currentState = "idle";
+  let frame = 0;
+  let timer = null;
+  let suppressClick = false;
+  let activeTarget = null;
+
+  sprite.style.backgroundImage = 'url("' + SHEET + '")';
+
+  const savedPos = readPosition();
+  if (savedPos) setPosition(savedPos.x, savedPos.y);
+  if (!shouldShowAtStart) root.style.display = "none";
+
+  function readPosition() {
+    try { return JSON.parse(localStorage.getItem("ilguAssistantPosition") || "null"); }
+    catch { return null; }
+  }
+
+  function setPosition(x, y) {
+    const maxX = window.innerWidth - root.offsetWidth - 8;
+    const maxY = window.innerHeight - root.offsetHeight - 8;
+    root.style.left = Math.max(8, Math.min(x, maxX)) + "px";
+    root.style.top = Math.max(8, Math.min(y, maxY)) + "px";
+    root.style.right = "auto";
+    root.style.bottom = "auto";
+  }
+
+  function savePosition() {
+    if (!root.style.left || !root.style.top) return;
+    localStorage.setItem("ilguAssistantPosition", JSON.stringify({
+      x: parseFloat(root.style.left),
+      y: parseFloat(root.style.top),
+    }));
+  }
+
+  function setState(name) {
+    if (!states[name]) name = "idle";
+    currentState = name;
+    frame = 0;
+    clearInterval(timer);
+    paintFrame();
+    timer = setInterval(function () {
+      frame = (frame + 1) % states[currentState].frames;
+      paintFrame();
+    }, states[currentState].ms);
+  }
+
+  function paintFrame() {
+    const state = states[currentState];
+    sprite.style.backgroundPosition = (-frame * CELL_W) + "px " + (-state.row * CELL_H) + "px";
+  }
+
+  function openPanel(title, body, actions) {
+    panelTitle.textContent = title;
+    panelText.textContent = body;
+    panelActions.innerHTML = "";
+    actions.forEach(function (action) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "ilgu-panel-action" + (action.primary ? " primary" : "");
+      btn.textContent = action.label;
+      btn.addEventListener("click", action.onClick);
+      panelActions.appendChild(btn);
+    });
+    root.classList.add("is-open");
+  }
+
+  function openHomePanel() {
+    setState("waving");
+    openPanel(text.title, text.intro, [
+      { label: text.search, onClick: focusSearch },
+      { label: text.guide, onClick: function () { root.classList.remove("is-open"); showScreen("guide"); } },
+      { label: text.contact, onClick: function () { root.classList.remove("is-open"); document.getElementById("open-contact")?.click(); } },
+      { label: text.hide, onClick: hideAssistant },
+    ]);
+  }
+
+  function focusSearch() {
+    root.classList.remove("is-open");
+    showScreen("home");
+    setTimeout(function () {
+      const input = document.getElementById("home-search-input");
+      input?.focus();
+    }, 80);
+  }
+
+  function hideAssistant() {
+    localStorage.setItem("ilguAssistantDisabled", "true");
+    localStorage.removeItem("ilguAssistantVisible");
+    root.classList.remove("is-open");
+    root.style.display = "none";
+    setState("idle");
+  }
+
+  function showCardHelp(card) {
+    const info = helpById[card.id];
+    if (!info) return;
+    setState("review");
+    openPanel(info.title || text.droppedTitle, info.body, [
+      { label: text.open, primary: true, onClick: function () { root.classList.remove("is-open"); card.click(); } },
+      { label: text.close, onClick: function () { root.classList.remove("is-open"); setState("idle"); } },
+    ]);
+  }
+
+  function clearDropTarget() {
+    if (activeTarget) activeTarget.classList.remove("ilgu-drop-target");
+    activeTarget = null;
+  }
+
+  function findDropTarget(x, y) {
+    root.style.pointerEvents = "none";
+    const target = document.elementFromPoint(x, y);
+    root.style.pointerEvents = "";
+    return target?.closest?.(".menu-card, .shortcut-add-btn");
+  }
+
+  let drag = null;
+  button.addEventListener("pointerdown", function (event) {
+    drag = {
+      id: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      rootX: root.getBoundingClientRect().left,
+      rootY: root.getBoundingClientRect().top,
+      moved: false,
+    };
+    button.setPointerCapture(event.pointerId);
+  });
+
+  button.addEventListener("pointermove", function (event) {
+    if (!drag || drag.id !== event.pointerId) return;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (Math.abs(dx) + Math.abs(dy) > 8) drag.moved = true;
+    if (!drag.moved) return;
+    suppressClick = true;
+    root.classList.add("dragging");
+    root.classList.remove("is-open");
+    setPosition(drag.rootX + dx, drag.rootY + dy);
+    const target = findDropTarget(event.clientX, event.clientY);
+    if (target !== activeTarget) {
+      clearDropTarget();
+      if (target && helpById[target.id]) {
+        activeTarget = target;
+        activeTarget.classList.add("ilgu-drop-target");
+      }
+    }
+  });
+
+  button.addEventListener("pointerup", function (event) {
+    if (!drag || drag.id !== event.pointerId) return;
+    button.releasePointerCapture(event.pointerId);
+    root.classList.remove("dragging");
+    const target = activeTarget;
+    clearDropTarget();
+    savePosition();
+    const wasMoved = drag.moved;
+    drag = null;
+    if (wasMoved && target) showCardHelp(target);
+    setTimeout(function () { suppressClick = false; }, 0);
+  });
+
+  button.addEventListener("click", function () {
+    if (suppressClick) return;
+    if (root.classList.contains("is-open")) {
+      root.classList.remove("is-open");
+      setState("idle");
+    } else {
+      openHomePanel();
+    }
+  });
+
+  button.addEventListener("dblclick", function () {
+    showScreen("home");
+    root.classList.remove("is-open");
+    setState("jumping");
+    setTimeout(function () { setState("idle"); }, 1000);
+  });
+
+  function showAssistant(options) {
+    const opts = options || {};
+    localStorage.removeItem("ilguAssistantDisabled");
+    localStorage.setItem("ilguAssistantVisible", "true");
+    root.style.display = "flex";
+
+    if (opts.open) openHomePanel();
+    else {
+      root.classList.remove("is-open");
+      setState("idle");
+    }
+
+    if (opts.anchor) {
+      const rect = opts.anchor.getBoundingClientRect();
+      const x = rect.right - (root.offsetWidth || 374);
+      const y = rect.bottom + 10;
+      setPosition(x, y);
+      savePosition();
+    }
+  }
+
+  window.showIlguAssistant = showAssistant;
+
+  window.addEventListener("resize", function () {
+    const rect = root.getBoundingClientRect();
+    setPosition(rect.left, rect.top);
+    savePosition();
+  });
+
+  setState("idle");
+})();
+
+(function initIlguSummonButton() {
+  const btn = document.getElementById("ilgu-summon-btn");
+  if (!btn) return;
+
+  btn.addEventListener("click", function (event) {
+    event.stopPropagation();
+    if (typeof window.showIlguAssistant === "function") {
+      window.showIlguAssistant({ open: true, anchor: btn });
+    }
+  });
+})();

@@ -1,4 +1,4 @@
-const CACHE = 'fireapp-v172';
+const CACHE = 'fireapp-v193';
 
 const PRECACHE_FILES = [
   './index.html',
@@ -7,6 +7,10 @@ const PRECACHE_FILES = [
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
+  './assets/pets/mailpup/spritesheet.webp',
+  './assets/pets/mailpup/pet.json',
+  './assets/pets/mailpup/summon.png',
+  './assets/pets/mailpup/summon-face.png',
 ];
 
 const NETWORK_FIRST = ['index.html', 'app.js', 'styles.css', 'manifest.json', 'facilities-data.js', 'facilities.js', 'holidays.json', 'chat streaming.html', 'intro.html', 'intro-mobile.html'];
@@ -37,7 +41,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   const filename = decodeURIComponent(url.pathname.split('/').pop() || '');
 
-  // ?ï¿½ì‹¬ ???ï¿½ì¼: ??ï¿½ï¿½ ?ï¿½íŠ¸?ï¿½í¬?ï¿½ì„œ ìµœì‹ ï¿?ê°€?ï¿½ì˜¤ï¿?(?ï¿½í”„?ï¿½ì¸ ??ìºì‹œ ?ï¿½ìš©)
+  // ?? ìŽŒ?????? ìŽŒ?? ??? ì™???? ì???? ì?ê²?? ìŽŒê½?ï§¤ì’–?Šå ?åª›Â€?? ìŽŒ?¤å ?(?? ì?ë´?? ìŽŒ????ï§?¨¯???? ìŽŒ??
   if (NETWORK_FIRST.includes(filename)) {
     e.respondWith(
       fetch(new Request(e.request.url, { cache: 'no-store' }))
@@ -52,7 +56,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // ?ï¿½ë¨¸ì§€ (?ï¿½ï¿½?ì§€, PDF, ?ï¿½ì´ë¸ŒëŸ¬ï¿???: ìºì‹œ ?ï¿½ì„ , ?ï¿½ìœ¼ï¿??ï¿½íŠ¸?ï¿½í¬?ï¿½ì„œ ë°›ì•„ ìºì‹œ
+  // ?? ìŽˆ?§ï§ž? (?? ì™??ï§žÂ€, PDF, ?? ìŽŒ? é‡‰??œ­????: ï§?¨¯???? ìŽŒê½? ?? ìŽŒ?å ??? ì???? ì?ê²?? ìŽŒê½?è«›ì†ë¸?ï§?¨¯??
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
@@ -65,3 +69,5 @@ self.addEventListener('fetch', e => {
     })
   );
 });
+
+
