@@ -5266,7 +5266,7 @@ html[data-theme="blossom"] .cal-day.holiday::after {
 
 .ilgu-loading-text {
   position: absolute;
-  bottom: -16px;
+  bottom: -4px;
   left: 50%;
   transform: translateX(-50%);
   width: 260px;
