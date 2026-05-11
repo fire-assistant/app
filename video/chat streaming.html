@@ -374,7 +374,7 @@
     position: fixed;
     inset: 0;
     z-index: 0;
-    background: var(--bg);
+    background: #000;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s linear;
@@ -553,7 +553,7 @@
 <body>
   <div class="stage" id="stage">
   <div class="next-frame" id="nextFrame">
-    <iframe id="introFrame" title="intro" loading="eager" srcdoc="<body style='margin:0;background:#f7f6f3;height:100vh;'></body>"></iframe>
+    <iframe id="introFrame" title="intro" loading="eager" srcdoc="<body style='margin:0;background:#000;height:100vh;'></body>"></iframe>
   </div>
   <div class="app">
     <section class="phone" aria-label="채팅 미리보기">
@@ -841,14 +841,20 @@
       if (token === runToken) {
         await runGlitchTransition(token);
         if (token !== runToken) return;
+        try {
+          await sleep(1000, token);
+        } catch {
+          return;
+        }
+        if (token !== runToken) return;
         // Now load intro fresh from 0 (replaces the black srcdoc)
         try { localStorage.removeItem(introStorageKey); } catch {}
         introFrame.removeAttribute("srcdoc");
         introFrame.src = introFile;
-        // intro.html duration = 42s, notify parent to close overlay after it ends
+        // intro duration = 41s, notify parent to close overlay after it ends
         setTimeout(() => {
           try { window.parent.postMessage({ type: 'INTRO_DONE' }, '*'); } catch {}
-        }, 42000);
+        }, 41000);
       }
     }
 
