@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Nozzle Loader</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #f0ede8;
+    }
+
+    .whirl-group {
+      transform-origin: 100px 100px;
+      animation: whirl-spin 2.8s linear infinite;
+    }
+
+    .water-a { animation: stream 0.9s linear infinite; }
+    .water-b { animation: stream 0.9s linear infinite 0.15s; }
+    .water-c { animation: stream 0.9s linear infinite 0.3s; }
+
+    @keyframes whirl-spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    @keyframes stream {
+      from { stroke-dashoffset: 18; }
+      to   { stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body>
+  <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Outer circle -->
+    <circle cx="100" cy="100" r="82"
+            fill="none" stroke="#2a2a2a" stroke-width="2.5"/>
+
+    <!-- Whirl arcs (rotating) — 3 arcs at r=90, 120° apart -->
+    <g class="whirl-group">
+      <path d="M 100 10 A 90 90 0 0 1 178 55"
+            fill="none" stroke="#999" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M 178 145 A 90 90 0 0 1 100 190"
+            fill="none" stroke="#999" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M 22 145 A 90 90 0 0 1 22 55"
+            fill="none" stroke="#999" stroke-width="2.2" stroke-linecap="round"/>
+    </g>
+
+    <!-- Nozzle body — centered at (100, 100), pointing right -->
+    <g transform="translate(100,100)" fill="none" stroke="#2a2a2a"
+       stroke-linecap="round" stroke-linejoin="round">
+
+      <!-- Coupling (left) with grip ridges -->
+      <rect x="-52" y="-14" width="24" height="28" rx="3" stroke-width="2"/>
+      <line x1="-44" y1="-14" x2="-44" y2="14" stroke-width="1.5"/>
+      <line x1="-36" y1="-14" x2="-36" y2="14" stroke-width="1.5"/>
+      <line x1="-28" y1="-14" x2="-28" y2="14" stroke-width="1.5"/>
+
+      <!-- Main body -->
+      <rect x="-28" y="-12" width="38" height="24" rx="2" stroke-width="2"/>
+
+      <!-- Taper section -->
+      <path d="M 10 -12 L 28 -7 L 28 7 L 10 12 Z" stroke-width="2"/>
+
+      <!-- Tip / nozzle opening -->
+      <rect x="28" y="-7" width="14" height="14" rx="2" stroke-width="2"/>
+
+      <!-- Handle -->
+      <path d="M -6 12 L -14 36" stroke-width="2"/>
+      <line x1="-14" y1="36" x2="0" y2="36" stroke-width="2"/>
+
+      <!-- Trigger -->
+      <path d="M -2 12 Q -2 20 -6 24" stroke-width="1.5"/>
+    </g>
+
+    <!-- Water streams from nozzle tip (x=142, y=100) — dashed, animated -->
+    <g fill="none" stroke-linecap="round">
+      <!-- Upper stream -->
+      <path class="water-a"
+            d="M 142 100 Q 156 88 170 80"
+            stroke="#555" stroke-width="1.8"
+            stroke-dasharray="5 4" stroke-dashoffset="0"/>
+      <!-- Middle stream -->
+      <path class="water-b"
+            d="M 142 100 Q 158 100 174 100"
+            stroke="#555" stroke-width="1.8"
+            stroke-dasharray="5 4" stroke-dashoffset="0"/>
+      <!-- Lower stream -->
+      <path class="water-c"
+            d="M 142 100 Q 156 112 170 120"
+            stroke="#555" stroke-width="1.8"
+            stroke-dasharray="5 4" stroke-dashoffset="0"/>
+    </g>
+
+  </svg>
+</body>
+</html>
