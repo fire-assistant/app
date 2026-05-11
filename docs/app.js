@@ -3639,9 +3639,9 @@ function renderDateCalculator() {
             const isLoading = Object.values(state.dateCalc.apiHolidays).some(v => v === null);
             const loadingText = isLoading ? " <span style='color:var(--text-dim);font-size:11px'>(공휴일 불러오는 중…)</span>" : "";
             if (mode.kind === "noncompliance_dual") {
-              return `공휴일은 자동 적용됩니다.${loadingText} 완료신고기한에 반영할 공휴일이 빠졌다면 입력 공휴일 지정 버튼으로 추가하세요. 이행완료기한에는 반영되지 않습니다.`;
+              return `공휴일은 자동 적용됩니다.${loadingText} 임시공휴일 등이 제대로 반영되어있는지 꼭 확인하세요. 빠진게 있으면 입력 공휴일 지정 버튼으로 추가하세요.`;
             }
-            return `공휴일은 자동 적용됩니다.${loadingText} 임시공휴일 등 빠진 날짜가 있으면 입력 공휴일 지정 버튼으로 추가하세요.`;
+            return `공휴일은 자동 적용됩니다.${loadingText} 임시공휴일 등이 제대로 반영되어있는지 꼭 확인하세요. 빠진게 있으면 입력 공휴일 지정 버튼으로 추가하세요.`;
           })()}</p>
           ` : ""}
           <div class="cal-wrap">
