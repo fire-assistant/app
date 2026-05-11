@@ -1,4 +1,4 @@
-const CACHE = 'fireapp-v169';
+const CACHE = 'fireapp-v170';
 
 const PRECACHE_FILES = [
   './index.html',
@@ -35,7 +35,7 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
   const url = new URL(e.request.url);
-  const filename = url.pathname.split('/').pop();
+  const filename = decodeURIComponent(url.pathname.split('/').pop() || '');
 
   // ?�심 ???�일: ??�� ?�트?�크?�서 최신�?가?�오�?(?�프?�인 ??캐시 ?�용)
   if (NETWORK_FIRST.includes(filename)) {
