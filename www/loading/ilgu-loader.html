@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Ilgu Loader</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #f0ede8;
+    }
+
+    .loader-wrap {
+      width: 200px;
+      height: 200px;
+      position: relative;
+    }
+
+    /* 캐릭터 */
+    .char-clip {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      width: 164px;
+      height: 164px;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+
+    .character {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform-origin: bottom center;
+      animation: bounce-squish 2.2s ease-in-out infinite;
+    }
+
+
+    /* 텍스트 */
+    .loading-text {
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 260px;
+      height: 28px;
+      text-align: center;
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: #444;
+      letter-spacing: 0.03em;
+    }
+
+    .msg {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      animation: msg-fade 7.5s ease-in-out infinite;
+    }
+    .msg1 { animation-delay: 0s; }
+    .msg2 { animation-delay: 2.5s; }
+    .msg3 { animation-delay: 5s; }
+
+    .ch {
+      display: inline-block;
+      animation: wave-char 1.6s ease-in-out infinite;
+      animation-delay: calc(var(--i) * 0.08s);
+    }
+
+    @keyframes bounce-squish {
+      0%   { transform: translateY(0)     scaleX(1)    scaleY(1);    }
+      30%  { transform: translateY(-13px) scaleX(0.93) scaleY(1.07); }
+      55%  { transform: translateY(8px)   scaleX(1.18) scaleY(0.82); }
+      75%  { transform: translateY(-4px)  scaleX(0.97) scaleY(1.03); }
+      100% { transform: translateY(0)     scaleX(1)    scaleY(1);    }
+    }
+
+
+    @keyframes msg-fade {
+      0%   { opacity: 0; transform: translateY(5px);  }
+      8%   { opacity: 1; transform: translateY(0);    }
+      28%  { opacity: 1; transform: translateY(0);    }
+      36%  { opacity: 0; transform: translateY(-5px); }
+      100% { opacity: 0; transform: translateY(-5px); }
+    }
+
+    @keyframes wave-char {
+      0%, 50%, 100% { transform: translateY(0);    }
+      25%            { transform: translateY(-6px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loader-wrap">
+
+    <!-- 일구 캐릭터 -->
+    <div class="char-clip">
+      <img class="character" src="ilgu.png" alt="">
+    </div>
+
+    <!-- 물결 텍스트 -->
+    <div class="loading-text">
+      <span class="msg msg1"><span class="ch" style="--i:0">결</span><span class="ch" style="--i:1">과</span><span class="ch" style="--i:2">를</span><span class="ch" style="--i:3">&nbsp;</span><span class="ch" style="--i:4">도</span><span class="ch" style="--i:5">출</span><span class="ch" style="--i:6">&nbsp;</span><span class="ch" style="--i:7">중</span><span class="ch" style="--i:8">입</span><span class="ch" style="--i:9">니</span><span class="ch" style="--i:10">다</span></span>
+      <span class="msg msg2"><span class="ch" style="--i:0">잠</span><span class="ch" style="--i:1">시</span><span class="ch" style="--i:2">만</span><span class="ch" style="--i:3">&nbsp;</span><span class="ch" style="--i:4">기</span><span class="ch" style="--i:5">다</span><span class="ch" style="--i:6">려</span><span class="ch" style="--i:7">&nbsp;</span><span class="ch" style="--i:8">주</span><span class="ch" style="--i:9">세</span><span class="ch" style="--i:10">요</span></span>
+      <span class="msg msg3"><span class="ch" style="--i:0">거</span><span class="ch" style="--i:1">의</span><span class="ch" style="--i:2">&nbsp;</span><span class="ch" style="--i:3">다</span><span class="ch" style="--i:4">&nbsp;</span><span class="ch" style="--i:5">됐</span><span class="ch" style="--i:6">어</span><span class="ch" style="--i:7">요</span><span class="ch" style="--i:8">!</span></span>
+    </div>
+
+  </div>
+</body>
+</html>
