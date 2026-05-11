@@ -12485,6 +12485,12 @@ function applyDevMode() {
   var on = localStorage.getItem('devMode') === 'true';
   document.getElementById('open-lab').style.display = on ? '' : 'none';
   renderHomeMeta();
+  if (typeof window.syncIlguAssistantAvailability === 'function') {
+    window.syncIlguAssistantAvailability();
+  }
+  if (typeof window.syncIlguSummonButton === 'function') {
+    window.syncIlguSummonButton();
+  }
 }
 applyDevMode();
 
@@ -12771,6 +12777,8 @@ applyDevMode();
   const SHEET = "./assets/pets/mailpup/spritesheet.webp";
   const CELL_W = 96;
   const CELL_H = 104;
+  const MOBILE_MEDIA = "(max-width: 768px)";
+  const MOBILE_DEVICE_RE = /Android|iPhone|iPad|iPod|Mobile/i;
   const states = {
     idle: { row: 0, frames: 6, ms: 260 },
     waving: { row: 3, frames: 4, ms: 220 },
@@ -12805,8 +12813,15 @@ applyDevMode();
     "open-contact": { title: "\uac1c\ubc1c\uc790\uc5d0\uac8c \ubb38\uc758", body: "\uc624\ub958, \uac1c\uc120 \uc81c\uc548, \ucd94\uac00\ud558\uace0 \uc2f6\uc740 \uae30\ub2a5\uc744 \uba54\uc77c\ub85c \ubcf4\ub0b4\ub294 \uc785\uad6c\uc5d0\uc694." },
   };
 
+  function isDesktopDevModeEnabled() {
+    const isDevMode = localStorage.getItem("devMode") === "true";
+    const isMobile = window.matchMedia(MOBILE_MEDIA).matches || MOBILE_DEVICE_RE.test(navigator.userAgent);
+    return isDevMode && !isMobile;
+  }
+
   const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-  const shouldShowAtStart = localStorage.getItem("ilguAssistantDisabled") !== "true" &&
+  const shouldShowAtStart = isDesktopDevModeEnabled() &&
+    localStorage.getItem("ilguAssistantDisabled") !== "true" &&
     (isStandalone || localStorage.getItem("ilguAssistantVisible") === "true");
 
   window.addEventListener("appinstalled", function () {
@@ -12847,6 +12862,29 @@ applyDevMode();
   const savedPos = readPosition();
   if (savedPos) setPosition(savedPos.x, savedPos.y);
   if (!shouldShowAtStart) root.style.display = "none";
+
+  function syncAvailability() {
+    const allowed = isDesktopDevModeEnabled();
+    if (!allowed) {
+      root.classList.remove("is-open");
+      root.style.display = "none";
+      setState("idle");
+      return false;
+    }
+
+    if (localStorage.getItem("ilguAssistantDisabled") === "true") {
+      root.classList.remove("is-open");
+      root.style.display = "none";
+      setState("idle");
+      return true;
+    }
+
+    root.style.display = "flex";
+    return true;
+  }
+
+  window.syncIlguAssistantAvailability = syncAvailability;
+  syncAvailability();
 
   function readPosition() {
     try { return JSON.parse(localStorage.getItem("ilguAssistantPosition") || "null"); }
@@ -13016,6 +13054,7 @@ applyDevMode();
 
   function showAssistant(options) {
     const opts = options || {};
+    if (!syncAvailability()) return;
     localStorage.removeItem("ilguAssistantDisabled");
     localStorage.setItem("ilguAssistantVisible", "true");
     root.style.display = "flex";
@@ -13038,6 +13077,7 @@ applyDevMode();
   window.showIlguAssistant = showAssistant;
 
   window.addEventListener("resize", function () {
+    syncAvailability();
     const rect = root.getBoundingClientRect();
     setPosition(rect.left, rect.top);
     savePosition();
@@ -13050,8 +13090,22 @@ applyDevMode();
   const btn = document.getElementById("ilgu-summon-btn");
   if (!btn) return;
 
+  function syncSummonButton() {
+    const isDevMode = localStorage.getItem("devMode") === "true";
+    const isMobile = window.matchMedia("(max-width: 768px)").matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    const visible = isDevMode && !isMobile;
+    btn.hidden = !visible;
+    btn.style.display = visible ? "flex" : "none";
+    btn.setAttribute("aria-hidden", visible ? "false" : "true");
+  }
+
+  window.syncIlguSummonButton = syncSummonButton;
+  syncSummonButton();
+  window.addEventListener("resize", syncSummonButton);
+
   btn.addEventListener("click", function (event) {
     event.stopPropagation();
+    if (btn.hidden) return;
     if (typeof window.showIlguAssistant === "function") {
       window.showIlguAssistant({ open: true, anchor: btn });
     }
