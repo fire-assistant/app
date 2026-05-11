@@ -2783,6 +2783,13 @@ function showExplorerCard(view) {
   if (vizCard) vizCard.classList.toggle("hidden", view !== "viz");
 }
 
+function showExplorerResultWithLoading(view = "main-result") {
+  showIlguLoading(() => {
+    showExplorerCard(view);
+    scrollToTop();
+  });
+}
+
 function renderMultiuseEntryButton(_input) {
   // 다중이용업소 안전시설은 탐색기 결과에서 제거됨 (실험실에서 접근)
 }
@@ -2927,8 +2934,7 @@ function showResults() {
     renderResultGroup("exception-list", exceptionItems);
     renderLodgingMultiuseEntryButton(input);
     renderExtraItems(input);
-    showExplorerCard("main-result");
-    scrollToTop();
+    showExplorerResultWithLoading();
     return;
   }
 
@@ -2946,8 +2952,7 @@ function showResults() {
     const button = document.getElementById("open-multiuse-safety");
     if (button) button.classList.add("hidden");
     renderExtraItems(input);
-    showExplorerCard("main-result");
-    scrollToTop();
+    showExplorerResultWithLoading();
     return;
   }
 
@@ -2972,16 +2977,14 @@ function showResults() {
     const button = document.getElementById("open-multiuse-safety");
     if (button) button.classList.add("hidden");
     renderExtraItems(input);
-    showExplorerCard("main-result");
-    scrollToTop();
+    showExplorerResultWithLoading();
     return;
   }
 
   const results = evaluateNeighborhoodFacility(input);
   renderExtraItems(input);
-  showExplorerCard("main-result");
   renderResults(results, input);
-  scrollToTop();
+  showExplorerResultWithLoading();
 }
 
 function getFloorCount(input) {
@@ -6816,6 +6819,16 @@ function yearScrollToTop() {
   if (el) el.scrollTop = 0;
 }
 
+function showYearResultWithLoading() {
+  showIlguLoading(() => {
+    document.getElementById("year-question-card").classList.add("hidden");
+    document.getElementById("year-result-card").classList.remove("hidden");
+    document.getElementById("year-multiuse-safety-card").classList.add("hidden");
+    document.getElementById("year-prog-wrap").classList.add("hidden");
+    yearScrollToTop();
+  });
+}
+
 function yearMoveStep(direction) {
   if (direction > 0 && !yearCurrentStepIsValid()) {
     const step = yearGetActiveSteps()[yearState.currentStep];
@@ -10189,10 +10202,7 @@ function yearShowResults() {
     renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
-    document.getElementById("year-question-card").classList.add("hidden");
-    document.getElementById("year-result-card").classList.remove("hidden");
-    document.getElementById("year-prog-wrap").classList.add("hidden");
-    yearScrollToTop();
+    showYearResultWithLoading();
     return;
   }
   // ── 분법 이전 숙박시설 처리 ──
@@ -10215,10 +10225,7 @@ function yearShowResults() {
     renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
-    document.getElementById("year-question-card").classList.add("hidden");
-    document.getElementById("year-result-card").classList.remove("hidden");
-    document.getElementById("year-prog-wrap").classList.add("hidden");
-    yearScrollToTop();
+    showYearResultWithLoading();
     return;
   }
   // ── 분법 이전 노유자시설 처리 ──
@@ -10241,10 +10248,7 @@ function yearShowResults() {
     renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
-    document.getElementById("year-question-card").classList.add("hidden");
-    document.getElementById("year-result-card").classList.remove("hidden");
-    document.getElementById("year-prog-wrap").classList.add("hidden");
-    yearScrollToTop();
+    showYearResultWithLoading();
     return;
   }
   // ── 분법 이전 의료시설 처리 ──
@@ -10268,10 +10272,7 @@ function yearShowResults() {
     renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
-    document.getElementById("year-question-card").classList.add("hidden");
-    document.getElementById("year-result-card").classList.remove("hidden");
-    document.getElementById("year-prog-wrap").classList.add("hidden");
-    yearScrollToTop();
+    showYearResultWithLoading();
     return;
   }
   // ── 분법 이전 종교시설 처리 ──
@@ -10293,10 +10294,7 @@ function yearShowResults() {
     renderSimpleRequiredList(allRequiredItems, "year-required-list");
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
-    document.getElementById("year-question-card").classList.add("hidden");
-    document.getElementById("year-result-card").classList.remove("hidden");
-    document.getElementById("year-prog-wrap").classList.add("hidden");
-    yearScrollToTop();
+    showYearResultWithLoading();
     return;
   }
   if (yearState.answers.yEraChoice === "before2004") {
@@ -10307,10 +10305,7 @@ function yearShowResults() {
     renderExtraItemsToTarget({}, "year-extra-items-section", "year-extra-items-list");
     document.getElementById("year-criteria-list").innerHTML = "";
     document.getElementById("year-exception-list").innerHTML = "";
-    document.getElementById("year-question-card").classList.add("hidden");
-    document.getElementById("year-result-card").classList.remove("hidden");
-    document.getElementById("year-prog-wrap").classList.add("hidden");
-    yearScrollToTop();
+    showYearResultWithLoading();
     return;
   }
   const pd = yPermitDateInt();
@@ -10402,11 +10397,7 @@ function yearShowResults() {
     }
   }
 
-  document.getElementById("year-question-card").classList.add("hidden");
-  document.getElementById("year-result-card").classList.remove("hidden");
-  document.getElementById("year-multiuse-safety-card").classList.add("hidden");
-  document.getElementById("year-prog-wrap").classList.add("hidden");
-  yearScrollToTop();
+  showYearResultWithLoading();
 }
 
 function yearWizardRestart() {
