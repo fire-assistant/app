@@ -12403,6 +12403,8 @@ document.getElementById('home-meta').textContent = PATCH_NOTES.version + ' / 최
 function applyDevMode() {
   var on = localStorage.getItem('devMode') === 'true';
   document.getElementById('open-lab').style.display = on ? '' : 'none';
+  var devIndicator = document.getElementById('home-dev-indicator');
+  if (devIndicator) devIndicator.classList.toggle('hidden', !on);
 }
 applyDevMode();
 

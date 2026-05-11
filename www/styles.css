@@ -258,6 +258,58 @@ input:focus-visible {
   color: var(--text-dim);
 }
 
+.home-dev-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border: 1px solid rgba(249, 171, 0, 0.32);
+  border-radius: 12px;
+  background: rgba(249, 171, 0, 0.1);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+.home-dev-dot {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 10px rgba(249, 171, 0, 0.75);
+  animation: devPulse 1.6s ease-in-out infinite;
+}
+
+.home-dev-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.home-dev-copy strong {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--amber);
+}
+
+.home-dev-copy span {
+  color: var(--text-muted);
+  font-size: 11px;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+@keyframes devPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.82); }
+}
+
 .menu-grid {
   display: flex;
   flex-direction: column;
