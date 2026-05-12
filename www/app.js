@@ -1044,8 +1044,27 @@ function getActiveSteps() {
       return true;
     });
   }
+  const EXPLORER_MULTIUSE_KEYS = [
+    "hasMultiuseBusiness",
+    "multiuseSimpleSprinklerCheck",
+    "multiuseOnSecondToTenthFloor",
+    "multiuseOnGroundOrRefugeFloor",
+    "multiuseUsesAV",
+    "multiuseHasGasFacility",
+    "multiuseHasRooms",
+    "multiuseHasEvacuationRoute",
+    "lodgingHasMultiuseBusiness",
+    "lodgingMultiuseSimpleSprinklerCheck",
+    "lodgingMultiuseOnSecondToTenthFloor",
+    "lodgingMultiuseOnGroundOrRefugeFloor",
+    "lodgingMultiuseUsesAV",
+    "lodgingMultiuseHasGasFacility",
+    "lodgingMultiuseHasRooms",
+    "lodgingMultiuseHasEvacuationRoute",
+  ];
   const activeSteps = steps.filter((step) => {
     if (["isThirdClassNeighborhood", "permitBefore1992", "pre1992PermitRange", "thirdClassDetailUse"].includes(step.key)) return false;
+    if (EXPLORER_MULTIUSE_KEYS.includes(step.key)) return false;
     if (!step.onlyFor) return true;
     if (step.onlyFor !== state.answers.occupancyType) return false;
     if (step.key === "hasLargeTargetFloor") return toNumber(state.answers.totalArea) < 1500;
@@ -6336,9 +6355,28 @@ function yearGetActiveSteps() {
   const hemApplicable = pd >= YD.D20241231 && ya.yHasHemodialysis === "yes";
   const postpartumApplicable = pd >= YD.D20220225 && ya.yIsPostpartum === "yes";
   const autoDispatch = clinicApplicable || hemApplicable || postpartumApplicable;
+  const YEAR_EXPLORER_MULTIUSE_KEYS = [
+    "yHasMultiuseBusiness",
+    "yMultiuseSimpleSprinklerCheck",
+    "yMultiuseOnSecondToTenthFloor",
+    "yMultiuseOnGroundOrRefugeFloor",
+    "yMultiuseUsesAV",
+    "yMultiuseHasGasFacility",
+    "yMultiuseHasRooms",
+    "yMultiuseHasEvacuationRoute",
+    "yLodgingHasMultiuseBusiness",
+    "yLodgingMultiuseSimpleSprinklerCheck",
+    "yLodgingMultiuseOnSecondToTenthFloor",
+    "yLodgingMultiuseOnGroundOrRefugeFloor",
+    "yLodgingMultiuseUsesAV",
+    "yLodgingMultiuseHasGasFacility",
+    "yLodgingMultiuseHasRooms",
+    "yLodgingMultiuseHasEvacuationRoute",
+  ];
   const activeSteps = yearSteps.filter((step) => {
     if (step.key === "yEraChoice") return true;
     if (["yPermitDate", "yOccupancyType"].includes(step.key)) return !!ya.yEraChoice;
+    if (YEAR_EXPLORER_MULTIUSE_KEYS.includes(step.key)) return false;
 
     // ── 분법 이전 근린생활시설 ──
     if (ya.yEraChoice === "before2004" && ya.yOccupancyType === "neighborhood") {

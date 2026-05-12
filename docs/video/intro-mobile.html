@@ -71,7 +71,7 @@ function Sprite({ start = 0, end = Infinity, children, keepMounted = false }) {
 function Stage({
   width = 1280, height = 720, duration = 10,
   background = '#f6f4ef', loop = true, autoplay = true,
-  persistKey = 'animstage', children,
+  persistKey = 'animstage', onComplete, children,
 }) {
   const [time, setTime] = React.useState(() => {
     try {
@@ -86,6 +86,7 @@ function Stage({
   const stageRef = React.useRef(null);
   const rafRef = React.useRef(null);
   const lastTsRef = React.useRef(null);
+  const completedRef = React.useRef(false);
 
   React.useEffect(() => {
     try { localStorage.setItem(persistKey + ':t', String(time)); } catch {}
@@ -140,6 +141,17 @@ function Stage({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [duration]);
+
+  React.useEffect(() => {
+    if (time < duration) {
+      completedRef.current = false;
+      return;
+    }
+    if (!loop && !playing && !completedRef.current) {
+      completedRef.current = true;
+      if (typeof onComplete === 'function') onComplete();
+    }
+  }, [time, duration, loop, playing, onComplete]);
 
   const displayTime = hoverTime != null ? hoverTime : time;
   const ctxValue = React.useMemo(
@@ -649,12 +661,17 @@ function DataFieldDimWrapperM() {
 }
 
 function AppM() {
+  const handleComplete = React.useCallback(() => {
+    try { window.parent.postMessage({ type: 'INTRO_DONE' }, '*'); } catch {}
+  }, []);
+
   return (
     <Stage
       width={MOBILE_W} height={MOBILE_H}
       duration={TOTAL_M} background="#050505"
       loop={false}
       persistKey="fire-intro-mobile"
+      onComplete={handleComplete}
     >
       <DataFieldDimWrapperM />
       <IntroTextM />

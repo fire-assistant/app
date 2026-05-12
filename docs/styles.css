@@ -5728,3 +5728,7 @@ html[data-theme="blossom"] .ilgu-panel-action {
   position: relative;
 }
 
+#multiuse-transitional-notes,
+#year-multiuse-transitional-notes {
+  margin-top: 12px;
+}
