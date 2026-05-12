@@ -6,7 +6,11 @@ if (new URLSearchParams(location.search).has('reset-intro')) {
 
 // ── 개발자 모드 (GA 추적 비활성화) ───────────────────────────────────────
 // 본인 기기에서 콘솔에 한 번만 실행: localStorage.setItem('devMode', 'true')
-if (localStorage.getItem('devMode') === 'true') {
+function isGaSuppressed() {
+  var until = Number(localStorage.getItem('gaSuppressedUntil') || '0');
+  return localStorage.getItem('devMode') === 'true' || Date.now() < until;
+}
+if (isGaSuppressed()) {
   window['ga-disable-G-LKQZX5YS2H'] = true;
 }
 
@@ -12544,10 +12548,12 @@ applyDevMode();
       var isOn = localStorage.getItem('devMode') === 'true';
       if (isOn) {
         localStorage.removeItem('devMode');
-        window['ga-disable-G-LKQZX5YS2H'] = false;
+        localStorage.setItem('gaSuppressedUntil', String(Date.now() + 5 * 60 * 1000));
+        window['ga-disable-G-LKQZX5YS2H'] = true;
         showToast('개발자 모드 OFF — 실험실 숨김');
       } else {
         localStorage.setItem('devMode', 'true');
+        localStorage.removeItem('gaSuppressedUntil');
         window['ga-disable-G-LKQZX5YS2H'] = true;
         showToast('개발자 모드 ON — 실험실 표시됨 🧪');
       }
