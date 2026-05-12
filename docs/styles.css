@@ -3156,6 +3156,12 @@ html[data-theme="light"] .cal-day.holiday::after {
   cursor: pointer;
 }
 
+.rg-group-header.single {
+  border-radius: 10px;
+  border-bottom: 1px solid var(--border2);
+  margin-bottom: 2px;
+}
+
 .rg-group-cb {
   width: 16px;
   height: 16px;

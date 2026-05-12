@@ -2664,7 +2664,7 @@ function setSectionVisibility(sectionId, visible) {
 }
 
 function clearMultiuseSections() {
-  ["multiuse-reason-list", "multiuse-transitional-notes"].forEach((id) => {
+  ["multiuse-required-list", "multiuse-reason-list", "multiuse-transitional-notes"].forEach((id) => {
     const node = document.getElementById(id);
     if (node) node.innerHTML = "";
   });
@@ -2687,6 +2687,14 @@ function renderSimpleRequiredList(items, targetId = "required-list") {
     node.innerHTML = `<span class="fr-dot"></span><span>${item.name}</span>`;
     list.appendChild(node);
   });
+}
+
+function renderMultiuseRequiredSafetyList(multiuse, targetId) {
+  const seen = new Set();
+  const items = (multiuse.reasonItems || [])
+    .filter((item) => item.status === "required" && item.name && !seen.has(item.name) && seen.add(item.name))
+    .map((item) => ({ name: item.name }));
+  renderSimpleRequiredList(items, targetId);
 }
 
 function buildMultiuseTransitionalNotes(flags) {
@@ -2829,6 +2837,7 @@ function renderMultiuseSafetyCard(input) {
   clearMultiuseSections();
   const multiuse = evaluateMultiuseFacilities(input);
   document.getElementById("multiuse-safety-summary").innerHTML = `<div class="ib-title">다중이용업소 안전시설 기준</div>입력한 조건을 기준으로 다중이용업소에 설치해야 하는 안전시설만 별도로 정리했습니다.`;
+  renderMultiuseRequiredSafetyList(multiuse, "multiuse-required-list");
   renderResultGroup("multiuse-reason-list", multiuse.reasonItems);
   renderTransitionalNotes(multiuse.transitionalNotes);
 }
@@ -2837,11 +2846,13 @@ function renderLodgingMultiuseSafetyCard(input) {
   clearMultiuseSections();
   const multiuse = evaluateLodgingMultiuseFacilities(input);
   document.getElementById("multiuse-safety-summary").innerHTML = `<div class="ib-title">다중이용업소 안전시설 기준</div>입력한 조건을 기준으로 다중이용업소에 설치해야 하는 안전시설만 별도로 정리했습니다.`;
+  renderMultiuseRequiredSafetyList(multiuse, "multiuse-required-list");
   renderResultGroup("multiuse-reason-list", multiuse.reasonItems);
   renderTransitionalNotes(multiuse.transitionalNotes);
 }
 
 function renderResults(results, input) {
+  ensureEmergencyElevatorSmokeControl(results, input, { allowRefugeElevator: true });
   const exceptionItems = buildExceptionItems(results, input);
   const requiredItems = buildRequiredItems(results, input, exceptionItems);
   const excludedNames = exceptionItems.filter((e) => e.category === "설치 제외").map((e) => e.name);
@@ -2951,6 +2962,7 @@ function showResults() {
 
   if (input.occupancyType === "lodging") {
     const results = evaluateLodgingFacility(input);
+    ensureEmergencyElevatorSmokeControl(results, input, { allowRefugeElevator: true });
     const exceptionItems = buildLodgingExceptionItems(results, input);
     const requiredItems = buildLodgingRequiredItems(results, input, exceptionItems);
     const excludedNames = exceptionItems.filter((e) => e.category === "설치 제외").map((e) => e.name);
@@ -2967,6 +2979,7 @@ function showResults() {
 
   if (input.occupancyType === "elderly") {
     const results = evaluateElderlyFacility(input);
+    ensureEmergencyElevatorSmokeControl(results, input, { allowRefugeElevator: true });
     const exceptionItems = buildElderlyExceptionItems(results, input);
     const requiredItems = buildElderlyRequiredItems(results, input, exceptionItems);
     const excludedNames = exceptionItems.filter((e) => e.category === "설치 제외").map((e) => e.name);
@@ -2985,6 +2998,7 @@ function showResults() {
 
   if (input.occupancyType === "medical") {
     const results = evaluateMedicalFacility(input);
+    ensureEmergencyElevatorSmokeControl(results, input, { allowRefugeElevator: true });
     const exceptionItems = buildMedicalExceptionItems(results, input);
     const requiredItems = buildMedicalRequiredItems(results, input, exceptionItems);
     const excludedNames = exceptionItems.filter((e) => e.category === "설치 제외").map((e) => e.name);
@@ -3063,6 +3077,18 @@ function buildExtraItems(input, options = {}) {
     }
   }
   return items;
+}
+
+function ensureEmergencyElevatorSmokeControl(results, input, options = {}) {
+  const hasEmergencyElevator = buildExtraItems(input, options)
+    .some((item) => item.name === "비상용 승강기");
+  if (!hasEmergencyElevator) return;
+
+  const smokeControl = results.find((item) => item.name === "제연설비");
+  if (!smokeControl || smokeControl.status === "required") return;
+
+  smokeControl.status = "required";
+  smokeControl.reason = "비상용 승강기 승강장 부속실에 제연설비를 설치해야 합니다.";
 }
 
 function renderExtraItemsToTarget(input, sectionId, listId, options = {}) {
@@ -10242,6 +10268,7 @@ function yearShowResults() {
       ? ({ restaurant: "음식점 등", marketBathhouse: "시장·공중목욕장", general: "기타 근린생활시설" }[inp.before2004FacilitySubtype] || "근린생활시설")
       : (inp.facilitySubtype === "bathhouse" ? "일반목욕장" : "근린생활시설");
     const results = yearEvaluateNeighborhoodBefore2004(inp);
+    ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     const summaryHtml = `<div class="ib-title">입력값 기준</div>근린생활시설(${subtypeLabel}), 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
     const exceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "구 소방법 적용 구간으로 별도 제외·대체 안내는 제공되지 않습니다." }];
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
@@ -10265,6 +10292,7 @@ function yearShowResults() {
     const [py, pm, pd2] = rawPermit.split("-").map(Number);
     const permitStr = `${py}년 ${pm}월 ${pd2}일`;
     const results = yearEvaluateLodgingBefore2004(inp);
+    ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     const summaryHtml = `<div class="ib-title">입력값 기준</div>숙박시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
     const exceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "구 소방법 적용 구간으로 별도 제외·대체 안내는 제공되지 않습니다." }];
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
@@ -10288,6 +10316,7 @@ function yearShowResults() {
     const [py, pm, pd2] = rawPermit.split("-").map(Number);
     const permitStr = `${py}년 ${pm}월 ${pd2}일`;
     const results = yearEvaluateElderlyBefore2004(inp);
+    ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     const summaryHtml = `<div class="ib-title">입력값 기준</div>노유자시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
     const exceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "구 소방법 적용 구간으로 별도 제외·대체 안내는 제공되지 않습니다." }];
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
@@ -10312,6 +10341,7 @@ function yearShowResults() {
     const permitStr = `${py}년 ${pm}월 ${pd2}일`;
     const subtypeLabel = inp.before2004MedicalSubtype === "hospital" ? "종합병원" : "병원·의원 등";
     const results = yearEvaluateMedicalBefore2004(inp);
+    ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     const summaryHtml = `<div class="ib-title">입력값 기준</div>의료시설(${subtypeLabel}), 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
     const exceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "구 소방법 적용 구간으로 별도 제외·대체 안내는 제공되지 않습니다." }];
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
@@ -10335,6 +10365,7 @@ function yearShowResults() {
     const [py, pm, pd2] = rawPermit.split("-").map(Number);
     const permitStr = `${py}년 ${pm}월 ${pd2}일`;
     const results = yearEvaluateReligiousBefore2004(inp);
+    ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     const summaryHtml = `<div class="ib-title">입력값 기준</div>종교시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
     const exceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "구 소방법 적용 구간으로 별도 제외·대체 안내는 제공되지 않습니다." }];
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
@@ -10399,6 +10430,8 @@ function yearShowResults() {
     exceptionItems = yearBuildNeighborhoodExceptionItems(results, inp);
     summaryHtml = `<div class="ib-title">입력값 기준</div>근린생활시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
   }
+
+  ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
 
   const excludedNames = new Set(exceptionItems.filter((e) => e.category === "설치 제외").map((e) => e.name));
   const hasParkingReplacement = exceptionItems.some((e) => e.category === "대체설비" && e.name === "주차장 관련 스프링클러설비 대체 가능");
@@ -10610,6 +10643,7 @@ document.getElementById("year-open-multiuse-safety").addEventListener("click", (
   } else {
     multiuse = evaluateMultiuseFacilities(inp);
   }
+  renderMultiuseRequiredSafetyList(multiuse, "year-multiuse-required-list");
   renderResultGroup("year-multiuse-reason-list", multiuse.reasonItems);
   const transitionalContainer = document.getElementById("year-multiuse-transitional-notes");
   if (transitionalContainer && multiuse.transitionalNotes && multiuse.transitionalNotes.length > 0) {
@@ -11510,6 +11544,7 @@ const RG_SECTION_IMAGES = {
   'w04': './image/inspection/스프링클러설비.png',
   'w05': './image/inspection/간이스프링클러설비.png',
   'w11': './image/inspection/옥외소화전.png',
+  'g01': './image/inspection/가스계소화설비.png',
   'a03': './image/inspection/비상방송설비.png',
   'a05': './image/inspection/자동화재탐지설비.png',
   'a06': './image/inspection/자동화재속보설비.png',
@@ -11557,6 +11592,9 @@ const RG_FACILITY_DESCS = {
   ],
   'w11': [
     '옥외소화전이 설치 된 총 개수를 기재합니다.',
+  ],
+  'g01': [
+    '이산화탄소, 할론, 할로겐화합물 및 불활성기체, 분말, 강화액, 고체에어로졸 소화설비가 해당합니다.',
   ],
   'a03': [
     '<b>전용/겸용</b>: 비상방송설비 전용으로 쓰이는 장비인지, 일반 방송설비와 겸용해서 사용하는지 확인합니다.',
@@ -11668,17 +11706,13 @@ const RG_FACILITY_GROUPS = [
       { id: 'w07', label: '물분무소화설비',                    st: '물분무소화설비' },
       { id: 'w08', label: '미분무소화설비',                    st: '미분무소화설비' },
       { id: 'w09', label: '포소화설비',                        st: '포소화설비' },
-      { id: 'w10', label: '강화액소화설비',                    st: '강화액소화설비' },
       { id: 'w11', label: '옥외소화전설비',                    st: '옥외소화전' },
     ],
   },
   {
-    id: 'gas', sectionLabel: '3-4', page: 5, name: '가스계·분말소화설비',
+    id: 'gas', sectionLabel: '3-4', page: 5, name: '가스계소화설비',
     items: [
-      { id: 'g01', label: '이산화탄소소화설비',                st: '이산화탄소' },
-      { id: 'g02', label: '할론소화설비',                      st: '할론소화설비' },
-      { id: 'g03', label: '할로겐화합물 및 불활성기체소화설비',st: '할로겐화합물' },
-      { id: 'g04', label: '분말소화설비',                      st: '분말소화설비' },
+      { id: 'g01', label: '가스계소화설비',                    st: '가스계소화설비' },
     ],
   },
   {
@@ -11749,7 +11783,7 @@ const RG_GRADE_DEFS = [
 ];
 
 // 수계소화설비 공동사항을 표시할 설비 ID
-const RG_WATER_IDS = new Set(['w03', 'w04', 'w05', 'w06', 'w07', 'w08', 'w09', 'w10', 'w11']);
+const RG_WATER_IDS = new Set(['w03', 'w04', 'w05', 'w06', 'w07', 'w08', 'w09', 'w11']);
 
 // 수계소화설비 공동사항 항목
 const RG_WATER_COMMON = [
@@ -12193,6 +12227,7 @@ function renderRgChecklist(c) {
 
     var header = document.createElement('div');
     header.className = 'rg-group-header';
+    if (allItems.length === 1) header.classList.add('single');
 
     var groupCb = document.createElement('input');
     groupCb.type = 'checkbox';
@@ -12219,43 +12254,50 @@ function renderRgChecklist(c) {
     grid.className = 'rg-item-grid';
     var itemCbs = [];
 
-    allItems.forEach(function (item) {
-      var lbl = document.createElement('label');
-      lbl.className = 'rg-item-label';
+    if (allItems.length > 1) {
+      allItems.forEach(function (item) {
+        var lbl = document.createElement('label');
+        lbl.className = 'rg-item-label';
 
-      var cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.checked = rgState.selected.has(item.id);
-      itemCbs.push(cb);
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = rgState.selected.has(item.id);
+        itemCbs.push(cb);
 
-      cb.addEventListener('change', function () {
-        rgState.grade = 'custom';   // 수동 변경 시 직접선택으로 전환
-        rgState.selected[cb.checked ? 'add' : 'delete'](item.id);
-        var a2 = allItems.every(function (i) { return rgState.selected.has(i.id); });
-        var b2 = allItems.some(function (i) { return rgState.selected.has(i.id); });
-        groupCb.checked = a2;
-        groupCb.indeterminate = b2 && !a2;
+        cb.addEventListener('change', function () {
+          rgState.grade = 'custom';   // 수동 변경 시 직접선택으로 전환
+          rgState.selected[cb.checked ? 'add' : 'delete'](item.id);
+          var a2 = allItems.every(function (i) { return rgState.selected.has(i.id); });
+          var b2 = allItems.some(function (i) { return rgState.selected.has(i.id); });
+          groupCb.checked = a2;
+          groupCb.indeterminate = b2 && !a2;
+        });
+
+        var span = document.createElement('span');
+        span.textContent = item.label;
+
+        lbl.appendChild(cb);
+        lbl.appendChild(span);
+        grid.appendChild(lbl);
       });
-
-      var span = document.createElement('span');
-      span.textContent = item.label;
-
-      lbl.appendChild(cb);
-      lbl.appendChild(span);
-      grid.appendChild(lbl);
-    });
+    }
 
     groupCb.addEventListener('change', function () {
       rgState.grade = 'custom';
       allItems.forEach(function (item, idx) {
         if (groupCb.checked) rgState.selected.add(item.id);
         else rgState.selected.delete(item.id);
-        itemCbs[idx].checked = groupCb.checked;
+        if (itemCbs[idx]) itemCbs[idx].checked = groupCb.checked;
       });
       groupCb.indeterminate = false;
     });
+    header.addEventListener('click', function (ev) {
+      if (ev.target === groupCb) return;
+      groupCb.checked = !groupCb.checked;
+      groupCb.dispatchEvent(new Event('change'));
+    });
 
-    c.appendChild(grid);
+    if (allItems.length > 1) c.appendChild(grid);
   });
 
   var goBtn = document.createElement('button');
