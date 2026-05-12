@@ -662,7 +662,10 @@ function DataFieldDimWrapperM() {
 
 function AppM() {
   const handleComplete = React.useCallback(() => {
-    try { window.parent.postMessage({ type: 'INTRO_DONE' }, '*'); } catch {}
+    try {
+      const target = window.top || window.parent || window;
+      target.postMessage({ type: 'INTRO_DONE' }, '*');
+    } catch {}
   }, []);
 
   return (
