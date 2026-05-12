@@ -10,8 +10,13 @@
     document.getElementById(id).classList.add('active');
   }
 
+  function trackMenuClick(menuName) {
+    console.warn("[GA] menu_click:", menuName);
+    gtag("event", "menu_click", { menu_name: menuName });
+  }
+
   openBtn.addEventListener('click', () => {
-    gtag("event", "menu_click", { menu_name: "소방시설도감" });
+    trackMenuClick("소방시설도감");
     showScreen('screen-facilities');
     init();
   });
