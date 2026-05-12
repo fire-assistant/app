@@ -3091,6 +3091,15 @@ function ensureEmergencyElevatorSmokeControl(results, input, options = {}) {
   smokeControl.reason = "비상용 승강기 승강장 부속실에 제연설비를 설치해야 합니다.";
 }
 
+function suppressBefore2004LowRiseEscapeItems(results, input) {
+  if ((input.aboveGroundFloors || 0) >= 3) return;
+  for (let i = results.length - 1; i >= 0; i--) {
+    if (String(results[i].name || "").includes("피난기구")) {
+      results.splice(i, 1);
+    }
+  }
+}
+
 function renderExtraItemsToTarget(input, sectionId, listId, options = {}) {
   const section = document.getElementById(sectionId);
   const list = document.getElementById(listId);
@@ -10269,6 +10278,7 @@ function yearShowResults() {
       : (inp.facilitySubtype === "bathhouse" ? "일반목욕장" : "근린생활시설");
     const results = yearEvaluateNeighborhoodBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
+    suppressBefore2004LowRiseEscapeItems(results, inp);
     const summaryHtml = `<div class="ib-title">입력값 기준</div>근린생활시설(${subtypeLabel}), 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
     const exceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "구 소방법 적용 구간으로 별도 제외·대체 안내는 제공되지 않습니다." }];
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
@@ -10293,6 +10303,7 @@ function yearShowResults() {
     const permitStr = `${py}년 ${pm}월 ${pd2}일`;
     const results = yearEvaluateLodgingBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
+    suppressBefore2004LowRiseEscapeItems(results, inp);
     const summaryHtml = `<div class="ib-title">입력값 기준</div>숙박시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
     const exceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "구 소방법 적용 구간으로 별도 제외·대체 안내는 제공되지 않습니다." }];
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
@@ -10317,6 +10328,7 @@ function yearShowResults() {
     const permitStr = `${py}년 ${pm}월 ${pd2}일`;
     const results = yearEvaluateElderlyBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
+    suppressBefore2004LowRiseEscapeItems(results, inp);
     const summaryHtml = `<div class="ib-title">입력값 기준</div>노유자시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
     const exceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "구 소방법 적용 구간으로 별도 제외·대체 안내는 제공되지 않습니다." }];
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
@@ -10342,6 +10354,7 @@ function yearShowResults() {
     const subtypeLabel = inp.before2004MedicalSubtype === "hospital" ? "종합병원" : "병원·의원 등";
     const results = yearEvaluateMedicalBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
+    suppressBefore2004LowRiseEscapeItems(results, inp);
     const summaryHtml = `<div class="ib-title">입력값 기준</div>의료시설(${subtypeLabel}), 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
     const exceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "구 소방법 적용 구간으로 별도 제외·대체 안내는 제공되지 않습니다." }];
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
@@ -10366,6 +10379,7 @@ function yearShowResults() {
     const permitStr = `${py}년 ${pm}월 ${pd2}일`;
     const results = yearEvaluateReligiousBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
+    suppressBefore2004LowRiseEscapeItems(results, inp);
     const summaryHtml = `<div class="ib-title">입력값 기준</div>종교시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
     const exceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "구 소방법 적용 구간으로 별도 제외·대체 안내는 제공되지 않습니다." }];
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
