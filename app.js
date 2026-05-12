@@ -15,7 +15,6 @@ if (isGaSuppressed()) {
 }
 
 function trackMenuClick(menuName) {
-  console.warn("[GA] menu_click:", menuName);
   gtag("event", "menu_click", { menu_name: menuName });
 }
 
