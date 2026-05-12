@@ -4515,11 +4515,11 @@ function multiuseRestart() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 document.getElementById("open-explorer").addEventListener("click", () => {
-  gtag("event", "menu_click", { menu_name: "소방시설탐색기" });
   showScreen("explorerSelect");
 });
 document.getElementById("back-from-explorer-select").addEventListener("click", () => showScreen("home"));
 document.getElementById("explorer-select-simple").addEventListener("click", () => {
+  gtag("event", "menu_click", { menu_name: "소방시설탐색기-간단한버전" });
   explorerRuntime.mode = "default";
   applyExplorerModeUI();
   showScreen("explorer");
@@ -4530,25 +4530,26 @@ document.getElementById("explorer-select-detailed").addEventListener("click", ()
   yearWizardRestart();
 });
 document.getElementById("open-date-calculator").addEventListener("click", () => {
-  gtag("event", "menu_click", { menu_name: "날짜계산기" });
+  gtag("event", "menu_click", { menu_name: "법정기한계산기" });
   showScreen("date");
   renderDateCalculator();
 });
 document.getElementById("open-inspection-decoder").addEventListener("click", () => {
-  gtag("event", "menu_click", { menu_name: "작동종합대상판독기" });
+  gtag("event", "menu_click", { menu_name: "자체점검가이드-작동종합대상판독기" });
   inspectionRestart();
   showScreen("inspection");
 });
 document.getElementById("open-multiuse-decoder").addEventListener("click", () => {
-  gtag("event", "menu_click", { menu_name: "다중이용업소판독기" });
   showScreen("multiuseSelect");
 });
 document.getElementById("back-from-multiuse-select").addEventListener("click", () => showScreen("home"));
 document.getElementById("multiuse-select-decoder").addEventListener("click", () => {
+  gtag("event", "menu_click", { menu_name: "다중이용업소해당여부판독기" });
   multiuseRestart();
   showScreen("multiuse");
 });
 document.getElementById("multiuse-select-safety").addEventListener("click", () => {
+  gtag("event", "menu_click", { menu_name: "다중이용업소에설치할안전시설탐색" });
   explorerRuntime.mode = "multiuse-only";
   explorerRuntime.from = "multiuseSelect";
   applyExplorerModeUI();
@@ -6567,6 +6568,7 @@ function yearRenderChoiceStep(step) {
       yearState.answers[step.key] = option.value;
       // 분법 이전/이후 선택 시 허가일 기본값 자동 전환
       if (step.key === "yEraChoice") {
+        gtag("event", "menu_click", { menu_name: option.value === "before2004" ? "소방시설탐색기-자세한버전(소방법분법이전)" : "소방시설탐색기-자세한버전(소방법분법이후)" });
         yearState.answers.yPermitDate = option.value === "before2004" ? "1992-07-28" : "2019-02-18";
       }
       yearRenderCurrentStep();
@@ -10626,7 +10628,10 @@ document.getElementById("year-back-to-main-result").addEventListener("click", ()
 document.getElementById("year-restart-from-multiuse").addEventListener("click", () => yearWizardRestart());
 document.getElementById("back-from-date").addEventListener("click", () => showScreen("home"));
 document.getElementById("back-from-guide").addEventListener("click", () => showScreen("home"));
-document.getElementById("open-guide").addEventListener("click", () => showScreen("guide"));
+document.getElementById("open-guide").addEventListener("click", () => {
+  gtag("event", "menu_click", { menu_name: "이용안내" });
+  showScreen("guide");
+});
 
 (function initIntroVideo() {
   const INTRO_SEEN_KEY = "introVideoSeen_v4";
@@ -11804,10 +11809,12 @@ function renderReportGuide(restoreScroll) {
     `;
     root.appendChild(selWrap);
     document.getElementById('rg-sel-inspection').addEventListener('click', function () {
+      gtag("event", "menu_click", { menu_name: "자체점검가이드-작동종합대상판독기" });
       inspectionRestart();
       showScreen('inspection');
     });
     document.getElementById('rg-sel-guide').addEventListener('click', function () {
+      gtag("event", "menu_click", { menu_name: "자체점검가이드-보고서읽는법" });
       rgState.mode = 'guide';
       rgState.tab = 'page1';
       renderReportGuide();
@@ -12452,7 +12459,6 @@ function renderFacilityBlock(c, item, selectedIds) {
 }
 
 document.getElementById('open-report-guide').addEventListener('click', function () {
-  gtag("event", "menu_click", { menu_name: "자체점검가이드" });
   rgState.mode = 'select';
   showScreen('reportGuide');
   renderReportGuide();
