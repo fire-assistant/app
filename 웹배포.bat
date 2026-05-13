@@ -30,6 +30,8 @@ if exist pdf.worker.min.js copy /Y pdf.worker.min.js  docs\pdf.worker.min.js  > 
 if exist report-guide.pdf  copy /Y report-guide.pdf   docs\report-guide.pdf   > nul  &  copy /Y report-guide.pdf   www\report-guide.pdf   > nul
 if exist image xcopy /Y /E /I image docs\image > nul
 if exist image xcopy /Y /E /I image www\image  > nul
+if exist assets xcopy /Y /E /I assets docs\assets > nul
+if exist assets xcopy /Y /E /I assets www\assets  > nul
 if exist video xcopy /Y /E /I video docs\video > nul
 if exist video xcopy /Y /E /I video www\video  > nul
 if exist loading xcopy /Y /E /I loading docs\loading > nul
