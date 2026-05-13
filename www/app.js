@@ -6392,6 +6392,27 @@ function sortByYearStepOrder(activeSteps) {
     return yearSteps.indexOf(a) - yearSteps.indexOf(b);
   });
 }
+
+const YEAR_NEIGHBORHOOD_MULTIUSE_KEYS = [
+  "yHasMultiuseBusiness",
+  "yMultiuseSimpleSprinklerCheck",
+  "yMultiuseOnSecondToTenthFloor",
+  "yMultiuseUsesAV",
+  "yMultiuseHasGasFacility",
+  "yMultiuseHasRooms",
+  "yMultiuseHasEvacuationRoute",
+];
+
+const YEAR_LODGING_MULTIUSE_KEYS = [
+  "yLodgingHasMultiuseBusiness",
+  "yLodgingMultiuseSimpleSprinklerCheck",
+  "yLodgingMultiuseOnSecondToTenthFloor",
+  "yLodgingMultiuseUsesAV",
+  "yLodgingMultiuseHasGasFacility",
+  "yLodgingMultiuseHasRooms",
+  "yLodgingMultiuseHasEvacuationRoute",
+];
+
 function yearGetActiveSteps() {
   const ya = yearState.answers;
   const pd = yPermitDateInt();
@@ -6420,7 +6441,7 @@ function yearGetActiveSteps() {
   const activeSteps = yearSteps.filter((step) => {
     if (step.key === "yEraChoice") return true;
     if (["yPermitDate", "yOccupancyType"].includes(step.key)) return !!ya.yEraChoice;
-    if (YEAR_EXPLORER_MULTIUSE_KEYS.includes(step.key)) return false;
+    if (YEAR_EXPLORER_MULTIUSE_KEYS.includes(step.key) && ya.yEraChoice !== "before2004") return false;
 
     // ── 분법 이전 근린생활시설 ──
     if (ya.yEraChoice === "before2004" && ya.yOccupancyType === "neighborhood") {
@@ -6428,6 +6449,13 @@ function yearGetActiveSteps() {
       const ag = parseInt(ya.yAboveGroundFloors) || 0;
       const preBefore1992 = pd > 0 && pd < YD.D19920728;
       const postAfter1992Before2004 = pd >= YD.D19920728;
+      if (YEAR_NEIGHBORHOOD_MULTIUSE_KEYS.includes(step.key)) {
+        if (pd < YD.D19970927) return false;
+        if (step.key === "yHasMultiuseBusiness") return true;
+        if (ya.yHasMultiuseBusiness !== "yes") return false;
+        if (step.key === "yMultiuseSimpleSprinklerCheck") return pd >= YD.D20010521;
+        return true;
+      }
       // 항상 표시
       const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet", "yFirstSecondFloorArea", "yParkingElecSet"];
       if (alwaysShow.includes(step.key)) return true;
@@ -6454,6 +6482,13 @@ function yearGetActiveSteps() {
       const ag = parseInt(ya.yAboveGroundFloors) || 0;
       const preBefore1992 = pd > 0 && pd < YD.D19920728;
       const postAfter1992 = pd >= YD.D19920728;
+      if (YEAR_LODGING_MULTIUSE_KEYS.includes(step.key)) {
+        if (pd < YD.D19970927) return false;
+        if (step.key === "yLodgingHasMultiuseBusiness") return true;
+        if (ya.yLodgingHasMultiuseBusiness !== "yes") return false;
+        if (step.key === "yLodgingMultiuseSimpleSprinklerCheck") return pd >= YD.D20010521;
+        return true;
+      }
       const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet", "yBefore2004LodgingIsTouristHotel", "yBefore2004LodgingParkingElecSet"];
       if (alwaysShow.includes(step.key)) return true;
       // 1992년 이전 전용 스텝
@@ -6811,13 +6846,18 @@ function yearRenderCompoundStep(step) {
     const toggleOption = (name) => { yearState.answers[name] = yearState.answers[name] === "yes" ? "no" : "yes"; yearRenderCurrentStep(); };
     const optionList = document.createElement("div");
     optionList.className = "choice-list";
-    [
+    const options = yearState.answers.yEraChoice === "before2004"
+      ? [
+        { name: "yMultiuseInBasement", label: "지하층 영업장 바닥면적 150㎡ 이상", description: "2001.5.21 이후 분법 이전 다중이용업소 간이스프링클러 기준" },
+      ]
+      : [
       { name: "yMultiuseInBasement", label: "지하층에 설치돼 있음", description: "해당되면 선택" },
       { name: "yMultiuseIsSealed", label: "밀폐구조의 영업장", description: "해당되면 선택" },
       { name: "yMultiuseIsPostpartum", label: "산후조리업", description: "해당되면 선택" },
       { name: "yMultiuseIsGosiwon", label: "고시원", description: "해당되면 선택" },
       { name: "yMultiuseIsGunRange", label: "권총사격장", description: "해당되면 선택" },
-    ].forEach((option) => {
+    ];
+    options.forEach((option) => {
       optionList.appendChild(makeToggleChoiceButton({ label: option.label, description: option.description, selected: ya[option.name] === "yes", onClick: () => toggleOption(option.name) }));
     });
     const noneSelected = selectedKeys.every((name) => ya[name] !== "yes");
@@ -6830,13 +6870,18 @@ function yearRenderCompoundStep(step) {
     const toggleOption = (name) => { yearState.answers[name] = yearState.answers[name] === "yes" ? "no" : "yes"; yearRenderCurrentStep(); };
     const optionList = document.createElement("div");
     optionList.className = "choice-list";
-    [
+    const options = yearState.answers.yEraChoice === "before2004"
+      ? [
+        { name: "yLodgingMultiuseInBasement", label: "지하층 영업장 바닥면적 150㎡ 이상", description: "2001.5.21 이후 분법 이전 다중이용업소 간이스프링클러 기준" },
+      ]
+      : [
       { name: "yLodgingMultiuseInBasement", label: "지하층에 설치돼 있음", description: "해당되면 선택" },
       { name: "yLodgingMultiuseIsSealed", label: "밀폐구조의 영업장", description: "해당되면 선택" },
       { name: "yLodgingMultiuseIsPostpartum", label: "산후조리업", description: "해당되면 선택" },
       { name: "yLodgingMultiuseIsGosiwon", label: "고시원", description: "해당되면 선택" },
       { name: "yLodgingMultiuseIsGunRange", label: "권총사격장", description: "해당되면 선택" },
-    ].forEach((option) => {
+    ];
+    options.forEach((option) => {
       optionList.appendChild(makeToggleChoiceButton({ label: option.label, description: option.description, selected: ya[option.name] === "yes", onClick: () => toggleOption(option.name) }));
     });
     const noneSelected = selectedKeys.every((name) => ya[name] !== "yes");
@@ -6941,6 +6986,8 @@ function yearNormalizeAnswers() {
   const wlArea = parseFloat(ya.yWindowlessArea) || 0;
   return {
     pd,
+    permitDateInt: pd,
+    eraChoice: ya.yEraChoice,
     occupancyType: ya.yOccupancyType,
     totalArea: parseFloat(ya.yTotalArea) || 0,
     aboveGroundFloors: parseInt(ya.yAboveGroundFloors) || 0,
@@ -7552,13 +7599,9 @@ function yearEvaluateNeighborhoodBefore2004(inp) {
   if (pd < YD.D20010521) {
     results.push(makeResult(categories.extinguishing, "간이스프링클러설비", "", "notRequired",
       "해당 시행 시기에는 간이스프링클러설비 규정이 없었습니다.", ""));
-  } else if (bf > 0 && ba >= 150) {
-    // 2001.05.21~2004.05.29: 다중이용업소의 지하층 영업장 150㎡이상이면 설치 대상
-    results.push(makeResult(categories.extinguishing, "간이스프링클러설비", "", "review",
-      "2001년 5월 21일부터 건물 내 다중이용업소(노래연습장·단란주점·휴게음식점 등)의 지하층 영업장 바닥면적이 150㎡ 이상이면 간이스프링클러설비 설치 대상입니다. 해당 영업장 여부를 확인하세요.", ""));
   } else {
     results.push(makeResult(categories.extinguishing, "간이스프링클러설비", "", "notRequired",
-      "다중이용업소 지하층 영업장이 없거나 면적 기준에 해당하지 않아 설치 대상이 아닙니다.", ""));
+      "분법 이전 시기에는 근린생활시설 자체에 대한 간이스프링클러설비 설치 의무가 없었습니다. 다중이용업소의 지하층 영업장 바닥면적이 150㎡ 이상인 경우에는 다중이용업소 안전시설에서 별도로 확인합니다.", ""));
   }
 
   // ── 물분무등소화설비 ──
@@ -8375,9 +8418,10 @@ function yearEvaluateMedicalBefore2004(inp) {
       "이 시기 의료시설의 일반 거실(병실 등)은 배연설비(현 제연설비) 설치 대상에서 제외됩니다.", ""));
   } else {
     const smokeCtrlReq = ag >= 11;
-    results.push(makeResult(categories.fireSupport, "제연설비", "", smokeCtrlReq ? "required" : "review",
-      smokeCtrlReq ? "지상 11층 이상으로 특별피난계단에 제연설비를 설치해야 합니다."
-      : "의료시설의 일반 거실·병실은 제연설비 설치 대상이 아닙니다. 다만 특별피난계단 및 비상용승강기의 계단실·승강장 부분에는 제연설비를 설치해야 합니다.", ""));
+    if (smokeCtrlReq) {
+      results.push(makeResult(categories.fireSupport, "제연설비", "", "required",
+        "지상 11층 이상으로 특별피난계단에 제연설비를 설치해야 합니다.", ""));
+    }
   }
 
   // ── 연결송수관설비 ──
@@ -8740,9 +8784,10 @@ function yearEvaluateElderlyBefore2004(inp) {
       "1992년 7월 28일 이전에는 노유자시설에 대한 배연설비(현 제연설비) 기준이 없었습니다.", ""));
   } else {
     const smokeCtrlReq = ag >= 11;
-    results.push(makeResult(categories.fireSupport, "제연설비", "", smokeCtrlReq ? "required" : "review",
-      smokeCtrlReq ? "지상 11층 이상으로 특별피난계단에 제연설비를 설치해야 합니다."
-      : "노유자시설의 일반 거실은 제연설비 설치 대상이 아닙니다. 다만 특별피난계단 및 비상용승강기의 계단실·승강장 부분에는 제연설비를 설치해야 합니다.", ""));
+    if (smokeCtrlReq) {
+      results.push(makeResult(categories.fireSupport, "제연설비", "", "required",
+        "지상 11층 이상으로 특별피난계단에 제연설비를 설치해야 합니다.", ""));
+    }
   }
 
   // ── 연결송수관설비 ──
@@ -10253,6 +10298,50 @@ function yearBuildNeighborhoodExceptionItems(results, inp) {
   return exceptionItems;
 }
 
+function yearShouldShowMultiuseSafetyButton(inp) {
+  if (inp.eraChoice === "before2004" && inp.permitDateInt < YD.D19970927) return false;
+  return (inp.occupancyType === "neighborhood" && inp.hasMultiuseBusiness) ||
+    (inp.occupancyType === "lodging" && inp.lodgingHasMultiuseBusiness);
+}
+
+function yearUpdateMultiuseSafetyButton(inp) {
+  const btn = document.getElementById("year-open-multiuse-safety");
+  if (!btn) return;
+  btn.classList.toggle("hidden", !yearShouldShowMultiuseSafetyButton(inp));
+}
+
+function insertAfterFirstItem(items, newItem) {
+  const next = [...items];
+  next.splice(Math.min(1, next.length), 0, newItem);
+  return next;
+}
+
+function normalizeBefore2004MultiuseFacilities(input, multiuse, isLodging = false) {
+  if (input.eraChoice !== "before2004") return multiuse;
+  const underground150 = isLodging ? input.lodgingMultiuseInBasement : input.multiuseInBasement;
+  const simpleItem = {
+    category: categories.extinguishing,
+    name: "간이스프링클러설비",
+    status: "required",
+    reason: "2001년 5월 21일부터 분법 이전까지 다중이용업소의 지하층 영업장 바닥면적이 150㎡ 이상이면 간이스프링클러설비 설치 대상입니다.",
+  };
+  const stripSimple = (items) => (items || []).filter((item) => item.name !== "간이스프링클러설비");
+  let requiredItems = stripSimple(multiuse.requiredItems);
+  let reasonItems = stripSimple(multiuse.reasonItems);
+  if (input.permitDateInt >= YD.D20010521 && underground150) {
+    requiredItems = insertAfterFirstItem(requiredItems, simpleItem);
+    reasonItems = insertAfterFirstItem(reasonItems, simpleItem);
+  }
+  return { ...multiuse, requiredItems, reasonItems };
+}
+
+function yearEvaluateMultiuseFacilitiesForCurrentEra(inp) {
+  if (inp.occupancyType === "lodging" && inp.lodgingHasMultiuseBusiness) {
+    return normalizeBefore2004MultiuseFacilities(inp, evaluateLodgingMultiuseFacilities(inp), true);
+  }
+  return normalizeBefore2004MultiuseFacilities(inp, evaluateMultiuseFacilities(inp), false);
+}
+
 function yearShowResults() {
   if (!yearCurrentStepIsValid()) {
     showToast("현재 질문의 값을 먼저 입력해 주세요.");
@@ -10287,6 +10376,7 @@ function yearShowResults() {
     renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
+    yearUpdateMultiuseSafetyButton(inp);
     showYearResultWithLoading();
     return;
   }
@@ -10312,6 +10402,7 @@ function yearShowResults() {
     renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
+    yearUpdateMultiuseSafetyButton(inp);
     showYearResultWithLoading();
     return;
   }
@@ -10337,6 +10428,7 @@ function yearShowResults() {
     renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
+    yearUpdateMultiuseSafetyButton(inp);
     showYearResultWithLoading();
     return;
   }
@@ -10363,6 +10455,7 @@ function yearShowResults() {
     renderYearExtraItems(inp);
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
+    yearUpdateMultiuseSafetyButton(inp);
     showYearResultWithLoading();
     return;
   }
@@ -10387,6 +10480,7 @@ function yearShowResults() {
     renderSimpleRequiredList(allRequiredItems, "year-required-list");
     renderResultGroup("year-criteria-list", results, [], allRequiredItems.map((i) => i.name));
     renderResultGroup("year-exception-list", exceptionItems);
+    yearUpdateMultiuseSafetyButton(inp);
     showYearResultWithLoading();
     return;
   }
@@ -10484,13 +10578,8 @@ function yearShowResults() {
   renderResultGroup("year-criteria-list", results, [...excludedNames], requiredItems.map((i) => i.name));
   renderResultGroup("year-exception-list", exceptionItems);
 
-  // 다중이용업소 버튼 표시 여부 (탐색기 결과에서 제거됨)
-  const yearMultiuseBtn = document.getElementById("year-open-multiuse-safety");
-  if (yearMultiuseBtn) {
-    {
-      yearMultiuseBtn.classList.add("hidden");
-    }
-  }
+  // 다중이용업소 버튼 표시 여부
+  yearUpdateMultiuseSafetyButton(inp);
 
   showYearResultWithLoading();
 }
@@ -10651,12 +10740,7 @@ document.getElementById("year-open-multiuse-safety").addEventListener("click", (
   const yearMultiuseSafetyCard = document.getElementById("year-multiuse-safety-card");
   const yearResultCard = document.getElementById("year-result-card");
   document.getElementById("year-multiuse-safety-summary").innerHTML = `<div class="ib-title">다중이용업소 안전시설 기준</div>입력한 조건을 기준으로 다중이용업소에 설치해야 하는 안전시설만 별도로 정리했습니다.`;
-  let multiuse;
-  if (inp.occupancyType === "lodging" && inp.lodgingHasMultiuseBusiness) {
-    multiuse = evaluateLodgingMultiuseFacilities(inp);
-  } else {
-    multiuse = evaluateMultiuseFacilities(inp);
-  }
+  const multiuse = yearEvaluateMultiuseFacilitiesForCurrentEra(inp);
   renderMultiuseRequiredSafetyList(multiuse, "year-multiuse-required-list");
   renderResultGroup("year-multiuse-reason-list", multiuse.reasonItems);
   const transitionalContainer = document.getElementById("year-multiuse-transitional-notes");
