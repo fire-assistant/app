@@ -1,0 +1,342 @@
+[
+  {
+    "name": "surprised",
+    "expected_frames": 6,
+    "found_frames": 6,
+    "output": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\animation-v2\\sheet-extracted\\surprised.png",
+    "bboxes": [
+      [
+        158,
+        77,
+        280,
+        225
+      ],
+      [
+        295,
+        79,
+        422,
+        225
+      ],
+      [
+        442,
+        54,
+        559,
+        211
+      ],
+      [
+        565,
+        60,
+        689,
+        211
+      ],
+      [
+        704,
+        78,
+        825,
+        225
+      ],
+      [
+        842,
+        78,
+        962,
+        225
+      ]
+    ]
+  },
+  {
+    "name": "clap",
+    "expected_frames": 6,
+    "found_frames": 6,
+    "output": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\animation-v2\\sheet-extracted\\clap.png",
+    "bboxes": [
+      [
+        154,
+        290,
+        273,
+        435
+      ],
+      [
+        296,
+        291,
+        408,
+        435
+      ],
+      [
+        429,
+        290,
+        542,
+        435
+      ],
+      [
+        564,
+        290,
+        680,
+        435
+      ],
+      [
+        702,
+        291,
+        816,
+        435
+      ],
+      [
+        837,
+        290,
+        953,
+        435
+      ]
+    ]
+  },
+  {
+    "name": "idle_tail",
+    "expected_frames": 4,
+    "found_frames": 4,
+    "output": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\animation-v2\\sheet-extracted\\idle_tail.png",
+    "bboxes": [
+      [
+        165,
+        489,
+        283,
+        632
+      ],
+      [
+        342,
+        489,
+        461,
+        632
+      ],
+      [
+        524,
+        489,
+        642,
+        632
+      ],
+      [
+        689,
+        489,
+        803,
+        632
+      ]
+    ]
+  },
+  {
+    "name": "salute",
+    "expected_frames": 6,
+    "found_frames": 6,
+    "output": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\animation-v2\\sheet-extracted\\salute.png",
+    "bboxes": [
+      [
+        150,
+        692,
+        267,
+        834
+      ],
+      [
+        286,
+        692,
+        403,
+        834
+      ],
+      [
+        421,
+        692,
+        536,
+        834
+      ],
+      [
+        556,
+        690,
+        669,
+        834
+      ],
+      [
+        691,
+        692,
+        807,
+        834
+      ],
+      [
+        829,
+        692,
+        944,
+        834
+      ]
+    ]
+  },
+  {
+    "name": "sleepy",
+    "expected_frames": 5,
+    "found_frames": 5,
+    "output": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\animation-v2\\sheet-extracted\\sleepy.png",
+    "bboxes": [
+      [
+        149,
+        881,
+        264,
+        1020
+      ],
+      [
+        292,
+        881,
+        405,
+        1020
+      ],
+      [
+        436,
+        880,
+        550,
+        1018
+      ],
+      [
+        581,
+        880,
+        695,
+        1017
+      ],
+      [
+        727,
+        880,
+        841,
+        1020
+      ]
+    ]
+  },
+  {
+    "name": "sulk",
+    "expected_frames": 5,
+    "found_frames": 5,
+    "output": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\animation-v2\\sheet-extracted\\sulk.png",
+    "bboxes": [
+      [
+        151,
+        1065,
+        262,
+        1204
+      ],
+      [
+        292,
+        1065,
+        402,
+        1204
+      ],
+      [
+        438,
+        1066,
+        546,
+        1203
+      ],
+      [
+        582,
+        1064,
+        692,
+        1204
+      ],
+      [
+        721,
+        1064,
+        830,
+        1204
+      ]
+    ]
+  },
+  {
+    "name": "eat",
+    "expected_frames": 6,
+    "found_frames": 6,
+    "output": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\animation-v2\\sheet-extracted\\eat.png",
+    "bboxes": [
+      [
+        151,
+        1247,
+        262,
+        1378
+      ],
+      [
+        289,
+        1247,
+        398,
+        1378
+      ],
+      [
+        417,
+        1247,
+        527,
+        1378
+      ],
+      [
+        545,
+        1247,
+        655,
+        1378
+      ],
+      [
+        681,
+        1247,
+        791,
+        1378
+      ],
+      [
+        810,
+        1247,
+        920,
+        1378
+      ]
+    ]
+  },
+  {
+    "name": "happy_jump",
+    "expected_frames": 8,
+    "found_frames": 8,
+    "output": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\animation-v2\\sheet-extracted\\happy_jump.png",
+    "bboxes": [
+      [
+        140,
+        1445,
+        233,
+        1560
+      ],
+      [
+        243,
+        1463,
+        340,
+        1561
+      ],
+      [
+        350,
+        1425,
+        445,
+        1539
+      ],
+      [
+        454,
+        1411,
+        549,
+        1525
+      ],
+      [
+        555,
+        1434,
+        650,
+        1543
+      ],
+      [
+        660,
+        1471,
+        754,
+        1561
+      ],
+      [
+        764,
+        1437,
+        861,
+        1548
+      ],
+      [
+        871,
+        1445,
+        964,
+        1560
+      ]
+    ]
+  }
+]

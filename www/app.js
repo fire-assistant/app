@@ -11076,6 +11076,7 @@ document.getElementById("open-guide").addEventListener("click", () => {
   function openIntroVideo(markSeen) {
     clearTimeout(closeTimer);
     try { localStorage.removeItem("fire-intro:t"); } catch {}
+    document.documentElement.setAttribute("data-intro-active", "true");
     // Show overlay BEFORE setting iframe src so iframe isn't loaded
     // inside a display:none parent (which throttles its timers/RAF)
     overlay.classList.remove("hidden");
@@ -11091,6 +11092,7 @@ document.getElementById("open-guide").addEventListener("click", () => {
     closeTimer = null;
     overlay.classList.add("hidden");
     frame.src = "about:blank";
+    document.documentElement.removeAttribute("data-intro-active");
   }
 
   closeBtn.addEventListener("click", closeIntroVideo);
@@ -11105,6 +11107,7 @@ document.getElementById("open-guide").addEventListener("click", () => {
   }
 
   if (!localStorage.getItem(INTRO_SEEN_KEY)) {
+    document.documentElement.setAttribute("data-intro-active", "true");
     requestAnimationFrame(() => openIntroVideo(true));
   }
 })();
@@ -13454,12 +13457,41 @@ applyDevMode();
     }, 80);
   }
 
+  let leaveTimer = null;
+
+  function cancelLeaving() {
+    if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
+    root.classList.remove("is-leaving");
+    const existing = root.querySelector(".ilgu-house");
+    if (existing) existing.remove();
+  }
+
+  function playLeavingAnimation(onDone) {
+    cancelLeaving();
+    if (typeof stopWander === "function") { try { stopWander(); } catch {} }
+    setState("failed");
+    const house = document.createElement("div");
+    house.className = "ilgu-house";
+    house.textContent = "🏠";
+    house.setAttribute("aria-hidden", "true");
+    root.appendChild(house);
+    root.classList.add("is-leaving");
+    leaveTimer = setTimeout(() => {
+      root.classList.remove("is-leaving");
+      house.remove();
+      leaveTimer = null;
+      onDone();
+    }, 1500);
+  }
+
   function hideAssistant() {
     localStorage.setItem("ilguAssistantDisabled", "true");
     localStorage.removeItem("ilguAssistantVisible");
     root.classList.remove("is-open");
-    root.style.display = "none";
-    setState("idle");
+    playLeavingAnimation(() => {
+      root.style.display = "none";
+      setState("idle");
+    });
   }
 
   function showCardHelp(card) {
@@ -13557,6 +13589,7 @@ applyDevMode();
 
   function showAssistant(options) {
     const opts = options || {};
+    cancelLeaving();
     if (!syncAvailability()) return;
     localStorage.removeItem("ilguAssistantDisabled");
     localStorage.setItem("ilguAssistantVisible", "true");
@@ -13568,7 +13601,13 @@ applyDevMode();
       setState("idle");
     }
 
-    if (opts.anchor) {
+    if (opts.bottomRight) {
+      localStorage.removeItem("ilguAssistantPosition");
+      root.style.left = "";
+      root.style.top = "";
+      root.style.right = "";
+      root.style.bottom = "";
+    } else if (opts.anchor) {
       const rect = opts.anchor.getBoundingClientRect();
       const x = rect.right - (root.offsetWidth || 374);
       const y = rect.bottom + 10;
@@ -13578,6 +13617,7 @@ applyDevMode();
   }
 
   window.showIlguAssistant = showAssistant;
+  window.hideIlguAssistant = hideAssistant;
 
   window.addEventListener("resize", function () {
     syncAvailability();
@@ -13671,11 +13711,26 @@ applyDevMode();
   syncSummonButton();
   window.addEventListener("resize", syncSummonButton);
 
+  function isIlguCurrentlyVisible() {
+    const root = document.getElementById("ilgu-assistant");
+    if (!root) return false;
+    if (localStorage.getItem("ilguAssistantDisabled") === "true") return false;
+    return window.getComputedStyle(root).display !== "none";
+  }
+
   btn.addEventListener("click", function (event) {
     event.stopPropagation();
     if (btn.hidden) return;
-    if (typeof window.showIlguAssistant === "function") {
-      window.showIlguAssistant({ open: true, anchor: btn });
+    if (isIlguCurrentlyVisible()) {
+      if (typeof window.hideIlguAssistant === "function") {
+        window.hideIlguAssistant();
+      }
+      btn.classList.remove("is-active");
+    } else {
+      if (typeof window.showIlguAssistant === "function") {
+        window.showIlguAssistant({ open: true, bottomRight: true });
+      }
+      btn.classList.add("is-active");
     }
   });
 })();

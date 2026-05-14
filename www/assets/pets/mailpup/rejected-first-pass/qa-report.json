@@ -1,0 +1,272 @@
+[
+  {
+    "name": "surprised",
+    "frames": 6,
+    "draft": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\first-pass\\phase1-strips\\surprised-strict-chromakey.png",
+    "processed": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\first-pass\\processed\\surprised.png",
+    "draft_size": [
+      2172,
+      724
+    ],
+    "processed_size": [
+      1152,
+      208
+    ],
+    "stats": {
+      "counts": {
+        "fur": 51140,
+        "shirt": 12662,
+        "navy": 12159,
+        "cheek": 2772,
+        "outline": 15123
+      },
+      "averages": {
+        "fur": [
+          248,
+          223,
+          187
+        ],
+        "shirt": [
+          246,
+          144,
+          53
+        ],
+        "navy": [
+          47,
+          56,
+          76
+        ],
+        "cheek": [
+          245,
+          168,
+          103
+        ],
+        "outline": [
+          16,
+          17,
+          17
+        ]
+      }
+    },
+    "status": "processed"
+  },
+  {
+    "name": "clap",
+    "frames": 6,
+    "draft": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\first-pass\\phase1-strips\\clap-chromakey.png",
+    "processed": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\first-pass\\processed\\clap.png",
+    "draft_size": [
+      2172,
+      724
+    ],
+    "processed_size": [
+      1152,
+      208
+    ],
+    "stats": {
+      "counts": {
+        "fur": 54331,
+        "shirt": 13070,
+        "navy": 11409,
+        "cheek": 107,
+        "outline": 16753
+      },
+      "averages": {
+        "fur": [
+          248,
+          224,
+          190
+        ],
+        "shirt": [
+          246,
+          145,
+          53
+        ],
+        "navy": [
+          45,
+          54,
+          75
+        ],
+        "cheek": [
+          247,
+          141,
+          106
+        ],
+        "outline": [
+          15,
+          16,
+          16
+        ]
+      }
+    },
+    "status": "processed"
+  },
+  {
+    "name": "idle_tail",
+    "frames": 4,
+    "draft": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\first-pass\\phase1-strips\\idle_tail-chromakey.png",
+    "processed": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\first-pass\\processed\\idle_tail.png",
+    "draft_size": [
+      2172,
+      724
+    ],
+    "processed_size": [
+      768,
+      208
+    ],
+    "stats": {
+      "counts": {
+        "fur": 36110,
+        "shirt": 9649,
+        "navy": 7745,
+        "cheek": 62,
+        "outline": 10649
+      },
+      "averages": {
+        "fur": [
+          248,
+          223,
+          188
+        ],
+        "shirt": [
+          245,
+          145,
+          56
+        ],
+        "navy": [
+          45,
+          55,
+          76
+        ],
+        "cheek": [
+          247,
+          155,
+          94
+        ],
+        "outline": [
+          15,
+          17,
+          16
+        ]
+      }
+    },
+    "status": "processed"
+  },
+  {
+    "name": "salute",
+    "frames": 6,
+    "draft": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\first-pass\\phase1-strips\\salute-chromakey.png",
+    "processed": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\first-pass\\processed\\salute.png",
+    "draft_size": [
+      2172,
+      724
+    ],
+    "processed_size": [
+      1152,
+      208
+    ],
+    "stats": {
+      "counts": {
+        "fur": 52325,
+        "shirt": 16302,
+        "navy": 11605,
+        "cheek": 87,
+        "outline": 15363
+      },
+      "averages": {
+        "fur": [
+          248,
+          225,
+          191
+        ],
+        "shirt": [
+          246,
+          145,
+          54
+        ],
+        "navy": [
+          45,
+          54,
+          75
+        ],
+        "cheek": [
+          242,
+          152,
+          106
+        ],
+        "outline": [
+          15,
+          16,
+          16
+        ]
+      }
+    },
+    "status": "processed"
+  },
+  {
+    "name": "sleepy",
+    "frames": 5,
+    "draft": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\first-pass\\phase1-strips\\sleepy-chromakey.png",
+    "processed": "C:\\Users\\dotel\\Desktop\\claude\\fireapp\\supply-fireapp\\assets\\pets\\mailpup\\first-pass\\processed\\sleepy.png",
+    "draft_size": [
+      2172,
+      724
+    ],
+    "processed_size": [
+      960,
+      208
+    ],
+    "stats": {
+      "counts": {
+        "fur": 46694,
+        "shirt": 11940,
+        "navy": 9310,
+        "cheek": 52,
+        "outline": 12614
+      },
+      "averages": {
+        "fur": [
+          248,
+          224,
+          189
+        ],
+        "shirt": [
+          245,
+          145,
+          55
+        ],
+        "navy": [
+          45,
+          55,
+          75
+        ],
+        "cheek": [
+          237,
+          154,
+          113
+        ],
+        "outline": [
+          15,
+          17,
+          16
+        ]
+      }
+    },
+    "status": "processed"
+  },
+  {
+    "name": "sulk",
+    "status": "missing",
+    "frames": 5
+  },
+  {
+    "name": "eat",
+    "status": "missing",
+    "frames": 6
+  },
+  {
+    "name": "happy_jump",
+    "status": "missing",
+    "frames": 8
+  }
+]
