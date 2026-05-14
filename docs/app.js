@@ -11059,7 +11059,7 @@ document.getElementById("open-guide").addEventListener("click", () => {
 });
 
 (function initIntroVideo() {
-  const INTRO_SEEN_KEY = "introVideoSeen_v4";
+  const INTRO_SEEN_KEY = "introVideoSeen_v5";
   const INTRO_DURATION_MS = 105000;
   const overlay = document.getElementById("intro-video-overlay");
   const frame = document.getElementById("intro-video-frame");
