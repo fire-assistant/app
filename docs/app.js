@@ -13270,6 +13270,8 @@ applyDevMode();
   const MOBILE_DEVICE_RE = /Android|iPhone|iPad|iPod|Mobile/i;
   const states = {
     idle: { row: 0, frames: 6, ms: 260 },
+    "running-right": { row: 1, frames: 8, ms: 180 },
+    "running-left": { row: 2, frames: 8, ms: 180 },
     waving: { row: 3, frames: 4, ms: 220 },
     jumping: { row: 4, frames: 5, ms: 190 },
     failed: { row: 5, frames: 8, ms: 220 },
@@ -13414,6 +13416,10 @@ applyDevMode();
     sprite.style.backgroundPosition = (-frame * CELL_W) + "px " + (-state.row * CELL_H) + "px";
   }
 
+  function setStateIfChanged(name) {
+    if (currentState !== name) setState(name);
+  }
+
   function openPanel(title, body, actions) {
     panelTitle.textContent = title;
     panelText.textContent = body;
@@ -13480,6 +13486,7 @@ applyDevMode();
 
   let drag = null;
   button.addEventListener("pointerdown", function (event) {
+    stopWander();
     drag = {
       id: event.pointerId,
       startX: event.clientX,
@@ -13500,6 +13507,8 @@ applyDevMode();
     suppressClick = true;
     root.classList.add("dragging");
     root.classList.remove("is-open");
+    if (event.movementX > 0.3) setStateIfChanged("running-right");
+    else if (event.movementX < -0.3) setStateIfChanged("running-left");
     setPosition(drag.rootX + dx, drag.rootY + dy);
     const target = findDropTarget(event.clientX, event.clientY);
     if (target !== activeTarget) {
@@ -13520,7 +13529,12 @@ applyDevMode();
     savePosition();
     const wasMoved = drag.moved;
     drag = null;
-    if (wasMoved && target) showCardHelp(target);
+    if (wasMoved && target) {
+      showCardHelp(target);
+    } else if (wasMoved) {
+      setState("idle");
+    }
+    if (wasMoved) wanderPauseUntil = Date.now() + 10000;
     setTimeout(function () { suppressClick = false; }, 0);
   });
 
@@ -13571,6 +13585,71 @@ applyDevMode();
     setPosition(rect.left, rect.top);
     savePosition();
   });
+
+  // --- Autonomous left/right wander ---
+  let wanderRAF = null;
+  let wanderX = null;
+  let wanderDir = 1;
+  const WANDER_SPEED = 0.5;
+  let wanderPauseUntil = 0;
+  let nextBehaviorAt = 0;
+  let behaviorMode = "idle";
+
+  function canWander() {
+    if (root.style.display === "none") return false;
+    if (root.classList.contains("is-open")) return false;
+    if (root.classList.contains("dragging")) return false;
+    if (drag) return false;
+    if (Date.now() < wanderPauseUntil) return false;
+    return true;
+  }
+
+  function startWander() {
+    if (wanderRAF) return;
+    const rect = root.getBoundingClientRect();
+    wanderX = parseFloat(root.style.left) || rect.left;
+    wanderDir = Math.random() < 0.5 ? -1 : 1;
+    setStateIfChanged(wanderDir > 0 ? "running-right" : "running-left");
+    const step = function () {
+      if (!canWander()) { stopWander(); return; }
+      wanderX += wanderDir * WANDER_SPEED;
+      const maxX = window.innerWidth - root.offsetWidth - 8;
+      if (wanderX <= 8) { wanderX = 8; wanderDir = 1; setStateIfChanged("running-right"); }
+      else if (wanderX >= maxX) { wanderX = maxX; wanderDir = -1; setStateIfChanged("running-left"); }
+      const y = parseFloat(root.style.top) || root.getBoundingClientRect().top;
+      setPosition(wanderX, y);
+      wanderRAF = requestAnimationFrame(step);
+    };
+    wanderRAF = requestAnimationFrame(step);
+  }
+
+  function stopWander() {
+    if (wanderRAF) cancelAnimationFrame(wanderRAF);
+    wanderRAF = null;
+    if (currentState === "running-right" || currentState === "running-left") {
+      setState("idle");
+    }
+  }
+
+  function behaviorTick() {
+    if (!canWander()) {
+      if (wanderRAF) stopWander();
+      nextBehaviorAt = Date.now() + 1500;
+      behaviorMode = "idle";
+      return;
+    }
+    if (Date.now() < nextBehaviorAt) return;
+    if (behaviorMode === "wander") {
+      behaviorMode = "idle";
+      stopWander();
+      nextBehaviorAt = Date.now() + 3000 + Math.random() * 5000;
+    } else {
+      behaviorMode = "wander";
+      startWander();
+      nextBehaviorAt = Date.now() + 4000 + Math.random() * 6000;
+    }
+  }
+  setInterval(behaviorTick, 300);
 
   setState("idle");
 })();
