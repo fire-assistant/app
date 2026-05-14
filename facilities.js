@@ -11,7 +11,9 @@
   }
 
   function trackMenuClick(menuName) {
-    gtag("event", "menu_click", { menu_name: menuName });
+    if (typeof gtag === "function") {
+      gtag("event", "menu_click", { menu_name: menuName });
+    }
   }
 
   openBtn.addEventListener('click', () => {
@@ -62,6 +64,8 @@
     contentEl.appendChild(tabBar);
     contentEl.appendChild(contentArea);
   }
+
+  window.initFacilities = init;
 
   function encodePath(path) {
     return path.split('/').map((seg, i) => (i === 0 && (seg === '.' || seg === '..')) ? seg : encodeURIComponent(seg)).join('/');
