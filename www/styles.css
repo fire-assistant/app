@@ -1771,6 +1771,192 @@ html[data-theme="blossom"] .cl-dot-holiday::after { background: #7a40c0; }
   text-align: left;
 }
 
+/* ── Inspection Decoder: refreshed (도감/보고서읽는법 톤에 맞춤) ── */
+
+/* 카드 박스 자체를 투명화 — "카드 안의 카드" 구조 해체 */
+#inspection-content .wq-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 4px 2px 0;
+  margin-bottom: 0;
+}
+
+/* STEP 라벨: rg-section-label 톤 (가로선 + 우상단 단계 표기 느낌) */
+#inspection-content .wq-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 6px 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+
+#inspection-content .wq-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+#inspection-content .wq-title {
+  font-size: 17px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+
+#inspection-content .wq-sub {
+  font-size: 12px;
+  margin-bottom: 16px;
+  color: var(--text-muted);
+}
+
+/* 선택지: rg-grade-btn 톤으로 — 카드형, 좌측 dot 액센트 */
+#inspection-content .choice-list {
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+#inspection-content .choice-button {
+  position: relative;
+  padding: 12px 16px 12px 32px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  transition: background var(--transition), border-color var(--transition), color var(--transition), padding var(--transition);
+}
+
+#inspection-content .choice-button::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: background var(--transition), box-shadow var(--transition);
+}
+
+#inspection-content .choice-button:hover {
+  background: var(--surface3);
+  border-color: var(--text-dim);
+}
+
+#inspection-content .choice-button:hover::before {
+  background: var(--red-soft);
+  box-shadow: 0 0 8px var(--red);
+}
+
+#inspection-content .choice-button strong {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+}
+
+#inspection-content .choice-button span {
+  font-size: 11.5px;
+  margin-top: 3px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+
+/* 결과 박스: rg-accordion 헤더+바디 구조로 재해석 */
+#inspection-content .insp-result {
+  padding: 0;
+  margin-bottom: 14px;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  overflow: hidden;
+  background: transparent;
+}
+
+#inspection-content .insp-result.insp-comprehensive {
+  border: 1px solid rgba(217, 48, 37, 0.25);
+}
+
+#inspection-content .insp-result.insp-operational {
+  border: 1px solid rgba(66, 133, 244, 0.28);
+}
+
+/* badge → 헤더 영역 (rg-accordion-header 톤) */
+#inspection-content .ir-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 0;
+  border: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+#inspection-content .ir-badge::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+#inspection-content .insp-comprehensive .ir-badge {
+  background: rgba(217, 48, 37, 0.12);
+  color: var(--red-soft);
+  border-bottom: 1px solid rgba(217, 48, 37, 0.2);
+}
+
+#inspection-content .insp-comprehensive .ir-badge::before {
+  background: var(--red);
+  box-shadow: 0 0 6px var(--red);
+}
+
+#inspection-content .insp-operational .ir-badge {
+  background: rgba(66, 133, 244, 0.1);
+  color: #7db1ff;
+  border-bottom: 1px solid rgba(66, 133, 244, 0.22);
+}
+
+#inspection-content .insp-operational .ir-badge::before {
+  background: var(--blue);
+  box-shadow: 0 0 6px var(--blue);
+}
+
+/* title → 바디 상단 */
+#inspection-content .ir-title {
+  margin: 0;
+  padding: 16px 16px 8px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  line-height: 1.35;
+  background: var(--surface);
+}
+
+/* reason → 바디 하단 */
+#inspection-content .ir-reason {
+  margin: 0;
+  padding: 0 16px 16px;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--text-muted);
+  background: var(--surface);
+}
+
+/* 버튼을 카드 바깥 액션 영역처럼 */
+#inspection-content .btn-restart {
+  margin-top: 8px;
+}
+
 /* ?�?� Multiuse Decoder ?�?� */
 .wq-group-label {
   padding: 12px 2px 4px;
