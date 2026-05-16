@@ -3483,6 +3483,7 @@ function renderDateCalculator() {
   const root = document.getElementById("date-content");
   const prevLeftScroll = root.querySelector(".date-left")?.scrollTop ?? 0;
   const prevRightScroll = root.querySelector(".date-right")?.scrollTop ?? 0;
+  const prevTabsScroll = root.querySelector(".dc-mode-tabs")?.scrollLeft ?? 0;
   const activeElement = document.activeElement;
   const prevActiveId = activeElement ? activeElement.id : "";
   const mode = CALC_MODES[state.dateCalc.mode];
@@ -3772,6 +3773,7 @@ function renderDateCalculator() {
     ];
   }
 
+  const formatTimelineDate = (d) => `<span class="dc-timeline-date-year">${d.getFullYear()}년 </span>${d.getMonth() + 1}월 ${d.getDate()}일`;
   const timelineHTML = timelineNodes.map((n) => {
     if (n.edge) {
       return `<div class="dc-timeline-edge"><span class="dc-timeline-edge-label">${n.edge}</span></div>`;
@@ -3780,7 +3782,7 @@ function renderDateCalculator() {
       <div class="dc-timeline-node">
         <div class="dc-timeline-dot ${n.type}"></div>
         <div class="dc-timeline-label">${n.label}</div>
-        <div class="dc-timeline-date">${formatDate(n.date)}</div>
+        <div class="dc-timeline-date">${formatTimelineDate(n.date)}</div>
       </div>
     `;
   }).join("");
@@ -3891,6 +3893,17 @@ function renderDateCalculator() {
   if (newLeft && prevLeftScroll > 0) newLeft.scrollTop = prevLeftScroll;
   const newRight = root.querySelector(".date-right");
   if (newRight && prevRightScroll > 0) newRight.scrollTop = prevRightScroll;
+  const newTabs = root.querySelector(".dc-mode-tabs");
+  if (newTabs) {
+    const activeTab = newTabs.querySelector(".dc-mode-tab.active");
+    if (activeTab) {
+      const target = activeTab.offsetLeft - (newTabs.clientWidth - activeTab.offsetWidth) / 2;
+      const max = newTabs.scrollWidth - newTabs.clientWidth;
+      newTabs.scrollLeft = Math.max(0, Math.min(max, target));
+    } else if (prevTabsScroll > 0) {
+      newTabs.scrollLeft = prevTabsScroll;
+    }
+  }
 
   root.querySelectorAll("[data-mode]").forEach((button) => {
     button.addEventListener("click", () => {

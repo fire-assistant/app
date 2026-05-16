@@ -2296,13 +2296,20 @@ html[data-theme="blossom"] #date-content .dc-hero-date.dc-accent-blue { color: v
   color: var(--text);
 }
 #date-content .dc-timeline-edge {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 40px;
   height: 2px;
   background: linear-gradient(90deg, var(--border) 0%, var(--border2) 50%, var(--border) 100%);
   position: relative;
   margin: 0 -4px;
   align-self: center;
   transform: translateY(-10px);
+}
+@media (max-width: 899px) {
+  #date-content .dc-timeline { padding: 14px 0 4px; }
+  #date-content .dc-timeline-node { min-width: 0; }
+  #date-content .dc-timeline-date-year { display: none; }
+  #date-content .dc-timeline-edge { min-width: 60px; }
 }
 #date-content .dc-timeline-edge-label {
   position: absolute;
