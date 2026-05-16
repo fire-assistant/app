@@ -1957,6 +1957,129 @@ html[data-theme="blossom"] .cl-dot-holiday::after { background: #7a40c0; }
   margin-top: 8px;
 }
 
+/* ── PC 3:7 레이아웃 — 좌측 히스토리 + 우측 본문 ── */
+#inspection-content .insp-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+#inspection-content .insp-main {
+  flex: 1;
+  min-width: 0;
+}
+
+#inspection-content .insp-history {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  #inspection-content {
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  #inspection-content .insp-history {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 0 0 240px;
+    position: sticky;
+    top: 12px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+}
+
+#inspection-content .insp-history-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 2px 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+#inspection-content .insp-history-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+#inspection-content .insp-history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+}
+
+#inspection-content .insp-history-item:hover {
+  background: var(--surface2);
+  border-color: var(--border2);
+  transform: translateX(2px);
+}
+
+#inspection-content .insp-history-step {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.6px;
+  color: var(--text-dim);
+}
+
+#inspection-content .insp-history-q {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+#inspection-content .insp-history-a {
+  font-size: 11px;
+  color: var(--red-soft);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* ── 클릭 피드백: selected → 180ms 후 이동 ── */
+#inspection-content .choice-button.selected {
+  background: var(--red-dim2);
+  border-color: var(--red);
+  animation: inspChoicePulse 0.18s ease;
+}
+
+#inspection-content .choice-button.selected::before {
+  background: var(--red);
+  box-shadow: 0 0 10px var(--red), 0 0 20px rgba(217, 48, 37, 0.5);
+}
+
+#inspection-content .choice-button.selected strong {
+  color: var(--red-soft);
+}
+
+/* 글로벌 ::after 체크마크가 STEP 라벨 분위기와 충돌 → 숨김 */
+#inspection-content .choice-button.selected::after {
+  display: none;
+}
+
+@keyframes inspChoicePulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
 /* ?�?� Multiuse Decoder ?�?� */
 .wq-group-label {
   padding: 12px 2px 4px;

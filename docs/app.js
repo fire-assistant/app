@@ -3995,14 +3995,52 @@ const inspectionState = {
   current: "start",
 };
 
+function buildInspectionHistoryPanel() {
+  if (inspectionState.history.length === 0) return null;
+  const aside = document.createElement("aside");
+  aside.className = "insp-history";
+  const titleEl = document.createElement("div");
+  titleEl.className = "insp-history-title";
+  titleEl.textContent = "진행 내역";
+  aside.appendChild(titleEl);
+
+  inspectionState.history.forEach((entry, idx) => {
+    const nodeKey = typeof entry === "object" ? entry.node : entry;
+    const chosenLabel = typeof entry === "object" ? entry.label : "";
+    const node = inspectionNodes[nodeKey];
+    if (!node) return;
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "insp-history-item";
+    item.innerHTML = `
+      <span class="insp-history-step">STEP ${idx + 1}</span>
+      <span class="insp-history-q">${node.title}</span>
+      ${chosenLabel ? `<span class="insp-history-a">→ ${chosenLabel}</span>` : ""}
+    `;
+    item.addEventListener("click", () => inspectionJumpTo(idx));
+    aside.appendChild(item);
+  });
+
+  return aside;
+}
+
 function renderInspection() {
   const root = document.getElementById("inspection-content");
   const current = inspectionState.current;
   const currentStep = inspectionState.history.length + 1;
 
+  root.innerHTML = "";
+  const layout = document.createElement("div");
+  layout.className = "insp-layout";
+
+  const historyPanel = buildInspectionHistoryPanel();
+  if (historyPanel) layout.appendChild(historyPanel);
+
+  const main = document.createElement("div");
+  main.className = "insp-main";
+
   if (current && typeof current === "object") {
     const isComp = current.result === "comprehensive";
-    root.innerHTML = "";
     const card = document.createElement("div");
     card.className = "wq-card";
     card.innerHTML = `
@@ -4028,14 +4066,15 @@ function renderInspection() {
     restartBtn.textContent = "처음부터 다시";
     restartBtn.addEventListener("click", inspectionRestart);
     card.appendChild(restartBtn);
-    root.appendChild(card);
+    main.appendChild(card);
+    layout.appendChild(main);
+    root.appendChild(layout);
     return;
   }
 
   const node = inspectionNodes[current];
   if (!node) return;
 
-  root.innerHTML = "";
   const card = document.createElement("div");
   card.className = "wq-card";
 
@@ -4061,7 +4100,7 @@ function renderInspection() {
     btn.type = "button";
     btn.className = "choice-button";
     btn.innerHTML = `<strong>${option.label}</strong>${option.sub ? `<span>${option.sub}</span>` : ""}`;
-    btn.addEventListener("click", () => inspectionSelect(option));
+    btn.addEventListener("click", () => inspectionSelect(option, btn));
     list.appendChild(btn);
   });
   card.appendChild(list);
@@ -4076,22 +4115,43 @@ function renderInspection() {
     card.appendChild(backBtn);
   }
 
-  root.appendChild(card);
+  main.appendChild(card);
+  layout.appendChild(main);
+  root.appendChild(layout);
 }
 
-function inspectionSelect(option) {
-  inspectionState.history.push(inspectionState.current);
-  inspectionState.current = option.next;
-  renderInspection();
-  const scrollEl = document.querySelector("#screen-inspection .scroll-content");
-  if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: "smooth" });
+function inspectionSelect(option, btn) {
+  if (btn) {
+    btn.classList.add("selected");
+    // 같은 리스트 내 다른 버튼은 클릭 무효화
+    const list = btn.parentElement;
+    if (list) list.querySelectorAll("button").forEach((b) => { if (b !== btn) b.style.pointerEvents = "none"; });
+  }
+  const currentNodeKey = inspectionState.current;
+  setTimeout(() => {
+    inspectionState.history.push({ node: currentNodeKey, label: option.label });
+    inspectionState.current = option.next;
+    renderInspection();
+    const scrollEl = document.querySelector("#screen-inspection .scroll-content");
+    if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: "smooth" });
+  }, 180);
 }
 
 function inspectionBack() {
   if (inspectionState.history.length > 0) {
-    inspectionState.current = inspectionState.history.pop();
+    const last = inspectionState.history.pop();
+    inspectionState.current = typeof last === "object" ? last.node : last;
     renderInspection();
   }
+}
+
+function inspectionJumpTo(index) {
+  if (index < 0 || index >= inspectionState.history.length) return;
+  const target = inspectionState.history[index];
+  const targetNode = typeof target === "object" ? target.node : target;
+  inspectionState.history = inspectionState.history.slice(0, index);
+  inspectionState.current = targetNode;
+  renderInspection();
 }
 
 function inspectionRestart() {
