@@ -2026,10 +2026,10 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   gap: 14px;
 }
 
-/* 모드 탭 — 밑줄형 sticky */
+/* 모드 탭 — 밑줄형 sticky (topbar 아래 위치) */
 #date-content .dc-mode-tabs {
   position: sticky;
-  top: 0;
+  top: 56px;
   z-index: 5;
   display: flex;
   gap: 0;
@@ -2039,6 +2039,11 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   background: var(--bg);
   overflow-x: auto;
   scrollbar-width: none;
+}
+@media (min-width: 900px) {
+  #date-content .dc-mode-tabs {
+    top: 64px;
+  }
 }
 #date-content .dc-mode-tabs::-webkit-scrollbar { display: none; }
 
@@ -2541,13 +2546,20 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   padding: 4px 0;
 }
 
-/* PC: scroll-content padding 재조정 (date 전용) */
+/* date: 페이지 자체 스크롤로 전환 (height:100vh 해제) */
+#screen-date {
+  height: auto !important;
+  min-height: 100vh;
+  overflow: visible !important;
+}
+#screen-date .scroll-content {
+  overflow: visible !important;
+  padding: 16px;
+  display: block !important;
+}
 @media (min-width: 900px) {
   #screen-date .scroll-content {
-    overflow-y: auto;
-    overflow-x: hidden;
     padding: 0 20px 24px;
-    display: block;
   }
   #date-content {
     max-width: 1280px;
