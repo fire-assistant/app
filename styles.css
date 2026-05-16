@@ -2023,7 +2023,7 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
 #date-content {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 22px;
   width: 100%;
   min-width: 0;
 }
@@ -2145,7 +2145,7 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
 #date-content .dc-action-section .dc-action-toggle {
   display: flex;
   flex-direction: row;
-  gap: 8px;
+  gap: 14px;
   flex: 1;
   min-width: 0;
 }
@@ -2531,7 +2531,7 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
 #date-content .dc-ref-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 22px;
 }
 #date-content .dc-ref-accordion {
   border: 1px solid var(--border);
