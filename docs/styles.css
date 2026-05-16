@@ -2053,31 +2053,42 @@ html[data-theme="blossom"] .cl-dot-holiday::after { background: #7a40c0; }
   line-height: 1.4;
 }
 
-/* ── 클릭 피드백: selected → 180ms 후 이동 ── */
+/* ── 클릭 피드백: selected → 350ms 후 이동 ── */
+/* 선택한 버튼이 앞으로 솟아 확대됨 (lift + zoom) */
 #inspection-content .choice-button.selected {
-  background: var(--red-dim2);
+  background: var(--red-dim);
   border-color: var(--red);
-  animation: inspChoicePulse 0.18s ease;
+  z-index: 2;
+  animation: inspChoiceLift 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.05) forwards;
 }
 
 #inspection-content .choice-button.selected::before {
   background: var(--red);
-  box-shadow: 0 0 10px var(--red), 0 0 20px rgba(217, 48, 37, 0.5);
+  box-shadow: 0 0 8px var(--red);
 }
 
 #inspection-content .choice-button.selected strong {
   color: var(--red-soft);
 }
 
-/* 글로벌 ::after 체크마크가 STEP 라벨 분위기와 충돌 → 숨김 */
+/* 글로벌 ::after 체크마크 숨김 */
 #inspection-content .choice-button.selected::after {
   display: none;
 }
 
-@keyframes inspChoicePulse {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(0.97); }
-  100% { transform: scale(1); }
+@keyframes inspChoiceLift {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(217, 48, 37, 0);
+  }
+  45% {
+    transform: scale(1.07);
+    box-shadow: 0 10px 40px -8px rgba(217, 48, 37, 0.45);
+  }
+  100% {
+    transform: scale(1.06);
+    box-shadow: 0 8px 32px -10px rgba(217, 48, 37, 0.4);
+  }
 }
 
 /* ?�?� Multiuse Decoder ?�?� */

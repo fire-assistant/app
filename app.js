@@ -4134,7 +4134,7 @@ function inspectionSelect(option, btn) {
     renderInspection();
     const scrollEl = document.querySelector("#screen-inspection .scroll-content");
     if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: "smooth" });
-  }, 180);
+  }, 550);
 }
 
 function inspectionBack() {
