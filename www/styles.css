@@ -2053,7 +2053,7 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
 /* 모드 탭 — 밑줄형 sticky (topbar 아래 위치) */
 #date-content .dc-mode-tabs {
   position: sticky;
-  top: 56px;
+  top: 60px;
   z-index: 5;
   display: flex;
   gap: 0;
