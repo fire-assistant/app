@@ -2101,38 +2101,30 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   background: var(--surface);
 }
 #date-content .dc-hero-save-btn {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 2;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 1px solid var(--red);
-  border-radius: 999px;
-  background: var(--red-dim2);
-  color: var(--red-soft);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: -0.1px;
-  transition: background var(--transition), color var(--transition), transform var(--transition);
-}
-#date-content .dc-hero-save-btn:hover {
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 13px 16px;
+  border: none;
+  border-radius: 10px;
   background: var(--red);
   color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  box-shadow: 0 2px 8px rgba(217, 48, 37, 0.3);
+  transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+#date-content .dc-hero-save-btn:hover {
+  background: #e8352a;
+  box-shadow: 0 4px 14px rgba(217, 48, 37, 0.42);
 }
 #date-content .dc-hero-save-btn:active {
-  transform: scale(0.97);
-}
-@media (max-width: 600px) {
-  #date-content .dc-hero-save-btn .dc-hero-save-label {
-    display: none;
-  }
-  #date-content .dc-hero-save-btn {
-    padding: 8px 10px;
-  }
+  transform: scale(0.98);
 }
 
 /* noncompliance actionType 토글 (캘린더 위 별도 행) */
@@ -2211,6 +2203,7 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   flex-wrap: wrap;
   gap: 28px;
   align-items: flex-end;
+  justify-content: space-between;
 }
 #date-content .dc-hero-result {
   display: flex;
@@ -2660,6 +2653,12 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   overflow: visible !important;
   padding: 16px;
   display: block !important;
+}
+/* topbar = body 스크롤 시 sticky 유지 (PC media 글로벌 relative 오버라이드) */
+#screen-date .topbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 21;
 }
 @media (min-width: 900px) {
   #screen-date .scroll-content {

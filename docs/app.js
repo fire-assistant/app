@@ -3799,13 +3799,13 @@ function renderDateCalculator() {
     </div>
 
     <section class="dc-hero">
-      <button id="add-to-home-btn" class="dc-hero-save-btn" type="button" title="메인화면에 표시">
-        📌 <span class="dc-hero-save-label">메인화면에 표시</span>
-      </button>
       <div class="dc-hero-main">
         <div class="dc-hero-results">${heroResultsHTML}</div>
         <div class="dc-timeline">${timelineHTML}</div>
       </div>
+      <button id="add-to-home-btn" class="dc-hero-save-btn" type="button">
+        📌 <span class="dc-hero-save-label">메인화면에 표시</span>
+      </button>
     </section>
 
     ${mode.kind === "noncompliance_dual" ? `
