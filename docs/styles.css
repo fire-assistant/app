@@ -2051,19 +2051,30 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
 }
 @media (min-width: 900px) {
   .dc-split {
+    flex: 1;
+    min-height: 0;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 22px;
   }
-  .dc-split-left {
-    flex: 1 1 0;
-    min-width: 0;
-    position: sticky;
-    top: 84px;
-  }
+  .dc-split-left,
   .dc-split-right {
     flex: 1 1 0;
     min-width: 0;
+    min-height: 0;
+    padding-right: 4px;
+  }
+  .dc-split-left {
+    position: sticky;
+    top: 96px;
+    align-self: flex-start;
+    padding-bottom: 20px;
+  }
+  .dc-split-right {
+    max-height: var(--dc-side-height, none);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 20px;
   }
 }
 #date-content .dc-ref-body {
@@ -2633,6 +2644,25 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
 }
 #date-content .calc-table td { background: var(--surface); }
 #date-content .calc-table tr:last-child td { border-bottom: none; }
+#date-content .calc-table-manager th:first-child,
+#date-content .calc-table-manager td:first-child {
+  width: 24%;
+}
+#date-content .calc-table-manager th,
+#date-content .calc-table-manager td {
+  vertical-align: top;
+}
+#date-content .calc-table-manager td:last-child {
+  line-height: 1.65;
+}
+#date-content .dc-doc-item {
+  display: block;
+  padding-left: 1.35em;
+  text-indent: -1.35em;
+}
+#date-content .dc-doc-item + .dc-doc-item {
+  margin-top: 6px;
+}
 
 /* 보조자 인원 계산기 (별도 카드) */
 #date-content .dc-assistant-card {
@@ -6628,6 +6658,10 @@ html[data-theme="blossom"] .cal-day.holiday::after {
   right: 18px;
   bottom: 18px;
   z-index: 8500;
+  --ilgu-pet-scale: 1;
+  --ilgu-pet-button-w: 82px;
+  --ilgu-pet-button-h: 88px;
+  --ilgu-sprite-scale: 0.8;
   width: min(374px, calc(100vw - 16px));
   min-height: 199px;
   display: flex;
@@ -6640,6 +6674,10 @@ html[data-theme="blossom"] .cal-day.holiday::after {
 }
 
 .ilgu-assistant.dragging {
+  cursor: grabbing;
+}
+
+.ilgu-assistant.throwing .ilgu-pet-button {
   cursor: grabbing;
 }
 
@@ -6698,8 +6736,9 @@ html[data-intro-active="true"] .ilgu-summon-btn {
 }
 
 .ilgu-pet-button {
-  width: 82px;
-  height: 88px;
+  position: relative;
+  width: var(--ilgu-pet-button-w);
+  height: var(--ilgu-pet-button-h);
   border: 0;
   padding: 0;
   border-radius: 0;
@@ -6724,8 +6763,34 @@ html[data-intro-active="true"] .ilgu-summon-btn {
   background-repeat: no-repeat;
   background-size: 768px 936px;
   image-rendering: auto;
-  transform: scale(0.8);
+  transform: scale(var(--ilgu-sprite-scale));
   transform-origin: center bottom;
+}
+
+.ilgu-resize-handle {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  border-right: 2px solid rgba(236, 236, 236, 0.78);
+  border-bottom: 2px solid rgba(236, 236, 236, 0.78);
+  background: transparent;
+  cursor: nwse-resize;
+  opacity: 0;
+  pointer-events: auto;
+  transition: opacity var(--transition), transform var(--transition), border-color var(--transition);
+}
+
+.ilgu-pet-button:hover .ilgu-resize-handle,
+.ilgu-pet-button:focus-visible .ilgu-resize-handle,
+.ilgu-resize-handle:active {
+  opacity: 1;
+}
+
+.ilgu-resize-handle:active {
+  transform: scale(1.08);
+  border-color: rgba(255, 106, 95, 0.9);
 }
 
 .ilgu-assistant-panel {

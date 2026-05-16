@@ -3514,7 +3514,18 @@ function renderDateCalculator() {
   let assistantCalculatorSection = "";
   const tableClassName = mode.kind === "noncompliance_dual"
     ? "calc-table calc-table-noncompliance"
+    : mode.kind === "manager_dual"
+      ? "calc-table calc-table-manager"
     : "calc-table";
+  const renderTableCell = (cell) => {
+    const html = String(cell);
+    if (mode.kind !== "manager_dual" || !/[①②③④⑤⑥⑦⑧⑨⑩]/.test(html)) return html;
+    return html
+      .split(/(?=[①②③④⑤⑥⑦⑧⑨⑩])/)
+      .filter(Boolean)
+      .map((part) => `<span class="dc-doc-item">${part.replace(/<br>\s*$/, "")}</span>`)
+      .join("");
+  };
 
   if (mode.kind === "inspect_report") {
     const countedDates = addInspectReportDays(baseDate, mode.days, holidayKeys);
@@ -3865,7 +3876,7 @@ function renderDateCalculator() {
         <div class="dc-ref-body">
           <table class="${tableClassName}">
             <thead><tr>${mode.tableHead.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
-            <tbody>${tableBody.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody>
+            <tbody>${tableBody.map((row) => `<tr>${row.map((cell) => `<td>${renderTableCell(cell)}</td>`).join("")}</tr>`).join("")}</tbody>
           </table>
         </div>
       </details>
@@ -3881,6 +3892,17 @@ function renderDateCalculator() {
       </div>
     </div>
   `;
+
+  const syncDateSplitHeight = () => {
+    const calSection = root.querySelector(".dc-cal-section");
+    if (!calSection || !window.matchMedia("(min-width: 900px)").matches) {
+      root.style.removeProperty("--dc-side-height");
+      return;
+    }
+    root.style.setProperty("--dc-side-height", `${Math.ceil(calSection.getBoundingClientRect().height) + 20}px`);
+  };
+  syncDateSplitHeight();
+  requestAnimationFrame(syncDateSplitHeight);
 
   const addToHomeBtn = root.querySelector("#add-to-home-btn");
   if (addToHomeBtn) {
@@ -13552,6 +13574,8 @@ applyDevMode();
   const SHEET = "./assets/pets/mailpup/spritesheet.webp";
   const CELL_W = 96;
   const CELL_H = 104;
+  const MIN_PET_SCALE = 0.7;
+  const MAX_PET_SCALE = 2;
   const MOBILE_MEDIA = "(max-width: 768px)";
   const MOBILE_DEVICE_RE = /Android|iPhone|iPad|iPod|Mobile/i;
   const states = {
@@ -13620,11 +13644,13 @@ applyDevMode();
     '</div>' +
     '<button class="ilgu-pet-button" type="button" aria-label="Ilgu assistant">' +
       '<span class="ilgu-pet-sprite"></span>' +
+      '<span class="ilgu-resize-handle" aria-hidden="true" title="크기 조절"></span>' +
     '</button>';
   document.body.appendChild(root);
 
   const sprite = root.querySelector(".ilgu-pet-sprite");
   const button = root.querySelector(".ilgu-pet-button");
+  const resizeHandle = root.querySelector(".ilgu-resize-handle");
   const panelTitle = root.querySelector(".ilgu-panel-title");
   const panelText = root.querySelector(".ilgu-panel-text");
   const panelActions = root.querySelector(".ilgu-panel-actions");
@@ -13633,8 +13659,10 @@ applyDevMode();
   let timer = null;
   let suppressClick = false;
   let activeTarget = null;
+  let petScale = 1;
 
   sprite.style.backgroundImage = 'url("' + SHEET + '")';
+  applyPetScale(readPetScale());
 
   const savedPos = readPosition();
   if (savedPos) setPosition(savedPos.x, savedPos.y);
@@ -13666,6 +13694,24 @@ applyDevMode();
   function readPosition() {
     try { return JSON.parse(localStorage.getItem("ilguAssistantPosition") || "null"); }
     catch { return null; }
+  }
+
+  function readPetScale() {
+    const value = Number(localStorage.getItem("ilguAssistantScale") || "1");
+    if (!Number.isFinite(value)) return 1;
+    return Math.max(MIN_PET_SCALE, Math.min(value, MAX_PET_SCALE));
+  }
+
+  function applyPetScale(scale) {
+    petScale = Math.max(MIN_PET_SCALE, Math.min(scale, MAX_PET_SCALE));
+    root.style.setProperty("--ilgu-pet-scale", String(petScale));
+    root.style.setProperty("--ilgu-pet-button-w", (82 * petScale) + "px");
+    root.style.setProperty("--ilgu-pet-button-h", (88 * petScale) + "px");
+    root.style.setProperty("--ilgu-sprite-scale", String(0.8 * petScale));
+  }
+
+  function savePetScale() {
+    localStorage.setItem("ilguAssistantScale", String(Math.round(petScale * 100) / 100));
   }
 
   function setPosition(x, y) {
@@ -13800,14 +13846,69 @@ applyDevMode();
   }
 
   let drag = null;
+  let resizeDrag = null;
+  let throwRAF = null;
+
+  function cancelPetThrow() {
+    if (throwRAF) cancelAnimationFrame(throwRAF);
+    throwRAF = null;
+    root.classList.remove("throwing");
+  }
+
+  function glideAfterDrop(vx, vy, onDone) {
+    const speed = Math.hypot(vx, vy);
+    if (speed < 0.05) {
+      onDone();
+      return;
+    }
+
+    cancelPetThrow();
+    root.classList.add("throwing");
+    setStateIfChanged(vx >= 0 ? "running-right" : "running-left");
+
+    let x = root.getBoundingClientRect().left;
+    let y = root.getBoundingClientRect().top;
+    let dx = Math.max(-0.48, Math.min(vx * 0.42, 0.48));
+    let dy = Math.max(-0.42, Math.min(vy * 0.36, 0.42));
+    let last = performance.now();
+
+    const step = function (now) {
+      const dt = Math.min(32, now - last);
+      last = now;
+      x += dx * dt;
+      y += dy * dt;
+      setPosition(x, y);
+
+      dx *= Math.pow(0.92, dt / 16);
+      dy *= Math.pow(0.92, dt / 16);
+
+      if (Math.hypot(dx, dy) < 0.025) {
+        throwRAF = null;
+        root.classList.remove("throwing");
+        savePosition();
+        onDone();
+        return;
+      }
+      throwRAF = requestAnimationFrame(step);
+    };
+    throwRAF = requestAnimationFrame(step);
+  }
+
   button.addEventListener("pointerdown", function (event) {
+    if (resizeDrag) return;
     stopWander();
+    cancelPetThrow();
     drag = {
       id: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       rootX: root.getBoundingClientRect().left,
       rootY: root.getBoundingClientRect().top,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      lastT: performance.now(),
+      vx: 0,
+      vy: 0,
       moved: false,
     };
     button.setPointerCapture(event.pointerId);
@@ -13815,6 +13916,13 @@ applyDevMode();
 
   button.addEventListener("pointermove", function (event) {
     if (!drag || drag.id !== event.pointerId) return;
+    const now = performance.now();
+    const dt = Math.max(1, now - drag.lastT);
+    drag.vx = (event.clientX - drag.lastX) / dt;
+    drag.vy = (event.clientY - drag.lastY) / dt;
+    drag.lastX = event.clientX;
+    drag.lastY = event.clientY;
+    drag.lastT = now;
     const dx = event.clientX - drag.startX;
     const dy = event.clientY - drag.startY;
     if (Math.abs(dx) + Math.abs(dy) > 8) drag.moved = true;
@@ -13843,14 +13951,55 @@ applyDevMode();
     clearDropTarget();
     savePosition();
     const wasMoved = drag.moved;
+    const release = drag;
     drag = null;
     if (wasMoved && target) {
-      showCardHelp(target);
+      glideAfterDrop(release.vx, release.vy, function () { showCardHelp(target); });
     } else if (wasMoved) {
-      setState("idle");
+      glideAfterDrop(release.vx, release.vy, function () { setState("idle"); });
     }
     if (wasMoved) wanderPauseUntil = Date.now() + 10000;
     setTimeout(function () { suppressClick = false; }, 0);
+  });
+
+  resizeHandle.addEventListener("pointerdown", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    stopWander();
+    cancelPetThrow();
+    root.classList.remove("is-open");
+    suppressClick = true;
+    resizeDrag = {
+      id: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startScale: petScale,
+      rootX: root.getBoundingClientRect().left,
+      rootY: root.getBoundingClientRect().top,
+    };
+    resizeHandle.setPointerCapture(event.pointerId);
+  });
+
+  resizeHandle.addEventListener("pointermove", function (event) {
+    if (!resizeDrag || resizeDrag.id !== event.pointerId) return;
+    const delta = ((event.clientX - resizeDrag.startX) + (event.clientY - resizeDrag.startY)) / 170;
+    const nextScale = Math.max(MIN_PET_SCALE, Math.min(resizeDrag.startScale + delta, MAX_PET_SCALE));
+    applyPetScale(nextScale);
+    setPosition(resizeDrag.rootX, resizeDrag.rootY);
+  });
+
+  resizeHandle.addEventListener("pointerup", function (event) {
+    if (!resizeDrag || resizeDrag.id !== event.pointerId) return;
+    resizeHandle.releasePointerCapture(event.pointerId);
+    savePetScale();
+    savePosition();
+    resizeDrag = null;
+    wanderPauseUntil = Date.now() + 5000;
+    setTimeout(function () { suppressClick = false; }, 0);
+  });
+
+  resizeHandle.addEventListener("click", function (event) {
+    event.stopPropagation();
   });
 
   button.addEventListener("click", function () {
