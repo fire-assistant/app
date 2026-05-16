@@ -2661,7 +2661,7 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
 }
 #screen-date .scroll-content {
   overflow: visible !important;
-  padding: 16px;
+  padding: 0 16px 16px;
   display: block !important;
 }
 /* topbar = body 스크롤 시 sticky 유지 (PC media 글로벌 relative 오버라이드) */

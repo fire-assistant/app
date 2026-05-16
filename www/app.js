@@ -3897,9 +3897,18 @@ function renderDateCalculator() {
   if (newTabs) {
     const activeTab = newTabs.querySelector(".dc-mode-tab.active");
     if (activeTab) {
-      const target = activeTab.offsetLeft - (newTabs.clientWidth - activeTab.offsetWidth) / 2;
-      const max = newTabs.scrollWidth - newTabs.clientWidth;
-      newTabs.scrollLeft = Math.max(0, Math.min(max, target));
+      const tabLeft = activeTab.offsetLeft;
+      const tabRight = tabLeft + activeTab.offsetWidth;
+      const viewLeft = newTabs.scrollLeft;
+      const viewRight = viewLeft + newTabs.clientWidth;
+      const pad = 12;
+      if (tabLeft < viewLeft + pad) {
+        newTabs.scrollLeft = Math.max(0, tabLeft - pad);
+      } else if (tabRight > viewRight - pad) {
+        newTabs.scrollLeft = tabRight - newTabs.clientWidth + pad;
+      } else if (prevTabsScroll > 0) {
+        newTabs.scrollLeft = prevTabsScroll;
+      }
     } else if (prevTabsScroll > 0) {
       newTabs.scrollLeft = prevTabsScroll;
     }
