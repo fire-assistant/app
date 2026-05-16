@@ -3617,9 +3617,9 @@ function renderDateCalculator() {
       `;
 
     assistantCalculatorSection = `
-      <section class="calc-card assistant-staffing-card">
-        <h3 class="calc-title">소방안전관리보조자 선임인원 계산기</h3>
-        <p class="calc-copy">위의 선임대상·선임인원 기준으로 그대로 계산합니다.</p>
+      <section class="dc-assistant-card assistant-staffing-card">
+        <h3 class="dc-assistant-title">소방안전관리보조자 선임인원 계산기</h3>
+        <p class="dc-assistant-copy">위의 선임대상·선임인원 기준으로 그대로 계산합니다.</p>
         <div class="assistant-staffing-toggle">
           <button class="calc-mode-btn${assistantTargetType === "apartment" ? " active" : ""}" type="button" data-assistant-target="apartment">아파트</button>
           <button class="calc-mode-btn${assistantTargetType === "other" ? " active" : ""}" type="button" data-assistant-target="other">그 외</button>
@@ -3681,85 +3681,161 @@ function renderDateCalculator() {
     cells.push(`<button class="${classes.join(" ")}" type="button" data-date="${key}">${date.getDate()}</button>`);
   }
 
+  // D-day 계산 헬퍼
+  const calcDDay = (target) => {
+    if (!target) return null;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const t = new Date(target); t.setHours(0,0,0,0);
+    return Math.round((t - today) / (1000 * 60 * 60 * 24));
+  };
+  const ddayBadge = (diff) => {
+    if (diff === null || diff === undefined) return "";
+    if (diff > 0) return `<span class="dc-hero-dday${diff <= 7 ? " urgent" : ""}">D-${diff}</span>`;
+    if (diff === 0) return `<span class="dc-hero-dday urgent">D-DAY</span>`;
+    return `<span class="dc-hero-dday passed">D+${Math.abs(diff)}</span>`;
+  };
+  const heroResultBlock = (label, date, dday, accent = "red") => `
+    <div class="dc-hero-result">
+      <div class="dc-hero-label">${label}</div>
+      <div class="dc-hero-date dc-accent-${accent}">${formatDate(date)}</div>
+      ${ddayBadge(dday)}
+    </div>
+  `;
+
+  // HERO 구성 (모드별)
+  let heroResultsHTML = "";
+  let timelineNodes = [];
+  if (mode.kind === "inspect_report") {
+    heroResultsHTML = heroResultBlock(mode.resultLabel, deadline, calcDDay(deadline), "red");
+    timelineNodes = [
+      { type: "start", label: "기산일", date: baseDate },
+      { edge: `+${mode.days}일` },
+      { type: "appoint", label: "마감", date: deadline },
+    ];
+  } else if (mode.kind === "manager_dual") {
+    heroResultsHTML =
+      heroResultBlock("선임기한", appointDeadline, calcDDay(appointDeadline), "red") +
+      heroResultBlock("선임신고기한", reportDeadline, calcDDay(reportDeadline), "blue");
+    timelineNodes = [
+      { type: "start", label: "기산일", date: baseDate },
+      { edge: `+${mode.appointDays}일` },
+      { type: "appoint", label: "선임", date: appointDeadline },
+      { edge: `+${mode.reportDays}일` },
+      { type: "report", label: "신고", date: reportDeadline },
+    ];
+  } else if (mode.kind === "noncompliance_dual") {
+    const actionType = mode.actionTypes[state.dateCalc.noncomplianceType] ?? mode.actionTypes.repair;
+    heroResultsHTML =
+      heroResultBlock("이행완료기한", appointDeadline, calcDDay(appointDeadline), "red") +
+      heroResultBlock("완료신고기한", reportDeadline, calcDDay(reportDeadline), "blue");
+    timelineNodes = [
+      { type: "start", label: "보고일", date: baseDate },
+      { edge: `+${actionType.completionDays}일` },
+      { type: "appoint", label: "이행", date: appointDeadline },
+      { edge: `+${mode.reportDays}일` },
+      { type: "report", label: "신고", date: reportDeadline },
+    ];
+  }
+
+  const timelineHTML = timelineNodes.map((n) => {
+    if (n.edge) {
+      return `<div class="dc-timeline-edge"><span class="dc-timeline-edge-label">${n.edge}</span></div>`;
+    }
+    return `
+      <div class="dc-timeline-node">
+        <div class="dc-timeline-dot ${n.type}"></div>
+        <div class="dc-timeline-label">${n.label}</div>
+        <div class="dc-timeline-date">${formatDate(n.date)}</div>
+      </div>
+    `;
+  }).join("");
+
+  // 공휴일 로딩 안내
+  const isHolidayLoading = Object.values(state.dateCalc.apiHolidays).some(v => v === null);
+  const holidayHint = mode.supportsHolidaySelection
+    ? `공휴일은 자동 적용됩니다${isHolidayLoading ? " <span style='color:var(--text-dim)'>(불러오는 중…)</span>" : ""}. 임시공휴일 등이 빠져있으면 캘린더 상단 "공휴일" 버튼으로 추가하세요.`
+    : "";
+
   root.innerHTML = `
-    <div class="date-mode-header">
-      <div class="calc-mode-tabs">
-        ${Object.entries(CALC_MODES).map(([key, cfg]) => `<button class="calc-mode-btn${key === state.dateCalc.mode ? " active" : ""}" type="button" data-mode="${key}">${cfg.short}</button>`).join("")}
-      </div>
+    <div class="dc-mode-tabs">
+      ${Object.entries(CALC_MODES).map(([key, cfg]) =>
+        `<button class="dc-mode-tab${key === state.dateCalc.mode ? " active" : ""}" type="button" data-mode="${key}">${cfg.short}</button>`
+      ).join("")}
     </div>
-    <div class="date-layout">
-      <div class="date-left">
-        <section class="calc-card">
-          <h3 class="calc-title">${mode.label}</h3>
-          <p class="calc-copy">${modeIntroBody}</p>
-          ${mode.kind === "noncompliance_dual" ? `
-          <div class="calc-mode-tabs calc-mode-tabs-detail">
-            ${Object.entries(mode.actionTypes).map(([key, cfg]) => `
-              <div class="calc-mode-option">
-                <button class="calc-mode-btn calc-mode-btn-info${key === state.dateCalc.noncomplianceType ? " active" : ""}" type="button" data-noncompliance-type="${key}">
-                  <span class="calc-mode-btn-label">${cfg.label}</span>
-                  <span class="calc-mode-info" tabindex="0" aria-label="${cfg.tooltip}" data-floating-tooltip="${cfg.tooltip}">i</span>
-                </button>
-              </div>
-            `).join("")}
-          </div>
-          ` : ""}
-          ${mode.supportsHolidaySelection ? `
-          <div class="holiday-toggle">
-            <button class="holiday-toggle-btn${state.dateCalc.selectMode === "base" ? " active" : ""}" type="button" data-select-mode="base">기산일 선택</button>
+
+    <section class="dc-hero">
+      <div class="dc-hero-results">${heroResultsHTML}</div>
+      <div class="dc-timeline">${timelineHTML}</div>
+    </section>
+
+    <div class="dc-main-grid">
+      <section class="dc-cal-section">
+        <div class="dc-cal-header">
+          <button class="dc-cal-nav-btn" type="button" data-cal-nav="-1">‹</button>
+          <div class="dc-cal-month">${viewYear}년 ${viewMonth + 1}월</div>
+          <button class="dc-cal-nav-btn" type="button" data-cal-nav="1">›</button>
+        </div>
+        ${mode.supportsHolidaySelection ? `
+          <div class="dc-cal-mode-toggle">
+            <button class="dc-cal-mode-toggle-btn${state.dateCalc.selectMode === "base" ? " active" : ""}" type="button" data-select-mode="base">📌 기산일 선택</button>
             ${state.dateCalc.selectMode === "holiday" && state.dateCalc.holidays.length > 0
-              ? `<button class="holiday-toggle-btn active holiday-clear-btn" type="button" data-action="clear-holidays">공휴일 ${state.dateCalc.holidays.length}개 지우기</button>`
-              : `<button class="holiday-toggle-btn${state.dateCalc.selectMode === "holiday" ? " active" : ""}" type="button" data-select-mode="holiday">입력 공휴일 지정</button>`}
+              ? `<button class="dc-cal-mode-toggle-btn active holiday-clear" type="button" data-action="clear-holidays">공휴일 ${state.dateCalc.holidays.length}개 지우기</button>`
+              : `<button class="dc-cal-mode-toggle-btn${state.dateCalc.selectMode === "holiday" ? " active" : ""}" type="button" data-select-mode="holiday">🟣 공휴일 추가</button>`}
           </div>
-          <p class="calc-copy">${(() => {
-            const isLoading = Object.values(state.dateCalc.apiHolidays).some(v => v === null);
-            const loadingText = isLoading ? " <span style='color:var(--text-dim);font-size:11px'>(공휴일 불러오는 중…)</span>" : "";
-            if (mode.kind === "noncompliance_dual") {
-              return `공휴일은 자동 적용됩니다.${loadingText} 임시공휴일 등이 제대로 반영되어있는지 꼭 확인하세요. 빠진게 있으면 입력 공휴일 지정 버튼으로 추가하세요.`;
-            }
-            return `공휴일은 자동 적용됩니다.${loadingText} 임시공휴일 등이 제대로 반영되어있는지 꼭 확인하세요. 빠진게 있으면 입력 공휴일 지정 버튼으로 추가하세요.`;
-          })()}</p>
-          ` : ""}
-          <div class="cal-wrap">
-            <div class="cal-nav">
-              <button class="cal-nav-btn" type="button" data-cal-nav="-1">‹</button>
-              <div class="cal-month">${viewYear}년 ${viewMonth + 1}월</div>
-              <button class="cal-nav-btn" type="button" data-cal-nav="1">›</button>
+          ${holidayHint ? `<p class="dc-cal-hint">${holidayHint}</p>` : ""}
+        ` : ""}
+        <div class="cal-dow">
+          <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+        </div>
+        <div class="cal-grid">${cells.join("")}</div>
+        <div class="dc-cal-legend">${legendMarkup}</div>
+      </section>
+
+      <aside class="dc-controls">
+        <div class="dc-control-card">
+          <label class="dc-control-label" for="calc-base-date">${mode.baseDateLabel}</label>
+          <input id="calc-base-date" type="date" value="${state.dateCalc.baseDate}">
+        </div>
+        ${mode.kind === "noncompliance_dual" ? `
+          <div class="dc-control-card">
+            <span class="dc-control-label">조치 종류</span>
+            <div class="dc-action-toggle">
+              ${Object.entries(mode.actionTypes).map(([key, cfg]) => `
+                <button class="dc-action-toggle-btn${key === state.dateCalc.noncomplianceType ? " active" : ""}" type="button" data-noncompliance-type="${key}">
+                  <span class="dc-action-days">${cfg.label}</span>
+                  <span>${cfg.description}</span>
+                </button>
+              `).join("")}
             </div>
-            <div class="cal-dow">
-              <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
-            </div>
-            <div class="cal-grid">${cells.join("")}</div>
           </div>
-          <div class="cal-legend">
-            ${legendMarkup}
-          </div>
-          <div class="calc-form-row">
-            <label>${mode.baseDateLabel}</label>
-            <input id="calc-base-date" class="calc-input" type="date" value="${state.dateCalc.baseDate}">
-          </div>
-        </section>
-      </div>
-      <div class="date-right">
-        ${resultSection || '<div class="date-empty">📅<br>날짜를 선택하면<br>결과가 여기에 표시됩니다.</div>'}
-        ${resultSection ? '<button id="add-to-home-btn" class="btn btn-primary add-to-home-btn" type="button">📌 제출기한 메인화면에 표시</button>' : ""}
-        <section class="calc-card">
-          <div class="info-box ${mode.infoTone}"><div class="ib-title">${mode.infoTitle}</div>${modeInfoBody}</div>
-          <p class="section-label">${mode.tableTitle}</p>
-          <div class="calc-table-wrap">
-            <table class="${tableClassName}">
-              <thead><tr>${mode.tableHead.map((head) => `<th>${head}</th>`).join("")}</tr></thead>
-              <tbody>${tableBody.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody>
-            </table>
-          </div>
-          ${(mode.extraSections || []).map((sec) => `
-            <p class="section-label" style="margin-top:16px;${sec.titleColor === 'red' ? 'color:var(--red-soft);' : ''}">${sec.title}</p>
-            <div class="info-box blue" style="margin-bottom:0;">${sec.content}</div>
-          `).join("")}
-        </section>
-        ${assistantCalculatorSection}
-      </div>
+        ` : ""}
+        <div class="info-box ${mode.infoTone}">
+          <div class="ib-title">${mode.infoTitle}</div>
+          ${modeInfoBody}
+        </div>
+        <button id="add-to-home-btn" class="dc-save-btn" type="button">📌 메인화면에 표시</button>
+      </aside>
     </div>
+
+    <section class="dc-ref-section">
+      <details class="dc-ref-accordion" open>
+        <summary>📋 ${mode.tableTitle}</summary>
+        <div class="dc-ref-body">
+          <table class="${tableClassName}">
+            <thead><tr>${mode.tableHead.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+            <tbody>${tableBody.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody>
+          </table>
+        </div>
+      </details>
+      ${(mode.extraSections || []).map((sec) => `
+        <details class="dc-ref-accordion" open>
+          <summary>${sec.title}</summary>
+          <div class="dc-ref-body" style="padding-top:14px;">${sec.content}</div>
+        </details>
+      `).join("")}
+    </section>
+
+    ${assistantCalculatorSection}
   `;
 
   const addToHomeBtn = root.querySelector("#add-to-home-btn");
@@ -3996,13 +4072,24 @@ const inspectionState = {
 };
 
 function buildInspectionHistoryPanel() {
-  if (inspectionState.history.length === 0) return null;
   const aside = document.createElement("aside");
   aside.className = "insp-history";
   const titleEl = document.createElement("div");
   titleEl.className = "insp-history-title";
   titleEl.textContent = "진행 내역";
   aside.appendChild(titleEl);
+
+  if (inspectionState.history.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "insp-history-empty";
+    empty.innerHTML = `
+      <div class="insp-history-empty-icon">🧯</div>
+      <div class="insp-history-empty-title">자체점검 종류 판정</div>
+      <div class="insp-history-empty-desc">우측 질문에 답하면<br>여기에 진행 내역이 쌓입니다.</div>
+    `;
+    aside.appendChild(empty);
+    return aside;
+  }
 
   inspectionState.history.forEach((entry, idx) => {
     const nodeKey = typeof entry === "object" ? entry.node : entry;
@@ -4477,14 +4564,62 @@ const multiuseState = {
   current: "start",
 };
 
+function buildMultiuseHistoryPanel() {
+  const aside = document.createElement("aside");
+  aside.className = "insp-history";
+  const titleEl = document.createElement("div");
+  titleEl.className = "insp-history-title";
+  titleEl.textContent = "진행 내역";
+  aside.appendChild(titleEl);
+
+  if (multiuseState.history.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "insp-history-empty";
+    empty.innerHTML = `
+      <div class="insp-history-empty-icon">👥</div>
+      <div class="insp-history-empty-title">다중이용업소 해당 여부</div>
+      <div class="insp-history-empty-desc">우측 질문에 답하면<br>여기에 진행 내역이 쌓입니다.</div>
+    `;
+    aside.appendChild(empty);
+    return aside;
+  }
+
+  multiuseState.history.forEach((entry, idx) => {
+    const nodeKey = typeof entry === "object" ? entry.node : entry;
+    const chosenLabel = typeof entry === "object" ? entry.label : "";
+    const node = multiuseNodes[nodeKey];
+    if (!node) return;
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "insp-history-item";
+    item.innerHTML = `
+      <span class="insp-history-step">STEP ${idx + 1}</span>
+      <span class="insp-history-q">${node.title}</span>
+      ${chosenLabel ? `<span class="insp-history-a">→ ${chosenLabel}</span>` : ""}
+    `;
+    item.addEventListener("click", () => multiuseJumpTo(idx));
+    aside.appendChild(item);
+  });
+
+  return aside;
+}
+
 function renderMultiuse() {
   const root = document.getElementById("multiuse-content");
   const current = multiuseState.current;
   const currentStep = multiuseState.history.length + 1;
 
+  root.innerHTML = "";
+  const layout = document.createElement("div");
+  layout.className = "insp-layout";
+
+  layout.appendChild(buildMultiuseHistoryPanel());
+
+  const main = document.createElement("div");
+  main.className = "insp-main";
+
   if (current && typeof current === "object") {
     const isYes = current.result === "yes";
-    root.innerHTML = "";
     const card = document.createElement("div");
     card.className = "wq-card";
     card.innerHTML = `
@@ -4522,14 +4657,15 @@ function renderMultiuse() {
     restartBtn.textContent = "처음부터 다시";
     restartBtn.addEventListener("click", multiuseRestart);
     card.appendChild(restartBtn);
-    root.appendChild(card);
+    main.appendChild(card);
+    layout.appendChild(main);
+    root.appendChild(layout);
     return;
   }
 
   const node = multiuseNodes[current];
   if (!node) return;
 
-  root.innerHTML = "";
   const card = document.createElement("div");
   card.className = "wq-card";
 
@@ -4584,7 +4720,7 @@ function renderMultiuse() {
     } else {
       btn.innerHTML = `<strong>${option.label}</strong>${option.sub ? `<span>${option.sub}</span>` : ""}`;
     }
-    btn.addEventListener("click", () => multiuseSelect(option));
+    btn.addEventListener("click", () => multiuseSelect(option, btn));
     list.appendChild(btn);
   });
 
@@ -4600,23 +4736,43 @@ function renderMultiuse() {
     card.appendChild(backBtn);
   }
 
-  root.appendChild(card);
+  main.appendChild(card);
+  layout.appendChild(main);
+  root.appendChild(layout);
   initFloatingTooltips(card);
 }
 
-function multiuseSelect(option) {
-  multiuseState.history.push(multiuseState.current);
-  multiuseState.current = option.next;
-  renderMultiuse();
-  const scrollEl = document.querySelector("#screen-multiuse .scroll-content");
-  if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: "smooth" });
+function multiuseSelect(option, btn) {
+  if (btn) {
+    btn.classList.add("selected");
+    const list = btn.parentElement;
+    if (list) list.querySelectorAll("button.choice-button").forEach((b) => { if (b !== btn) b.style.pointerEvents = "none"; });
+  }
+  const currentNodeKey = multiuseState.current;
+  setTimeout(() => {
+    multiuseState.history.push({ node: currentNodeKey, label: option.label });
+    multiuseState.current = option.next;
+    renderMultiuse();
+    const scrollEl = document.querySelector("#screen-multiuse .scroll-content");
+    if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: "smooth" });
+  }, 550);
 }
 
 function multiuseBack() {
   if (multiuseState.history.length > 0) {
-    multiuseState.current = multiuseState.history.pop();
+    const last = multiuseState.history.pop();
+    multiuseState.current = typeof last === "object" ? last.node : last;
     renderMultiuse();
   }
+}
+
+function multiuseJumpTo(index) {
+  if (index < 0 || index >= multiuseState.history.length) return;
+  const target = multiuseState.history[index];
+  const targetNode = typeof target === "object" ? target.node : target;
+  multiuseState.history = multiuseState.history.slice(0, index);
+  multiuseState.current = targetNode;
+  renderMultiuse();
 }
 
 function multiuseRestart() {
