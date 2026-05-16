@@ -3852,7 +3852,7 @@ function renderDateCalculator() {
       <details class="dc-ref-accordion" open>
         <summary>⚠️ ${mode.infoTitle}</summary>
         <div class="dc-ref-body" style="padding-top:14px;">
-          <div class="info-box ${mode.infoTone}" style="border:none;padding:0;background:transparent;">
+          <div class="info-box ${mode.infoTone}" style="border:none;padding:0;margin:0;background:transparent;">
             ${modeInfoBody}
           </div>
         </div>

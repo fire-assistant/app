@@ -2033,6 +2033,9 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+#date-content > * + * {
+  margin-top: 14px;
+}
 #date-content .dc-ref-body {
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -2538,7 +2541,7 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
 #date-content .dc-ref-section {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 14px;
 }
 #date-content .dc-ref-accordion {
   border: 1px solid var(--border);
