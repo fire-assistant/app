@@ -3824,6 +3824,8 @@ function renderDateCalculator() {
       </div>
     ` : ""}
 
+    <div class="dc-split">
+      <div class="dc-split-left">
     <div class="dc-main-grid">
       <section class="dc-cal-section">
         <div class="dc-cal-header">
@@ -3847,7 +3849,8 @@ function renderDateCalculator() {
         <div class="dc-cal-legend">${legendMarkup}</div>
       </section>
     </div>
-
+      </div>
+      <div class="dc-split-right">
     <section class="dc-ref-section">
       <details class="dc-ref-accordion" open>
         <summary>⚠️ ${mode.infoTitle}</summary>
@@ -3875,6 +3878,8 @@ function renderDateCalculator() {
     </section>
 
     ${assistantCalculatorSection}
+      </div>
+    </div>
   `;
 
   const addToHomeBtn = root.querySelector("#add-to-home-btn");
