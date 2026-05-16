@@ -696,11 +696,46 @@ const CALC_MODES = {
     extraSections: [
       {
         title: "선임 대상",
-        content: `<b>가.</b> 300세대 이상인 아파트<br><b>나.</b> 연면적 1만5천㎡ 이상인 특정소방대상물(아파트·연립주택 제외)<br><b>다.</b> 가·나 외 특정소방대상물 중 다음 어느 하나에 해당하는 것<br>&nbsp;&nbsp;1) 공동주택 중 기숙사<br>&nbsp;&nbsp;2) 의료시설<br>&nbsp;&nbsp;3) 노유자 시설<br>&nbsp;&nbsp;4) 수련시설<br>&nbsp;&nbsp;5) 숙박시설(바닥면적 합계 1,500㎡ 미만이고 관계인이 24시간 상시 근무하는 경우 제외)`,
+        content: `
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div>
+    <div style="color:var(--red-soft);font-weight:700;margin-bottom:4px;">가.</div>
+    <div style="padding-left:8px;">300세대 이상인 아파트</div>
+  </div>
+  <div style="border-top:1px solid rgba(66,133,244,0.15);padding-top:12px;">
+    <div style="color:var(--red-soft);font-weight:700;margin-bottom:4px;">나.</div>
+    <div style="padding-left:8px;">연면적 1만5천㎡ 이상인 특정소방대상물(아파트·연립주택 제외)</div>
+  </div>
+  <div style="border-top:1px solid rgba(66,133,244,0.15);padding-top:12px;">
+    <div style="color:var(--red-soft);font-weight:700;margin-bottom:4px;">다.</div>
+    <div style="padding-left:8px;display:flex;flex-direction:column;gap:4px;">
+      <span>가·나 외 특정소방대상물 중 다음 어느 하나에 해당하는 것</span>
+      <span style="padding-left:12px;">1) 공동주택 중 기숙사</span>
+      <span style="padding-left:12px;">2) 의료시설</span>
+      <span style="padding-left:12px;">3) 노유자 시설</span>
+      <span style="padding-left:12px;">4) 수련시설</span>
+      <span style="padding-left:12px;">5) 숙박시설(바닥면적 합계 1,500㎡ 미만이고 관계인이 24시간 상시 근무하는 경우 제외)</span>
+    </div>
+  </div>
+</div>`,
       },
       {
         title: "선임 인원",
-        content: `<b>가.</b> 아파트(300세대 이상): 1명. 초과되는 300세대마다 1명 이상 추가 선임<br><b>나.</b> 연면적 1만5천㎡ 이상: 1명. 초과되는 연면적 1만5천㎡마다 1명 추가 선임<br><b>다.</b> 그 밖의 대상: 1명. 야간·휴일에 이용되지 않는 것이 확인된 경우 선임 제외 가능`,
+        content: `
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div>
+    <div style="color:var(--red-soft);font-weight:700;margin-bottom:4px;">가.</div>
+    <div style="padding-left:8px;">아파트(300세대 이상): 1명. 초과되는 300세대마다 1명 이상 추가 선임</div>
+  </div>
+  <div style="border-top:1px solid rgba(66,133,244,0.15);padding-top:12px;">
+    <div style="color:var(--red-soft);font-weight:700;margin-bottom:4px;">나.</div>
+    <div style="padding-left:8px;">연면적 1만5천㎡ 이상: 1명. 초과되는 연면적 1만5천㎡마다 1명 추가 선임</div>
+  </div>
+  <div style="border-top:1px solid rgba(66,133,244,0.15);padding-top:12px;">
+    <div style="color:var(--red-soft);font-weight:700;margin-bottom:4px;">다.</div>
+    <div style="padding-left:8px;">그 밖의 대상: 1명. 야간·휴일에 이용되지 않는 것이 확인된 경우 선임 제외 가능</div>
+  </div>
+</div>`,
       },
     ],
   },
@@ -3764,9 +3799,28 @@ function renderDateCalculator() {
     </div>
 
     <section class="dc-hero">
-      <div class="dc-hero-results">${heroResultsHTML}</div>
-      <div class="dc-timeline">${timelineHTML}</div>
+      <button id="add-to-home-btn" class="dc-hero-save-btn" type="button" title="메인화면에 표시">
+        📌 <span class="dc-hero-save-label">메인화면에 표시</span>
+      </button>
+      <div class="dc-hero-main">
+        <div class="dc-hero-results">${heroResultsHTML}</div>
+        <div class="dc-timeline">${timelineHTML}</div>
+      </div>
     </section>
+
+    ${mode.kind === "noncompliance_dual" ? `
+      <div class="dc-action-section">
+        <span class="dc-control-label">조치 종류</span>
+        <div class="dc-action-toggle">
+          ${Object.entries(mode.actionTypes).map(([key, cfg]) => `
+            <button class="dc-action-toggle-btn${key === state.dateCalc.noncomplianceType ? " active" : ""}" type="button" data-noncompliance-type="${key}">
+              <span class="dc-action-days">${cfg.label}</span>
+              <span>${cfg.description}</span>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    ` : ""}
 
     <div class="dc-main-grid">
       <section class="dc-cal-section">
@@ -3790,34 +3844,17 @@ function renderDateCalculator() {
         <div class="cal-grid">${cells.join("")}</div>
         <div class="dc-cal-legend">${legendMarkup}</div>
       </section>
-
-      <aside class="dc-controls">
-        <div class="dc-control-card">
-          <label class="dc-control-label" for="calc-base-date">${mode.baseDateLabel}</label>
-          <input id="calc-base-date" type="date" value="${state.dateCalc.baseDate}">
-        </div>
-        ${mode.kind === "noncompliance_dual" ? `
-          <div class="dc-control-card">
-            <span class="dc-control-label">조치 종류</span>
-            <div class="dc-action-toggle">
-              ${Object.entries(mode.actionTypes).map(([key, cfg]) => `
-                <button class="dc-action-toggle-btn${key === state.dateCalc.noncomplianceType ? " active" : ""}" type="button" data-noncompliance-type="${key}">
-                  <span class="dc-action-days">${cfg.label}</span>
-                  <span>${cfg.description}</span>
-                </button>
-              `).join("")}
-            </div>
-          </div>
-        ` : ""}
-        <div class="info-box ${mode.infoTone}">
-          <div class="ib-title">${mode.infoTitle}</div>
-          ${modeInfoBody}
-        </div>
-        <button id="add-to-home-btn" class="dc-save-btn" type="button">📌 메인화면에 표시</button>
-      </aside>
     </div>
 
     <section class="dc-ref-section">
+      <details class="dc-ref-accordion" open>
+        <summary>⚠️ ${mode.infoTitle}</summary>
+        <div class="dc-ref-body" style="padding-top:14px;">
+          <div class="info-box ${mode.infoTone}" style="border:none;padding:0;background:transparent;">
+            ${modeInfoBody}
+          </div>
+        </div>
+      </details>
       <details class="dc-ref-accordion" open>
         <summary>📋 ${mode.tableTitle}</summary>
         <div class="dc-ref-body">
@@ -3918,13 +3955,16 @@ function renderDateCalculator() {
       renderDateCalculator();
     });
   });
-  root.querySelector("#calc-base-date").addEventListener("input", (event) => {
-    state.dateCalc.baseDate = event.target.value;
-    const selected = parseDate(event.target.value);
-    state.dateCalc.viewYear = selected.getFullYear();
-    state.dateCalc.viewMonth = selected.getMonth();
-    renderDateCalculator();
-  });
+  const baseDateInput = root.querySelector("#calc-base-date");
+  if (baseDateInput) {
+    baseDateInput.addEventListener("input", (event) => {
+      state.dateCalc.baseDate = event.target.value;
+      const selected = parseDate(event.target.value);
+      state.dateCalc.viewYear = selected.getFullYear();
+      state.dateCalc.viewMonth = selected.getMonth();
+      renderDateCalculator();
+    });
+  }
   const assistantInput = root.querySelector("#assistant-staffing-value");
   if (assistantInput) {
     assistantInput.addEventListener("input", (event) => {

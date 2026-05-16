@@ -2024,6 +2024,27 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   display: flex;
   flex-direction: column;
   gap: 14px;
+  width: 100%;
+  min-width: 0;
+}
+#date-content > * {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+#date-content .dc-ref-body {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+#date-content .dc-ref-body table {
+  table-layout: fixed;
+  width: 100%;
+}
+#date-content .dc-ref-body td,
+#date-content .dc-ref-body th {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* 모드 탭 — 밑줄형 sticky (topbar 아래 위치) */
@@ -2067,8 +2088,9 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   border-bottom-color: var(--red);
 }
 
-/* HERO */
+/* HERO — 결과/타임라인 풀폭 */
 #date-content .dc-hero {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -2077,6 +2099,96 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   border-left: 3px solid var(--red);
   border-radius: var(--radius);
   background: var(--surface);
+}
+#date-content .dc-hero-save-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--red);
+  border-radius: 999px;
+  background: var(--red-dim2);
+  color: var(--red-soft);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  transition: background var(--transition), color var(--transition), transform var(--transition);
+}
+#date-content .dc-hero-save-btn:hover {
+  background: var(--red);
+  color: #fff;
+}
+#date-content .dc-hero-save-btn:active {
+  transform: scale(0.97);
+}
+@media (max-width: 600px) {
+  #date-content .dc-hero-save-btn .dc-hero-save-label {
+    display: none;
+  }
+  #date-content .dc-hero-save-btn {
+    padding: 8px 10px;
+  }
+}
+
+/* noncompliance actionType 토글 (캘린더 위 별도 행) */
+#date-content .dc-action-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+#date-content .dc-action-section .dc-control-label {
+  margin: 0;
+  flex-shrink: 0;
+}
+#date-content .dc-action-section .dc-action-toggle {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  #date-content .dc-action-section .dc-action-toggle {
+    flex-direction: column;
+  }
+}
+#date-content .dc-hero-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* HERO 아래 가로 컨트롤 행 */
+#date-content .dc-hero-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (min-width: 900px) {
+  #date-content .dc-hero-controls {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 10px;
+  }
+  #date-content .dc-hero-controls .dc-control-card {
+    flex: 1;
+    min-width: 0;
+  }
+  #date-content .dc-hero-controls .dc-save-btn {
+    flex: 0 0 220px;
+    align-self: stretch;
+  }
 }
 
 #date-content .dc-hero-empty {
@@ -2212,27 +2324,9 @@ html[data-theme="blossom"] #date-content .dc-hero-date.dc-accent-blue { color: v
   padding: 0 4px;
 }
 
-/* 메인 그리드 */
+/* 메인 그리드 = 캘린더 풀폭 단일 컬럼 */
 #date-content .dc-main-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-@media (min-width: 900px) {
-  #date-content .dc-main-grid {
-    flex-direction: row;
-    align-items: flex-start;
-  }
-  #date-content .dc-cal-section {
-    flex: 7;
-    min-width: 0;
-  }
-  #date-content .dc-controls {
-    flex: 3;
-    min-width: 0;
-    position: sticky;
-    top: 60px;
-  }
+  display: block;
 }
 
 /* 캘린더 섹션 */
@@ -2513,6 +2607,16 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+#date-content .dc-assistant-card .assistant-staffing-formula,
+#date-content .dc-assistant-card .assistant-staffing-examples,
+#date-content .dc-assistant-card .assistant-staffing-help {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
 #date-content .dc-assistant-title {
   margin: 0 0 6px;
