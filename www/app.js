@@ -13939,12 +13939,40 @@ applyDevMode();
   }
 
   let leaveTimer = null;
+  let enterTimer = null;
 
   function cancelLeaving() {
     if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
     root.classList.remove("is-leaving");
     const existing = root.querySelector(".ilgu-house");
     if (existing) existing.remove();
+  }
+
+  function cancelEntering() {
+    if (enterTimer) { clearTimeout(enterTimer); enterTimer = null; }
+    root.classList.remove("is-entering");
+    const existing = root.querySelector(".ilgu-house");
+    if (existing) existing.remove();
+  }
+
+  function playEnteringAnimation(onDone) {
+    cancelEntering();
+    cancelLeaving();
+    setState("waving");
+    const house = document.createElement("div");
+    house.className = "ilgu-house";
+    house.textContent = "🏠";
+    house.setAttribute("aria-hidden", "true");
+    root.appendChild(house);
+    root.classList.add("is-entering");
+    enterTimer = setTimeout(function () {
+      root.classList.remove("is-entering");
+      house.remove();
+      enterTimer = null;
+      setState("waving");
+      setTimeout(function () { setState("idle"); }, 800);
+      onDone();
+    }, 1500);
   }
 
   function playLeavingAnimation(onDone) {
@@ -13966,6 +13994,7 @@ applyDevMode();
   }
 
   function hideAssistant() {
+    cancelEntering();
     localStorage.setItem("ilguAssistantDisabled", "true");
     localStorage.removeItem("ilguAssistantVisible");
     root.classList.remove("is-open");
@@ -14179,12 +14208,6 @@ applyDevMode();
     localStorage.setItem("ilguAssistantVisible", "true");
     root.style.display = "flex";
 
-    if (opts.open) openHomePanel();
-    else {
-      root.classList.remove("is-open");
-      setState("idle");
-    }
-
     if (opts.bottomRight) {
       localStorage.removeItem("ilguAssistantPosition");
       root.style.left = "";
@@ -14198,6 +14221,14 @@ applyDevMode();
       setPosition(x, y);
       savePosition();
     }
+
+    playEnteringAnimation(function () {
+      if (opts.open) openHomePanel();
+      else {
+        root.classList.remove("is-open");
+        setState("idle");
+      }
+    });
   }
 
   window.showIlguAssistant = showAssistant;

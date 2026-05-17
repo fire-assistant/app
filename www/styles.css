@@ -6836,6 +6836,27 @@ html[data-intro-active="true"] .ilgu-summon-btn {
   display: none !important;
 }
 
+.ilgu-assistant.is-entering .ilgu-pet-button {
+  animation: ilgu-pet-spawn 1.5s cubic-bezier(0.33, 0, 0.4, 1) forwards;
+  transform-origin: center bottom;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes ilgu-pet-spawn {
+  0%   { transform: scale(0)    translateY(17px); opacity: 0; }
+  10%  { transform: scale(0.1)  translateY(17px); opacity: 0; }
+  18%  { transform: scale(0.4)  translateY(15px); opacity: 0.9; }
+  30%  { transform: scale(0.75) translateY(11px); opacity: 1; }
+  50%  { transform: scale(0.95) translateY(6px);  opacity: 1; }
+  80%  { transform: scale(1)    translateY(3px);  opacity: 1; }
+  100% { transform: scale(1)    translateY(0);    opacity: 1; }
+}
+
+.ilgu-assistant.is-entering .ilgu-assistant-panel {
+  display: none !important;
+}
+
 .ilgu-pet-button {
   position: relative;
   width: var(--ilgu-pet-button-w);
