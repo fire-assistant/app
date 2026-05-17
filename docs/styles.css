@@ -5582,8 +5582,8 @@ html[data-theme="official"] {
   --surface: #ffffff;
   --surface2: #f7f8fa;
   --surface3: #eef0f4;
-  --border: #ced4da;
-  --border2: #adb5bd;
+  --border: #c4ccd8;
+  --border2: #a8b4c0;
   --red: #c0271d;
   --red-soft: #a02018;
   --red-dim: rgba(192, 39, 29, 0.07);
@@ -5595,8 +5595,8 @@ html[data-theme="official"] {
   --green: #1a6e35;
   --green-dim: rgba(26, 110, 53, 0.09);
   --text: #1a1e27;
-  --text-muted: #4a5568;
-  --text-dim: #8a96a3;
+  --text-muted: #3a4558;
+  --text-dim: #5a6878;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.07);
@@ -5803,12 +5803,12 @@ html[data-theme="official"] .contact-card {
    BLOSSOM THEME ??벚꽃 ?��???
    ?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═ */
 html[data-theme="blossom"] {
-  --bg: #fdf4f6;
-  --surface: #ffffff;
-  --surface2: #fef0f3;
-  --surface3: #fce6ec;
-  --border: #f2c8d4;
-  --border2: #e8a8bc;
+  --bg: #fbe8ef;
+  --surface: #fff0f4;
+  --surface2: #fde0ea;
+  --surface3: #f8d0de;
+  --border: #e8b8c8;
+  --border2: #d49ab0;
   --red: #c84b6e;
   --red-soft: #e06080;
   --red-dim: rgba(200, 75, 110, 0.08);
@@ -5820,8 +5820,8 @@ html[data-theme="blossom"] {
   --green: #507850;
   --green-dim: rgba(80, 120, 80, 0.1);
   --text: #1e1014;
-  --text-muted: #4a2e3a;
-  --text-dim: #7a5868;
+  --text-muted: #3a2030;
+  --text-dim: #604858;
   --shadow-sm: 0 1px 4px rgba(180, 80, 100, 0.08), 0 1px 2px rgba(180, 80, 100, 0.05);
   --shadow-md: 0 4px 14px rgba(180, 80, 100, 0.12), 0 2px 5px rgba(180, 80, 100, 0.07);
   --shadow-lg: 0 8px 28px rgba(180, 80, 100, 0.15), 0 4px 10px rgba(180, 80, 100, 0.08);
@@ -5835,7 +5835,7 @@ html[data-theme="blossom"] .topbar {
 
 /* ???�더 ??벚꽃 그라?�언??*/
 html[data-theme="blossom"] .home-header {
-  background: linear-gradient(135deg, #fff0f4 0%, #fdf4f6 100%);
+  background: linear-gradient(135deg, #ffecf3 0%, #fde8f1 100%);
   border-bottom-color: var(--border);
 }
 html[data-theme="blossom"] .home-header::before {
