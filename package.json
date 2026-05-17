@@ -17,5 +17,8 @@
     "@capacitor/core": "^8.3.1",
     "@jimp/plugin-resize": "^1.6.1",
     "jimp": "^1.6.1"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   }
 }
