@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>일구 로딩 미리보기 v2</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(ellipse at center 40%, #243456 0%, #1a2942 55%, #0f1a2c 100%);
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%);
+      z-index: 10;
+    }
+
+    .v2-overlay {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .v2-wrap {
+      position: relative;
+      width: min(620px, calc(100vw - 24px));
+      height: min(620px, calc(100vh - 40px));
+    }
+
+    /* 캐릭터 뒤 종이 레이어 */
+    .v2-paper-stage-back {
+      position: absolute;
+      inset: 0;
+      overflow: visible;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* 스프라이트 캐릭터 영역 */
+    .v2-scene-frame {
+      position: absolute;
+      inset: 0 0 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    /* 5프레임 스프라이트, 핑퐁 8단계 재생 */
+    .v2-sprite {
+      height: 100%;
+      aspect-ratio: 396 / 793;
+      background-image: url('../assets/loading/ilgu_working_animated.png');
+      background-size: 500% 100%;
+      background-repeat: no-repeat;
+      background-position: 0% 50%;
+      filter: drop-shadow(0 22px 32px rgba(0, 0, 0, 0.55));
+      animation: v2-sprite-cycle 5.2s steps(1) infinite;
+    }
+
+    /* 1→2→3→(loop) — 3프레임 순방향 */
+    @keyframes v2-sprite-cycle {
+      0%     { background-position: 0%   50%; }  /* frame 1 */
+      12.5%  { background-position: 25%  50%; }
+      25%    { background-position: 50%  50%; }
+      37.5%  { background-position: 75%  50%; }
+      50%    { background-position: 100% 50%; }
+      62.5%  { background-position: 75%  50%; }
+      75%    { background-position: 50%  50%; }
+      87.5%  { background-position: 25%  50%; }
+      100%   { background-position: 0%   50%; }
+    }
+
+    /* 캐릭터 앞 종이 레이어 */
+    .v2-paper-stage-front {
+      position: absolute;
+      inset: 0;
+      overflow: visible;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* 진행 텍스트 */
+    .v2-loading-text {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      text-align: center;
+      font-size: 19px;
+      font-weight: 800;
+      color: #f0f0f0;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      z-index: 5;
+    }
+    .v2-loading-text strong {
+      margin-left: 10px;
+      color: #ffd05a;
+      font-weight: 900;
+      text-shadow: 0 0 12px rgba(255, 208, 90, 0.45), 0 2px 6px rgba(0,0,0,0.6);
+    }
+    .v2-dot {
+      display: inline-block;
+      color: #ffd05a;
+      animation: v2-dot-pop 1.1s ease-in-out infinite;
+    }
+    .v2-dot:nth-of-type(2) { animation-delay: 0.14s; }
+    .v2-dot:nth-of-type(3) { animation-delay: 0.28s; }
+    @keyframes v2-dot-pop {
+      0%, 70%, 100% { opacity: 0.4; transform: translateY(0); }
+      35% { opacity: 1; transform: translateY(-3px); }
+    }
+
+    /* 진행바 */
+    .v2-progress-track {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 26px;
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.5),
+        0 1px 0 rgba(255, 255, 255, 0.05);
+      z-index: 5;
+    }
+    .v2-progress-fill {
+      position: relative;
+      width: 1%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ffd75a 0%, #ffb23f 55%, #ff6b4a 100%);
+      box-shadow: 0 0 18px rgba(255, 178, 63, 0.55);
+      transition: width 0.22s linear;
+    }
+    .v2-progress-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.45) 50%,
+        transparent 100%
+      );
+      transform: translateX(-100%);
+      animation: v2-shimmer 1.6s linear infinite;
+    }
+    @keyframes v2-shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+
+    .v2-loading-caption {
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      margin: 0;
+      text-align: center;
+      color: rgba(236, 236, 236, 0.7);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      z-index: 5;
+    }
+
+    /* 보조 종이 효과 (스프라이트가 패닉할 때 더 풍성하게) */
+    .v2-paper {
+      position: absolute;
+      border-radius: 3px 8px 4px 4px;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0,0,0,0.3);
+      will-change: transform, opacity;
+      transform-origin: center center;
+    }
+    .v2-paper.kind-a {
+      background:
+        linear-gradient(180deg, transparent 11px, rgba(180, 160, 130, 0.55) 12px, transparent 14px),
+        linear-gradient(180deg, transparent 22px, rgba(180, 160, 130, 0.45) 23px, transparent 25px),
+        linear-gradient(180deg, transparent 33px, rgba(180, 160, 130, 0.45) 34px, transparent 36px),
+        linear-gradient(180deg, transparent 44px, rgba(180, 160, 130, 0.4) 45px, transparent 47px),
+        #fffaf0;
+    }
+    .v2-paper.kind-a::after {
+      content: ""; position: absolute; right: 6px; top: 8px;
+      width: 11px; height: 8px; border-radius: 2px;
+      background: rgba(255, 205, 104, 0.55);
+    }
+    .v2-paper.kind-b {
+      background:
+        linear-gradient(180deg, transparent 14px, rgba(160, 140, 110, 0.5) 15px, transparent 17px),
+        linear-gradient(180deg, transparent 28px, rgba(160, 140, 110, 0.4) 29px, transparent 31px),
+        linear-gradient(180deg, transparent 42px, rgba(160, 140, 110, 0.4) 43px, transparent 45px),
+        #fff5e6;
+    }
+    .v2-paper.kind-b::after {
+      content: ""; position: absolute; left: 6px; top: 7px;
+      width: 14px; height: 4px; border-radius: 1px;
+      background: rgba(220, 140, 100, 0.5);
+      box-shadow: 0 7px 0 rgba(180, 100, 70, 0.35);
+    }
+    .v2-paper.kind-c {
+      background:
+        linear-gradient(180deg, transparent 12px, rgba(170, 150, 120, 0.45) 13px, transparent 15px),
+        linear-gradient(180deg, transparent 26px, rgba(170, 150, 120, 0.4) 27px, transparent 29px),
+        linear-gradient(180deg, transparent 40px, rgba(170, 150, 120, 0.4) 41px, transparent 43px),
+        #fdf8ec;
+    }
+    .v2-paper.kind-c::after {
+      content: ""; position: absolute; right: 5px; bottom: 7px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: rgba(120, 170, 230, 0.45);
+    }
+  </style>
+</head>
+<body>
+  <div class="v2-overlay">
+    <div class="v2-wrap">
+      <div class="v2-paper-stage-back" id="v2-stage-back"></div>
+
+      <div class="v2-scene-frame">
+        <div class="v2-sprite" role="img" aria-label="일구가 서류를 정리하는 중"></div>
+      </div>
+
+      <div class="v2-paper-stage-front" id="v2-stage-front"></div>
+
+      <div class="v2-loading-text">
+        <span id="v2-status">서류를 찾는 중</span><span class="v2-dot">.</span><span class="v2-dot">.</span><span class="v2-dot">.</span>
+        <strong id="v2-percent">1%</strong>
+      </div>
+
+      <div class="v2-progress-track">
+        <div id="v2-bar" class="v2-progress-fill"></div>
+      </div>
+
+      <p class="v2-loading-caption">일구가 열심히 자료를 정리하고 있어요</p>
+    </div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById("v2-status");
+    const percentEl = document.getElementById("v2-percent");
+    const barEl = document.getElementById("v2-bar");
+    const stageBack = document.getElementById("v2-stage-back");
+    const stageFront = document.getElementById("v2-stage-front");
+    const wrap = document.querySelector(".v2-wrap");
+
+    const loadingSteps = [
+      { limit: 25, text: "서류를 찾는 중" },
+      { limit: 55, text: "자료를 검토하는 중" },
+      { limit: 82, text: "결과를 정리하는 중" },
+      { limit: 99, text: "마무리 확인 중" },
+      { limit: 100, text: "완료" },
+    ];
+
+    /** 진행 곡선: 0~70%(빠름) → 70~85%(느림) → 85~90%(거의 멈춤) → 90~100%(점프) */
+    function curve(t) {
+      if (t < 0.30) return (t / 0.30) * 70;
+      if (t < 0.75) return 70 + ((t - 0.30) / 0.45) * 15;
+      if (t < 0.90) return 85 + ((t - 0.75) / 0.15) * 5;
+      return 90 + ((t - 0.90) / 0.10) * 10;
+    }
+
+    function paint(percent) {
+      const step = loadingSteps.find((item) => percent <= item.limit) || loadingSteps[loadingSteps.length - 1];
+      statusEl.textContent = step.text;
+      percentEl.textContent = `${percent}%`;
+      barEl.style.width = `${percent}%`;
+    }
+
+    // ───── 보조 종이 (스프라이트가 이미 종이를 뿜고 있으니 살짝만 추가) ─────
+    const papers = [];
+    const PAPER_KINDS = ["kind-a", "kind-b", "kind-c"];
+    function rand(min, max) { return min + Math.random() * (max - min); }
+
+    function spawnPaper() {
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      // 책상 부근에서 좌/우 바깥쪽으로 튀어나가게 (캐릭터 자체 종이와 겹치지 않게)
+      const fromLeft = Math.random() < 0.5;
+      const sourceX = fromLeft ? w * 0.35 : w * 0.65;
+      const sourceY = h * 0.58 + rand(-10, 15);
+
+      const size = rand(0.7, 1.05);
+      const baseW = 42 * size;
+      const baseH = 56 * size;
+
+      const direction = fromLeft ? -1 : 1;
+      const vx = direction * rand(70, 160);
+      const vy = rand(-240, -340);
+      const gravity = rand(360, 460);
+      const rotation = rand(0, 360);
+      const rotationSpeed = rand(-200, 200);
+      const layer = Math.random() < 0.5 ? "back" : "front";
+      const lifeMs = rand(2000, 3000);
+
+      const el = document.createElement("div");
+      el.className = `v2-paper ${PAPER_KINDS[Math.floor(Math.random() * PAPER_KINDS.length)]}`;
+      el.style.width = `${baseW}px`;
+      el.style.height = `${baseH}px`;
+      el.style.left = `0px`;
+      el.style.top = `0px`;
+      el.style.opacity = "0";
+      (layer === "back" ? stageBack : stageFront).appendChild(el);
+
+      papers.push({
+        el, x: sourceX - baseW / 2, y: sourceY - baseH / 2,
+        vx, vy, gravity, rotation, rotationSpeed,
+        life: lifeMs, born: performance.now(),
+      });
+    }
+
+    let lastFrame = performance.now();
+    function physicsLoop(now) {
+      const dt = Math.min((now - lastFrame) / 1000, 0.05);
+      lastFrame = now;
+      const h = wrap.clientHeight;
+
+      for (let i = papers.length - 1; i >= 0; i--) {
+        const p = papers[i];
+        const age = now - p.born;
+        const lifeT = age / p.life;
+
+        p.vy += p.gravity * dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.rotation += p.rotationSpeed * dt;
+
+        let opacity;
+        if (lifeT < 0.15) opacity = lifeT / 0.15;
+        else if (lifeT > 0.75) opacity = Math.max(0, 1 - (lifeT - 0.75) / 0.25);
+        else opacity = 1;
+
+        p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0) rotate(${p.rotation}deg)`;
+        p.el.style.opacity = opacity.toFixed(3);
+
+        if (lifeT >= 1 || p.y > h + 100) {
+          p.el.remove();
+          papers.splice(i, 1);
+        }
+      }
+      requestAnimationFrame(physicsLoop);
+    }
+    requestAnimationFrame(physicsLoop);
+
+    let spawnTimer = null;
+    function startSpawning() {
+      for (let i = 0; i < 2; i++) setTimeout(spawnPaper, i * 220);
+      const tick = () => {
+        spawnPaper();
+        spawnTimer = setTimeout(tick, rand(420, 720)); // 좀 띄엄띄엄 (스프라이트 종이와 균형)
+      };
+      spawnTimer = setTimeout(tick, 600);
+    }
+    function stopSpawning() {
+      clearTimeout(spawnTimer);
+      spawnTimer = null;
+    }
+
+    // ───── 메인 진행 루프 ─────
+    function runPreview() {
+      const duration = 4000 + Math.random() * 4000; // 4~8초
+      const start = performance.now();
+      let lastPercent = 0;
+
+      startSpawning();
+      paint(0);
+
+      function tick(now) {
+        const t = Math.min((now - start) / duration, 1);
+        const target = curve(t);
+        const percent = Math.max(lastPercent, Math.min(t < 1 ? 99 : 100, Math.floor(target)));
+        lastPercent = percent;
+        paint(percent);
+
+        if (t < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          stopSpawning();
+          setTimeout(runPreview, 1500);
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+
+    runPreview();
+  </script>
+</body>
+</html>

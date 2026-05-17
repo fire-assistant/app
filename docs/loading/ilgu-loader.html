@@ -2,114 +2,88 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>Ilgu Loader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>일구 로딩 미리보기</title>
+  <link rel="stylesheet" href="../styles.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      max-width: none;
       min-height: 100vh;
-      background: #f0ede8;
-    }
-
-    .loader-wrap {
-      width: 200px;
-      height: 200px;
-      position: relative;
-    }
-
-    /* 캐릭터 */
-    .char-clip {
-      position: absolute;
-      top: 18px;
-      left: 18px;
-      width: 164px;
-      height: 164px;
-      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        linear-gradient(rgba(13, 13, 13, 0.58), rgba(13, 13, 13, 0.58)),
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.16), transparent 42%),
+        #1c1c1c;
       overflow: hidden;
     }
-
-    .character {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform-origin: bottom center;
-      animation: bounce-squish 2.2s ease-in-out infinite;
-    }
-
-
-    /* 텍스트 */
-    .loading-text {
-      position: absolute;
-      bottom: -16px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 260px;
-      height: 28px;
-      text-align: center;
-      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-      font-size: 20px;
-      font-weight: 600;
-      color: #444;
-      letter-spacing: 0.03em;
-    }
-
-    .msg {
-      position: absolute;
-      left: 0;
-      width: 100%;
-      opacity: 0;
-      animation: msg-fade 7.5s ease-in-out infinite;
-    }
-    .msg1 { animation-delay: 0s; }
-    .msg2 { animation-delay: 2.5s; }
-    .msg3 { animation-delay: 5s; }
-
-    .ch {
-      display: inline-block;
-      animation: wave-char 1.6s ease-in-out infinite;
-      animation-delay: calc(var(--i) * 0.08s);
-    }
-
-    @keyframes bounce-squish {
-      0%   { transform: translateY(0)     scaleX(1)    scaleY(1);    }
-      30%  { transform: translateY(-13px) scaleX(0.93) scaleY(1.07); }
-      55%  { transform: translateY(8px)   scaleX(1.18) scaleY(0.82); }
-      75%  { transform: translateY(-4px)  scaleX(0.97) scaleY(1.03); }
-      100% { transform: translateY(0)     scaleX(1)    scaleY(1);    }
-    }
-
-
-    @keyframes msg-fade {
-      0%   { opacity: 0; transform: translateY(5px);  }
-      8%   { opacity: 1; transform: translateY(0);    }
-      28%  { opacity: 1; transform: translateY(0);    }
-      36%  { opacity: 0; transform: translateY(-5px); }
-      100% { opacity: 0; transform: translateY(-5px); }
-    }
-
-    @keyframes wave-char {
-      0%, 50%, 100% { transform: translateY(0);    }
-      25%            { transform: translateY(-6px); }
+    .ilgu-overlay {
+      position: relative;
+      inset: auto;
+      width: 100vw;
+      height: 100vh;
     }
   </style>
 </head>
 <body>
-  <div class="loader-wrap">
-
-    <!-- 일구 캐릭터 -->
-    <div class="char-clip">
-      <img class="character" src="ilgu.png" alt="">
+  <div id="ilgu-loading-overlay" class="ilgu-overlay">
+    <div class="ilgu-loader-wrap">
+      <div class="ilgu-scene-frame">
+        <img class="ilgu-work-scene" src="../assets/loading/ilgu_working.png" alt="일구가 서류를 정리하는 중">
+      </div>
+      <div class="ilgu-loading-text">
+        <span id="ilgu-loading-status">서류를 찾는 중</span>
+        <span class="ilgu-dot">.</span><span class="ilgu-dot">.</span><span class="ilgu-dot">.</span>
+        <strong id="ilgu-loading-percent">1%</strong>
+      </div>
+      <div class="ilgu-progress-track" aria-hidden="true">
+        <div id="ilgu-loading-bar" class="ilgu-progress-fill"></div>
+      </div>
+      <p class="ilgu-loading-caption">일구가 열심히 자료를 정리하고 있어요</p>
     </div>
-
-    <!-- 물결 텍스트 -->
-    <div class="loading-text">
-      <span class="msg msg1"><span class="ch" style="--i:0">결</span><span class="ch" style="--i:1">과</span><span class="ch" style="--i:2">를</span><span class="ch" style="--i:3">&nbsp;</span><span class="ch" style="--i:4">도</span><span class="ch" style="--i:5">출</span><span class="ch" style="--i:6">&nbsp;</span><span class="ch" style="--i:7">중</span><span class="ch" style="--i:8">입</span><span class="ch" style="--i:9">니</span><span class="ch" style="--i:10">다</span></span>
-      <span class="msg msg2"><span class="ch" style="--i:0">잠</span><span class="ch" style="--i:1">시</span><span class="ch" style="--i:2">만</span><span class="ch" style="--i:3">&nbsp;</span><span class="ch" style="--i:4">기</span><span class="ch" style="--i:5">다</span><span class="ch" style="--i:6">려</span><span class="ch" style="--i:7">&nbsp;</span><span class="ch" style="--i:8">주</span><span class="ch" style="--i:9">세</span><span class="ch" style="--i:10">요</span></span>
-      <span class="msg msg3"><span class="ch" style="--i:0">거</span><span class="ch" style="--i:1">의</span><span class="ch" style="--i:2">&nbsp;</span><span class="ch" style="--i:3">다</span><span class="ch" style="--i:4">&nbsp;</span><span class="ch" style="--i:5">됐</span><span class="ch" style="--i:6">어</span><span class="ch" style="--i:7">요</span><span class="ch" style="--i:8">!</span></span>
-    </div>
-
   </div>
+
+  <script>
+    const statusEl = document.getElementById("ilgu-loading-status");
+    const percentEl = document.getElementById("ilgu-loading-percent");
+    const barEl = document.getElementById("ilgu-loading-bar");
+    const loadingSteps = [
+      { limit: 25, text: "서류를 찾는 중" },
+      { limit: 55, text: "자료를 검토하는 중" },
+      { limit: 82, text: "결과를 정리하는 중" },
+      { limit: 99, text: "마무리 확인 중" },
+      { limit: 100, text: "완료" },
+    ];
+
+    function runPreview() {
+      const duration = 3000 + Math.random() * 3000;
+      const start = performance.now();
+      let lastPercent = 1;
+
+      function paint(percent) {
+        const step = loadingSteps.find((item) => percent <= item.limit) || loadingSteps[loadingSteps.length - 1];
+        statusEl.textContent = step.text;
+        percentEl.textContent = `${percent}%`;
+        barEl.style.width = `${percent}%`;
+      }
+
+      function tick(now) {
+        const raw = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - raw, 2.35);
+        const maxBeforeDone = raw < 1 ? 99 : 100;
+        const percent = Math.max(lastPercent, Math.min(maxBeforeDone, Math.floor(eased * 100)));
+        lastPercent = percent;
+        paint(percent);
+        if (raw < 1) requestAnimationFrame(tick);
+        else setTimeout(runPreview, 650);
+      }
+
+      paint(1);
+      requestAnimationFrame(tick);
+    }
+
+    runPreview();
+  </script>
 </body>
 </html>

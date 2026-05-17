@@ -888,14 +888,18 @@
   <!-- 일구 로딩 오버레이 -->
   <div id="ilgu-loading-overlay" class="ilgu-overlay hidden">
     <div class="ilgu-loader-wrap">
-      <div class="ilgu-char-clip">
-        <img class="ilgu-character" src="./loading/ilgu.png" alt="">
+      <div class="ilgu-scene-frame">
+        <img class="ilgu-work-scene" src="./assets/loading/ilgu_working.png" alt="일구가 서류를 정리하는 중">
       </div>
       <div class="ilgu-loading-text">
-        <span class="ilgu-msg ilgu-msg1"><span class="ilgu-ch" style="--i:0">결</span><span class="ilgu-ch" style="--i:1">과</span><span class="ilgu-ch" style="--i:2">를</span><span class="ilgu-ch" style="--i:3">&nbsp;</span><span class="ilgu-ch" style="--i:4">도</span><span class="ilgu-ch" style="--i:5">출</span><span class="ilgu-ch" style="--i:6">&nbsp;</span><span class="ilgu-ch" style="--i:7">중</span><span class="ilgu-ch" style="--i:8">입</span><span class="ilgu-ch" style="--i:9">니</span><span class="ilgu-ch" style="--i:10">다</span></span>
-        <span class="ilgu-msg ilgu-msg2"><span class="ilgu-ch" style="--i:0">잠</span><span class="ilgu-ch" style="--i:1">시</span><span class="ilgu-ch" style="--i:2">만</span><span class="ilgu-ch" style="--i:3">&nbsp;</span><span class="ilgu-ch" style="--i:4">기</span><span class="ilgu-ch" style="--i:5">다</span><span class="ilgu-ch" style="--i:6">려</span><span class="ilgu-ch" style="--i:7">&nbsp;</span><span class="ilgu-ch" style="--i:8">주</span><span class="ilgu-ch" style="--i:9">세</span><span class="ilgu-ch" style="--i:10">요</span></span>
-        <span class="ilgu-msg ilgu-msg3"><span class="ilgu-ch" style="--i:0">거</span><span class="ilgu-ch" style="--i:1">의</span><span class="ilgu-ch" style="--i:2">&nbsp;</span><span class="ilgu-ch" style="--i:3">다</span><span class="ilgu-ch" style="--i:4">&nbsp;</span><span class="ilgu-ch" style="--i:5">됐</span><span class="ilgu-ch" style="--i:6">어</span><span class="ilgu-ch" style="--i:7">요</span><span class="ilgu-ch" style="--i:8">!</span></span>
+        <span id="ilgu-loading-status">서류를 찾는 중</span>
+        <span class="ilgu-dot">.</span><span class="ilgu-dot">.</span><span class="ilgu-dot">.</span>
+        <strong id="ilgu-loading-percent">1%</strong>
       </div>
+      <div class="ilgu-progress-track" aria-hidden="true">
+        <div id="ilgu-loading-bar" class="ilgu-progress-fill"></div>
+      </div>
+      <p class="ilgu-loading-caption">일구가 열심히 자료를 정리하고 있어요</p>
     </div>
   </div>
 

@@ -1187,17 +1187,56 @@ const screenLabels = {
   layoutLearn: "소방시설 배치 배우기",
 };
 
+let ilguLoadingFrame = null;
+
 function showIlguLoading(callback) {
   const overlay = document.getElementById("ilgu-loading-overlay");
+  const statusEl = document.getElementById("ilgu-loading-status");
+  const percentEl = document.getElementById("ilgu-loading-percent");
+  const barEl = document.getElementById("ilgu-loading-bar");
+  const loadingSteps = [
+    { limit: 25, text: "서류를 찾는 중" },
+    { limit: 55, text: "자료를 검토하는 중" },
+    { limit: 82, text: "결과를 정리하는 중" },
+    { limit: 99, text: "마무리 확인 중" },
+    { limit: 100, text: "완료" },
+  ];
+  const duration = 3000 + Math.random() * 3000;
+  const start = performance.now();
+  let lastPercent = 1;
+
+  if (ilguLoadingFrame) cancelAnimationFrame(ilguLoadingFrame);
+  function paint(percent) {
+    const step = loadingSteps.find((item) => percent <= item.limit) || loadingSteps[loadingSteps.length - 1];
+    if (statusEl) statusEl.textContent = step.text;
+    if (percentEl) percentEl.textContent = `${percent}%`;
+    if (barEl) barEl.style.width = `${percent}%`;
+  }
+  paint(1);
   overlay.classList.remove("hidden", "fading");
-  setTimeout(() => {
+
+  function tick(now) {
+    const elapsed = now - start;
+    const raw = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - raw, 2.35);
+    const maxBeforeDone = raw < 1 ? 99 : 100;
+    const jitter = raw < 0.92 ? Math.sin(elapsed / 120) * 1.4 : 0;
+    const percent = Math.max(lastPercent, Math.min(maxBeforeDone, Math.floor(eased * 100 + jitter)));
+    lastPercent = percent;
+    paint(percent);
+    if (raw < 1) {
+      ilguLoadingFrame = requestAnimationFrame(tick);
+      return;
+    }
     overlay.classList.add("fading");
     setTimeout(() => {
       overlay.classList.add("hidden");
       overlay.classList.remove("fading");
+      ilguLoadingFrame = null;
       callback();
     }, 300);
-  }, 3800);
+  }
+  ilguLoadingFrame = requestAnimationFrame(tick);
 }
 
 function showScreen(name) {
