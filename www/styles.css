@@ -5804,9 +5804,9 @@ html[data-theme="official"] .contact-card {
    ?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═ */
 html[data-theme="blossom"] {
   --bg: #fbe8ef;
-  --surface: #fff0f4;
-  --surface2: #fde0ea;
-  --surface3: #f8d0de;
+  --surface: #fef6f8;
+  --surface2: #fdeef3;
+  --surface3: #fad8e4;
   --border: #e8b8c8;
   --border2: #d49ab0;
   --red: #c84b6e;
