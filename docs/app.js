@@ -1188,12 +1188,21 @@ const screenLabels = {
 };
 
 let ilguLoadingFrame = null;
+let ilguSpriteTimer = null;
+let ilguSpawnTimer = null;
+let ilguPhysicsFrame = null;
+let ilguPapers = [];
 
 function showIlguLoading(callback) {
   const overlay = document.getElementById("ilgu-loading-overlay");
   const statusEl = document.getElementById("ilgu-loading-status");
   const percentEl = document.getElementById("ilgu-loading-percent");
   const barEl = document.getElementById("ilgu-loading-bar");
+  const spriteEl = document.getElementById("v2-sprite");
+  const stageBack = document.getElementById("v2-stage-back");
+  const stageFront = document.getElementById("v2-stage-front");
+  const wrap = document.getElementById("v2-loader-wrap");
+
   const loadingSteps = [
     { limit: 25, text: "서류를 찾는 중" },
     { limit: 55, text: "자료를 검토하는 중" },
@@ -1201,19 +1210,121 @@ function showIlguLoading(callback) {
     { limit: 99, text: "마무리 확인 중" },
     { limit: 100, text: "완료" },
   ];
-  const duration = 3000 + Math.random() * 3000;
-  const start = performance.now();
-  let lastPercent = 1;
 
   if (ilguLoadingFrame) cancelAnimationFrame(ilguLoadingFrame);
+  if (ilguPhysicsFrame) cancelAnimationFrame(ilguPhysicsFrame);
+  clearTimeout(ilguSpawnTimer);
+  clearTimeout(ilguSpriteTimer);
+  ilguPapers.forEach(p => p.el.remove());
+  ilguPapers = [];
+
+  overlay.classList.remove("fading");
+  overlay.classList.remove("hidden");
+  overlay.style.opacity = "0";
+  requestAnimationFrame(() => { overlay.style.opacity = ""; });
+
+  // sprite frame cycling
+  const spritePositions = ["0%", "33.33%", "100%", "66.66%"];
+  let spriteIdx = 0;
+  function cycleSpriteFrame() {
+    spriteIdx = (spriteIdx + 1) % spritePositions.length;
+    if (spriteEl) spriteEl.style.backgroundPosition = spritePositions[spriteIdx] + " 50%";
+    ilguSpriteTimer = setTimeout(cycleSpriteFrame, 600);
+  }
+  ilguSpriteTimer = setTimeout(cycleSpriteFrame, 600);
+
+  // wave-char status paint
+  let lastStatusText = "";
   function paint(percent) {
-    const step = loadingSteps.find((item) => percent <= item.limit) || loadingSteps[loadingSteps.length - 1];
-    if (statusEl) statusEl.textContent = step.text;
+    const step = loadingSteps.find(s => percent <= s.limit) || loadingSteps[loadingSteps.length - 1];
+    if (step.text !== lastStatusText) {
+      if (statusEl) {
+        statusEl.innerHTML = "";
+        [...step.text].forEach((ch, i) => {
+          const s = document.createElement("span");
+          s.className = "v2-wave-char";
+          s.textContent = ch;
+          s.style.animationDelay = `${i * 0.08}s`;
+          if (ch === " ") s.style.width = "0.3em";
+          statusEl.appendChild(s);
+        });
+      }
+      lastStatusText = step.text;
+    }
     if (percentEl) percentEl.textContent = `${percent}%`;
     if (barEl) barEl.style.width = `${percent}%`;
   }
+
+  // paper physics
+  const PAPER_KINDS = ["kind-a", "kind-b", "kind-c"];
+  function randBetween(min, max) { return min + Math.random() * (max - min); }
+  function spawnPaper() {
+    if (!wrap) return;
+    const w = wrap.clientWidth;
+    const h = wrap.clientHeight;
+    const fromLeft = Math.random() < 0.5;
+    const sourceX = fromLeft ? w * 0.35 : w * 0.65;
+    const sourceY = h * 0.30 + randBetween(-10, 15);
+    const size = randBetween(0.8, 1.2);
+    const baseW = 26 * size;
+    const baseH = 36 * size;
+    const direction = fromLeft ? -1 : 1;
+    const el = document.createElement("div");
+    el.className = `v2-paper ${PAPER_KINDS[Math.floor(Math.random() * PAPER_KINDS.length)]}`;
+    el.style.width = `${baseW}px`;
+    el.style.height = `${baseH}px`;
+    el.style.left = "0px";
+    el.style.top = "0px";
+    el.style.opacity = "0";
+    const layer = Math.random() < 0.5 ? "back" : "front";
+    (layer === "back" ? stageBack : stageFront).appendChild(el);
+    ilguPapers.push({
+      el,
+      x: sourceX - baseW / 2, y: sourceY - baseH / 2,
+      vx: direction * randBetween(70, 160),
+      vy: randBetween(-240, -340),
+      gravity: randBetween(360, 460),
+      rotation: randBetween(0, 360),
+      rotationSpeed: randBetween(-200, 200),
+      life: randBetween(2000, 3000),
+      born: performance.now(),
+    });
+  }
+
+  let physicsLast = performance.now();
+  function physicsLoop(now) {
+    const dt = Math.min((now - physicsLast) / 1000, 0.05);
+    physicsLast = now;
+    const h = wrap ? wrap.clientHeight : 0;
+    for (let i = ilguPapers.length - 1; i >= 0; i--) {
+      const p = ilguPapers[i];
+      const lifeT = (now - p.born) / p.life;
+      p.vy += p.gravity * dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.rotation += p.rotationSpeed * dt;
+      const opacity = lifeT < 0.15 ? lifeT / 0.15 : lifeT > 0.75 ? Math.max(0, 1 - (lifeT - 0.75) / 0.25) : 1;
+      p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0) rotate(${p.rotation}deg)`;
+      p.el.style.opacity = opacity.toFixed(3);
+      if (lifeT >= 1 || p.y > h + 100) { p.el.remove(); ilguPapers.splice(i, 1); }
+    }
+    ilguPhysicsFrame = requestAnimationFrame(physicsLoop);
+  }
+  ilguPhysicsFrame = requestAnimationFrame(physicsLoop);
+
+  function startSpawning() {
+    for (let i = 0; i < 4; i++) setTimeout(spawnPaper, i * 120);
+    function tick() { spawnPaper(); ilguSpawnTimer = setTimeout(tick, randBetween(180, 360)); }
+    ilguSpawnTimer = setTimeout(tick, 300);
+  }
+  function stopSpawning() { clearTimeout(ilguSpawnTimer); ilguSpawnTimer = null; }
+
+  startSpawning();
   paint(1);
-  overlay.classList.remove("hidden", "fading");
+
+  const duration = 3000 + Math.random() * 3000;
+  const start = performance.now();
+  let lastPercent = 1;
 
   function tick(now) {
     const elapsed = now - start;
@@ -1224,14 +1335,16 @@ function showIlguLoading(callback) {
     const percent = Math.max(lastPercent, Math.min(maxBeforeDone, Math.floor(eased * 100 + jitter)));
     lastPercent = percent;
     paint(percent);
-    if (raw < 1) {
-      ilguLoadingFrame = requestAnimationFrame(tick);
-      return;
-    }
+    if (raw < 1) { ilguLoadingFrame = requestAnimationFrame(tick); return; }
+    stopSpawning();
+    clearTimeout(ilguSpriteTimer);
     overlay.classList.add("fading");
     setTimeout(() => {
       overlay.classList.add("hidden");
       overlay.classList.remove("fading");
+      cancelAnimationFrame(ilguPhysicsFrame);
+      ilguPapers.forEach(p => p.el.remove());
+      ilguPapers = [];
       ilguLoadingFrame = null;
       callback();
     }, 300);

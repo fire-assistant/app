@@ -885,21 +885,24 @@
     </div>
   </section>
 
-  <!-- 일구 로딩 오버레이 -->
+  <!-- 일구 로딩 오버레이 v2 -->
   <div id="ilgu-loading-overlay" class="ilgu-overlay hidden">
-    <div class="ilgu-loader-wrap">
-      <div class="ilgu-scene-frame">
-        <img class="ilgu-work-scene" src="./assets/loading/ilgu_working.png" alt="일구가 서류를 정리하는 중">
+    <div class="v2-overlay">
+      <div class="v2-wrap" id="v2-loader-wrap">
+        <div class="v2-paper-stage-back" id="v2-stage-back"></div>
+        <div class="v2-scene-frame">
+          <div id="v2-sprite" class="v2-sprite" role="img" aria-label="일구가 서류를 정리하는 중"></div>
+        </div>
+        <div class="v2-paper-stage-front" id="v2-stage-front"></div>
+        <div class="v2-loading-text">
+          <span id="ilgu-loading-status">서류를 찾는 중</span>
+          <strong id="ilgu-loading-percent">1%</strong>
+        </div>
+        <div class="v2-progress-track">
+          <div id="ilgu-loading-bar" class="v2-progress-fill"></div>
+        </div>
+        <p class="ilgu-loading-caption">일구가 열심히 자료를 정리하고 있어요</p>
       </div>
-      <div class="ilgu-loading-text">
-        <span id="ilgu-loading-status">서류를 찾는 중</span>
-        <span class="ilgu-dot">.</span><span class="ilgu-dot">.</span><span class="ilgu-dot">.</span>
-        <strong id="ilgu-loading-percent">1%</strong>
-      </div>
-      <div class="ilgu-progress-track" aria-hidden="true">
-        <div id="ilgu-loading-bar" class="ilgu-progress-fill"></div>
-      </div>
-      <p class="ilgu-loading-caption">일구가 열심히 자료를 정리하고 있어요</p>
     </div>
   </div>
 
