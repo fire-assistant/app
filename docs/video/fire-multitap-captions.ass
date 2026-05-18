@@ -1,0 +1,20 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 720
+PlayResY: 1280
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Main,Malgun Gothic,66,&H00FFFFFF,&H000000FF,&H00161616,&HAA000000,-1,0,0,0,100,100,0,0,1,5,0,2,48,48,145,1
+Style: Small,Malgun Gothic,48,&H00FFFFFF,&H000000FF,&H00161616,&HAA000000,-1,0,0,0,100,100,0,0,1,4,0,2,48,48,150,1
+Style: Warn,Malgun Gothic,56,&H002D52FF,&H000000FF,&H0000001F,&HAA000000,-1,0,0,0,100,100,0,0,1,5,0,2,48,48,145,1
+Style: End,Malgun Gothic,58,&H00FFFFFF,&H000000FF,&H00161616,&HAA000000,-1,0,0,0,100,100,0,0,1,5,0,2,46,46,145,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:04.20,Main,,0,0,0,,당신은 어떤 불을\N켜겠습니까?
+Dialogue: 0,0:00:04.20,0:00:10.80,Warn,,0,0,0,,잠깐이면 괜찮겠지...
+Dialogue: 0,0:00:10.80,0:00:17.80,Small,,0,0,0,,올바른 사용은\N일상을 밝힙니다
+Dialogue: 0,0:00:17.80,0:00:24.40,Small,,0,0,0,,멀티탭 하나의 선택이\N완전히 다른 불을 만듭니다
+Dialogue: 0,0:00:24.40,0:00:30.00,End,,0,0,0,,문어발식 콘센트 사용은\N화재의 시작\N{\fs42}안전은 작은 습관에서

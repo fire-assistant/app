@@ -6866,6 +6866,15 @@ const yearStepOrder = new Map([
   "yLodgingMultiuseHasEvacuationRoute",
 ].map((key, index) => [key, index]));
 
+// 자세한 버전(분법 이전) 자동산정 대상 키 (자동 ON이면 화면에서 숨김, 수동이면 맨 뒤로)
+const YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY_BEFORE2004 = {
+  neighborhood: new Set(["yBefore2004HasLargeFloor450", "yBefore2004SprinklerFloor", "yBefore2004HasDetFloor300", "yBefore2004LargeFloor1000"]),
+  lodging: new Set(["yBefore2004LodgingHasLargeFloor450", "yBefore2004LodgingSprinklerFloor", "yBefore2004LodgingAutoDetFloor300", "yBefore2004LodgingHasLargeFloor300", "yBefore2004LodgingHasLargeFloor1000", "yBefore2004LodgingHasFloor1500"]),
+  medical: new Set(["yBefore2004MedicalHasLargeFloor450", "yBefore2004MedicalHasLargeFloor300", "yBefore2004MedicalSprinklerFloor", "yBefore2004MedicalAutoDetFloor300", "yBefore2004MedicalHasLargeFloor1000", "yBefore2004MedicalHasFloor1500"]),
+  elderly: new Set(["yBefore2004ElderlyHasLargeFloor450", "yBefore2004ElderlySprinklerFloor", "yBefore2004ElderlyAutoDetFloor300", "yBefore2004ElderlyHasLargeFloor300", "yBefore2004ElderlyLargeFloor1000", "yBefore2004ElderlyHasFloor500Plus"]),
+  religious: new Set(["yBefore2004ReligiousHasLargeFloor600"]),
+};
+
 // 자세한 버전(분법 이후) 수동 입력 모드일 때 면적 관련 질문을 맨 뒤로 (용도별)
 const YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY = {
   neighborhood: new Set(["yHasLargeTargetFloor", "yHasLargeFloorFor1000", "yFirstSecondFloorArea", "ySmokeControlArea"]),
@@ -6877,9 +6886,14 @@ const YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY = {
 
 function sortByYearStepOrder(activeSteps) {
   const ya = yearState.answers;
-  const keysToEnd = (ya.yEraChoice === "after2004" && ya.yAutoCalcAreas === "no")
-    ? YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY[ya.yOccupancyType]
-    : null;
+  let keysToEnd = null;
+  if (ya.yAutoCalcAreas === "no") {
+    if (ya.yEraChoice === "after2004") {
+      keysToEnd = YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY[ya.yOccupancyType];
+    } else if (ya.yEraChoice === "before2004") {
+      keysToEnd = YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY_BEFORE2004[ya.yOccupancyType];
+    }
+  }
   const orderKey = (step) => {
     let idx = yearStepOrder.get(step.key) ?? Number.MAX_SAFE_INTEGER;
     if (keysToEnd && keysToEnd.has(step.key)) {
@@ -6947,6 +6961,7 @@ function yearGetActiveSteps() {
 
     // ── 분법 이전 근린생활시설 ──
     if (ya.yEraChoice === "before2004" && ya.yOccupancyType === "neighborhood") {
+      if (ya.yAutoCalcAreas === "yes" && YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY_BEFORE2004.neighborhood.has(step.key)) return false;
       const ta = parseFloat(ya.yTotalArea) || 0;
       const ag = parseInt(ya.yAboveGroundFloors) || 0;
       const preBefore1992 = pd > 0 && pd < YD.D19920728;
@@ -6980,6 +6995,7 @@ function yearGetActiveSteps() {
     }
     // ── 분법 이전 숙박시설 ──
     if (ya.yEraChoice === "before2004" && ya.yOccupancyType === "lodging") {
+      if (ya.yAutoCalcAreas === "yes" && YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY_BEFORE2004.lodging.has(step.key)) return false;
       const ta = parseFloat(ya.yTotalArea) || 0;
       const ag = parseInt(ya.yAboveGroundFloors) || 0;
       const preBefore1992 = pd > 0 && pd < YD.D19920728;
@@ -7006,6 +7022,7 @@ function yearGetActiveSteps() {
 
     // ── 분법 이전 의료시설 ──
     if (ya.yEraChoice === "before2004" && ya.yOccupancyType === "medical") {
+      if (ya.yAutoCalcAreas === "yes" && YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY_BEFORE2004.medical.has(step.key)) return false;
       const ta = parseFloat(ya.yTotalArea) || 0;
       const ag = parseInt(ya.yAboveGroundFloors) || 0;
       const preBefore1992 = pd > 0 && pd < YD.D19920728;
@@ -7025,6 +7042,7 @@ function yearGetActiveSteps() {
 
     // ── 분법 이전 노유자시설 ──
     if (ya.yEraChoice === "before2004" && ya.yOccupancyType === "elderly") {
+      if (ya.yAutoCalcAreas === "yes" && YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY_BEFORE2004.elderly.has(step.key)) return false;
       const ta = parseFloat(ya.yTotalArea) || 0;
       const ag = parseInt(ya.yAboveGroundFloors) || 0;
       const preBefore1992 = pd > 0 && pd < YD.D19920728;
@@ -7044,6 +7062,7 @@ function yearGetActiveSteps() {
 
     // ── 분법 이전 종교시설 ──
     if (ya.yEraChoice === "before2004" && ya.yOccupancyType === "religious") {
+      if (ya.yAutoCalcAreas === "yes" && YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY_BEFORE2004.religious.has(step.key)) return false;
       const ta = parseFloat(ya.yTotalArea) || 0;
       const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet", "yBefore2004ReligiousParkingElecSet"];
       if (alwaysShow.includes(step.key)) return true;
@@ -7062,10 +7081,10 @@ function yearGetActiveSteps() {
 // 자세한 버전(분법 이후) 면적 자동산정 지원 용도
 const YEAR_AUTO_OCCUPANCY_TYPES = ["neighborhood", "lodging", "elderly", "medical", "religious"];
 
-// 자동산정 모드 여부 (분법 이후 + 지원 용도 + 토글 ON)
+// 자동산정 모드 여부 (지원 용도 + 토글 ON, 분법 이전/이후 공통)
 function yearIsAutoAreaMode() {
   const ya = yearState.answers;
-  return ya.yEraChoice === "after2004"
+  return (ya.yEraChoice === "after2004" || ya.yEraChoice === "before2004")
     && YEAR_AUTO_OCCUPANCY_TYPES.includes(ya.yOccupancyType)
     && ya.yAutoCalcAreas === "yes";
 }
@@ -7084,6 +7103,34 @@ function yearAutoDeriveLargeFloor(threshold) {
   if (ag >= 4 && aboveAvg >= threshold) return "yes";
   if (bf > 0 && basementAvg >= threshold) return "yes";
   if (hasWl && wlA >= threshold) return "yes";
+  return "no";
+}
+
+// 직사각형 가정으로 "지하·무창·3층 이상 중 threshold㎡ 이상" 자동 판정 (분법 이전 자탐 조건)
+function yearAutoDeriveLargeFloorMin3(threshold) {
+  const ya = yearState.answers;
+  const ta = parseFloat(ya.yTotalArea) || 0;
+  const ba = parseFloat(ya.yBasementAreaSum) || 0;
+  const bf = parseInt(ya.yBasementFloors) || 0;
+  const ag = parseInt(ya.yAboveGroundFloors) || 0;
+  const hasWl = ya.yHasWindowlessFloor === "yes";
+  const wlA = hasWl ? (parseFloat(ya.yWindowlessArea) || 0) : 0;
+  const aboveAvg = ag > 0 ? (ta - ba) / ag : 0;
+  const basementAvg = bf > 0 ? ba / bf : 0;
+  if (ag >= 3 && aboveAvg >= threshold) return "yes";
+  if (bf > 0 && basementAvg >= threshold) return "yes";
+  if (hasWl && wlA >= threshold) return "yes";
+  return "no";
+}
+
+// 직사각형 가정으로 "4층 이상(지상) 중 threshold㎡ 이상" 자동 판정 (지하·무창 제외, 분법 이전 근린·숙박 SP 조건)
+function yearAutoDeriveAboveFloor4Plus(threshold) {
+  const ya = yearState.answers;
+  const ta = parseFloat(ya.yTotalArea) || 0;
+  const ba = parseFloat(ya.yBasementAreaSum) || 0;
+  const ag = parseInt(ya.yAboveGroundFloors) || 0;
+  const aboveAvg = ag > 0 ? (ta - ba) / ag : 0;
+  if (ag >= 4 && aboveAvg >= threshold) return "yes";
   return "no";
 }
 
@@ -7110,6 +7157,47 @@ function yearApplyAutoCalc() {
   yearRecalcF12();
   yearRecalcSmokeAreaTargets();
   const ya = yearState.answers;
+  // 분법 이전: 시기·용도별 분기로 면적 관련 답을 도출
+  if (ya.yEraChoice === "before2004") {
+    const pd = yPermitDateInt();
+    const sprThreshold = (pd > 0 && pd < YD.D19840701) ? 1500 : 1000;
+    switch (ya.yOccupancyType) {
+      case "neighborhood":
+        ya.yBefore2004HasLargeFloor450 = yearAutoDeriveLargeFloor(450);
+        ya.yBefore2004HasDetFloor300 = yearAutoDeriveLargeFloorMin3(300);
+        ya.yBefore2004LargeFloor1000 = yearAutoDeriveLargeFloor(1000);
+        ya.yBefore2004SprinklerFloor = yearAutoDeriveAboveFloor4Plus(sprThreshold);
+        break;
+      case "lodging":
+        ya.yBefore2004LodgingHasLargeFloor450 = yearAutoDeriveLargeFloor(450);
+        ya.yBefore2004LodgingSprinklerFloor = yearAutoDeriveAboveFloor4Plus(sprThreshold);
+        ya.yBefore2004LodgingAutoDetFloor300 = yearAutoDeriveLargeFloorMin3(300);
+        ya.yBefore2004LodgingHasLargeFloor300 = yearAutoDeriveLargeFloor(300);
+        ya.yBefore2004LodgingHasLargeFloor1000 = yearAutoDeriveLargeFloor(1000);
+        ya.yBefore2004LodgingHasFloor1500 = yearAutoDeriveAnyFloor(1500);
+        break;
+      case "medical":
+        ya.yBefore2004MedicalHasLargeFloor450 = yearAutoDeriveLargeFloor(450);
+        ya.yBefore2004MedicalHasLargeFloor300 = yearAutoDeriveLargeFloor(300);
+        ya.yBefore2004MedicalSprinklerFloor = yearAutoDeriveLargeFloor(sprThreshold);
+        ya.yBefore2004MedicalAutoDetFloor300 = yearAutoDeriveLargeFloorMin3(300);
+        ya.yBefore2004MedicalHasLargeFloor1000 = yearAutoDeriveLargeFloor(1000);
+        ya.yBefore2004MedicalHasFloor1500 = yearAutoDeriveAnyFloor(1500);
+        break;
+      case "elderly":
+        ya.yBefore2004ElderlyHasLargeFloor450 = yearAutoDeriveLargeFloor(450);
+        ya.yBefore2004ElderlySprinklerFloor = yearAutoDeriveLargeFloor(sprThreshold);
+        ya.yBefore2004ElderlyAutoDetFloor300 = yearAutoDeriveLargeFloorMin3(300);
+        ya.yBefore2004ElderlyHasLargeFloor300 = yearAutoDeriveLargeFloor(300);
+        ya.yBefore2004ElderlyLargeFloor1000 = yearAutoDeriveLargeFloor(1000);
+        ya.yBefore2004ElderlyHasFloor500Plus = yearAutoDeriveAnyFloor(500);
+        break;
+      case "religious":
+        ya.yBefore2004ReligiousHasLargeFloor600 = yearAutoDeriveLargeFloor(600);
+        break;
+    }
+    return;
+  }
   switch (ya.yOccupancyType) {
     case "neighborhood":
       ya.yHasLargeTargetFloor = yearAutoDeriveLargeFloor(300);
@@ -7231,9 +7319,9 @@ function yearRenderChoiceStep(step) {
   });
   container.appendChild(wrapper);
 
-  // 자세한 버전(분법 이후, 지원 용도): 면적 자동산정 토글
+  // 자세한 버전(지원 용도): 면적 자동산정 토글 (분법 이전/이후 공통)
   if (step.key === "yOccupancyType"
-      && yearState.answers.yEraChoice === "after2004"
+      && (yearState.answers.yEraChoice === "after2004" || yearState.answers.yEraChoice === "before2004")
       && YEAR_AUTO_OCCUPANCY_TYPES.includes(yearState.answers.yOccupancyType)) {
     const toggleWrap = document.createElement("label");
     toggleWrap.className = "info-box blue";
@@ -11066,6 +11154,8 @@ function yearShowResults() {
     showToast("현재 질문의 값을 먼저 입력해 주세요.");
     return;
   }
+  // 면적 자동산정 모드면 분기 진입 전에 파생 답 채우기 (분법 이전/이후 공통)
+  yearApplyAutoCalc();
   // 다중이용업소 버튼/카드 초기화
   const _ymBtn = document.getElementById("year-open-multiuse-safety");
   if (_ymBtn) _ymBtn.classList.add("hidden");
@@ -12685,7 +12775,6 @@ function renderReportGuide(restoreScroll) {
           <button id="rg-sel-guide" class="choice-button" type="button">
             <div class="choice-label-wrap">
               <strong>📋 자체점검 보고서 읽는법</strong>
-              <span class="test-badge">테스트중</span>
             </div>
             <span>자체점검 실시결과 보고서 작성·읽기 안내</span>
           </button>
