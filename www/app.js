@@ -12868,9 +12868,18 @@ const RG_PAGE1_SECTIONS = [
     img: './image/inspection/page 1/page1-대상물설명.png',
     desc: [
       '<b>명칭(상호)</b>: 건물명을 기재합니다.',
-      '<b>대상물 구분(용도)</b>: 「소방시설 설치 및 관리에 관한 법률 시행령」 별표 2에 따른 특정소방대상물 구분을 기재합니다.',
+      '<b>대상물 구분(용도)</b>: 「소방시설 설치 및 관리에 관한 법률 시행령」 별표 2에 따른 특정소방대상물 구분을 기재합니다. 소방법에는 "근린생활시설"로만 구분되지만, 점검업체가 건축법 기준인 제1종·제2종으로 나눠 기재하는 경우가 많습니다. 또한 제1종 또는 제2종 "근린생활시설"로 적혀 있더라도 소방법에서는 용도와 면적에 따라 업무시설이나 종교시설 등으로 분류되는 경우도 있습니다.',
       '<b>소재지</b>: 특정소방대상물의 주소를 기재합니다.',
     ],
+    noteTable: {
+      title: '제1종·제2종 근린생활시설',
+      head: ['구분', '대표 업종'],
+      rows: [
+        ['제1종', '소매점(1,000㎡ 미만), 의원·치과·한의원, 이용원·미용원·목욕장, 파출소·우체국·보건소 등 소규모 생활편의시설'],
+        ['제2종', '일반음식점, 휴게음식점(300㎡ 이상), 학원·독서실, 노래연습장·단란주점, PC방·게임장, 공연장(500㎡ 미만) 등'],
+      ],
+      footnote: '※ 휴게음식점·제과점처럼 같은 업종이라도 면적에 따라 제1종과 제2종이 달라지는 경우도 있습니다.',
+    },
   },
   {
     id: 'p1-period',
@@ -12967,6 +12976,50 @@ function createRgAccordion(section, num) {
       noteBox.appendChild(row);
     });
     body.appendChild(noteBox);
+  }
+
+  if (section.noteTable) {
+    var ntBox = document.createElement('div');
+    ntBox.className = 'rg-role-note';
+    var ntTitle = document.createElement('div');
+    ntTitle.className = 'rg-role-note-title';
+    ntTitle.innerHTML = '<span class="rg-note-badge">참고</span> ' + section.noteTable.title;
+    ntBox.appendChild(ntTitle);
+    var ntWrap = document.createElement('div');
+    ntWrap.className = 'calc-table-wrap';
+    ntWrap.style.marginTop = '8px';
+    var ntTable = document.createElement('table');
+    ntTable.className = 'calc-table';
+    var ntThead = document.createElement('thead');
+    var ntHr = document.createElement('tr');
+    section.noteTable.head.forEach(function (h) {
+      var th = document.createElement('th');
+      th.textContent = h;
+      ntHr.appendChild(th);
+    });
+    ntThead.appendChild(ntHr);
+    ntTable.appendChild(ntThead);
+    var ntTbody = document.createElement('tbody');
+    section.noteTable.rows.forEach(function (rowData) {
+      var tr = document.createElement('tr');
+      rowData.forEach(function (cell, ci) {
+        var td = document.createElement('td');
+        td.innerHTML = cell;
+        if (ci === 0) td.style.whiteSpace = 'nowrap';
+        tr.appendChild(td);
+      });
+      ntTbody.appendChild(tr);
+    });
+    ntTable.appendChild(ntTbody);
+    ntWrap.appendChild(ntTable);
+    ntBox.appendChild(ntWrap);
+    if (section.noteTable.footnote) {
+      var ntFn = document.createElement('div');
+      ntFn.style.cssText = 'margin-top:6px;font-size:11px;color:var(--text-dim);line-height:1.55;';
+      ntFn.textContent = section.noteTable.footnote;
+      ntBox.appendChild(ntFn);
+    }
+    body.appendChild(ntBox);
   }
 
   if (section.extraNotes && section.extraNotes.length) {
