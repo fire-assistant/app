@@ -3980,7 +3980,7 @@ function renderDateCalculator() {
           ${Object.entries(mode.actionTypes).map(([key, cfg]) => `
             <button class="dc-action-toggle-btn${key === state.dateCalc.noncomplianceType ? " active" : ""}" type="button" data-noncompliance-type="${key}">
               <span class="dc-action-days">${cfg.label}</span>
-              <span>${cfg.description}</span>
+              <span class="dc-action-desc">${cfg.description}</span>
             </button>
           `).join("")}
         </div>
