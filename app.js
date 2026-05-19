@@ -14554,6 +14554,7 @@ applyDevMode();
 
   let loaded = false;
   let totalChapters = 0;
+  const openedOnce = new Set();
 
   function pickFortune() {
     return FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
@@ -14602,9 +14603,11 @@ applyDevMode();
     introEl.textContent = data.intro;
     chaptersEl.innerHTML = "";
     totalChapters = data.chapters.length;
+    openedOnce.clear();
     data.chapters.forEach((c) => {
       const det = document.createElement("details");
       det.className = "devletter-chapter";
+      det.dataset.chapterNum = c.num;
       det.innerHTML = `
         <summary class="devletter-chapter-summary">
           <span class="devletter-chapter-num">${escapeHtml(String(c.num).padStart(2,"0"))}</span>
@@ -14612,17 +14615,16 @@ applyDevMode();
         </summary>
         <div class="devletter-chapter-body">${escapeHtml(c.body)}</div>
       `;
-      det.addEventListener("toggle", checkAllOpen);
+      det.addEventListener("toggle", () => onChapterToggle(det));
       chaptersEl.appendChild(det);
     });
   }
 
-  function checkAllOpen() {
+  function onChapterToggle(det) {
+    if (!det.open) return;
+    openedOnce.add(det.dataset.chapterNum);
     if (localStorage.getItem(READ_FLAG)) return;
-    const all = chaptersEl.querySelectorAll("details.devletter-chapter");
-    if (!all.length) return;
-    const openCount = Array.from(all).filter(d => d.open).length;
-    if (openCount >= totalChapters) {
+    if (openedOnce.size >= totalChapters && totalChapters > 0) {
       try { localStorage.setItem(READ_FLAG, "1"); } catch {}
       setTimeout(showReward, 350);
     }
@@ -14682,4 +14684,22 @@ applyDevMode();
   if (reward) reward.addEventListener("click", (e) => {
     if (e.target === reward) hideReward();
   });
+
+  // 점검용: 프로필 사진 5번 연속 클릭 시 보상카드 강제 출력
+  (function attachAvatarSecret() {
+    const avatar = document.querySelector("#screen-developer-letter .devletter-avatar");
+    if (!avatar) return;
+    avatar.style.cursor = "pointer";
+    let count = 0;
+    let timer = null;
+    avatar.addEventListener("click", () => {
+      count++;
+      clearTimeout(timer);
+      timer = setTimeout(() => { count = 0; }, 1500);
+      if (count >= 5) {
+        count = 0;
+        showReward();
+      }
+    });
+  })();
 })();
