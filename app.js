@@ -805,6 +805,7 @@ const screens = {
   lab: document.getElementById("screen-lab"),
   facilities: document.getElementById("screen-facilities"),
   layoutLearn: document.getElementById("screen-layout-learn"),
+  "developer-letter": document.getElementById("screen-developer-letter"),
 };
 
 const questionElements = {
@@ -5239,22 +5240,47 @@ function renderOccupancyCalculator() {
         <p class="occ-note">※ 그 외 대상은 기숙사·의료시설·노유자시설·수련시설·숙박시설 제외 기준입니다.</p>
       </section>
 
-      <section class="wq-card occ-ref-card">
-        <div class="info-box amber">
-          <div class="ib-title">선임 대상</div>
-          <b>가.</b> 300세대 이상인 아파트<br>
-          <b>나.</b> 연면적 1만5천㎡ 이상인 특정소방대상물(아파트·연립주택 제외)<br>
-          <b>다.</b> 가·나 외 특정소방대상물 중 다음 어느 하나에 해당하는 것<br>
-          &nbsp;&nbsp;1) 공동주택 중 기숙사<br>&nbsp;&nbsp;2) 의료시설<br>&nbsp;&nbsp;3) 노유자 시설<br>&nbsp;&nbsp;4) 수련시설<br>
-          &nbsp;&nbsp;5) 숙박시설(바닥면적 합계 1,500㎡ 미만이고 관계인이 24시간 상시 근무하는 경우 제외)
+      <div class="dc-ref-accordion">
+        <div class="dc-ref-head">선임 대상</div>
+        <div class="dc-ref-body">
+          <div class="dc-ref-row">
+            <div class="dc-ref-marker">가.</div>
+            <div class="dc-ref-text">300세대 이상인 아파트</div>
+          </div>
+          <div class="dc-ref-row">
+            <div class="dc-ref-marker">나.</div>
+            <div class="dc-ref-text">연면적 1만5천㎡ 이상인 특정소방대상물(아파트·연립주택 제외)</div>
+          </div>
+          <div class="dc-ref-row">
+            <div class="dc-ref-marker">다.</div>
+            <div class="dc-ref-text">
+              <span>가·나 외 특정소방대상물 중 다음 어느 하나에 해당하는 것</span>
+              <span class="dc-ref-sub">1) 공동주택 중 기숙사</span>
+              <span class="dc-ref-sub">2) 의료시설</span>
+              <span class="dc-ref-sub">3) 노유자 시설</span>
+              <span class="dc-ref-sub">4) 수련시설</span>
+              <span class="dc-ref-sub">5) 숙박시설(바닥면적 합계 1,500㎡ 미만이고 관계인이 24시간 상시 근무하는 경우 제외)</span>
+            </div>
+          </div>
         </div>
-        <div class="info-box blue">
-          <div class="ib-title">선임 인원</div>
-          <b>가.</b> 아파트(300세대 이상): 1명. 초과되는 300세대마다 1명 이상 추가 선임<br>
-          <b>나.</b> 연면적 1만5천㎡ 이상: 1명. 초과되는 연면적 1만5천㎡마다 1명 추가 선임<br>
-          <b>다.</b> 그 밖의 대상: 1명. 야간·휴일에 이용되지 않는 것이 확인된 경우 선임 제외 가능
+      </div>
+      <div class="dc-ref-accordion" style="margin-top:10px;">
+        <div class="dc-ref-head">선임 인원</div>
+        <div class="dc-ref-body">
+          <div class="dc-ref-row">
+            <div class="dc-ref-marker">가.</div>
+            <div class="dc-ref-text">아파트(300세대 이상): 1명. 초과되는 300세대마다 1명 이상 추가 선임</div>
+          </div>
+          <div class="dc-ref-row">
+            <div class="dc-ref-marker">나.</div>
+            <div class="dc-ref-text">연면적 1만5천㎡ 이상: 1명. 초과되는 연면적 1만5천㎡마다 1명 추가 선임</div>
+          </div>
+          <div class="dc-ref-row">
+            <div class="dc-ref-marker">다.</div>
+            <div class="dc-ref-text">그 밖의 대상: 1명. 야간·휴일에 이용되지 않는 것이 확인된 경우 선임 제외 가능</div>
+          </div>
         </div>
-      </section>
+      </div>
     `;
     attachTabListeners();
 
@@ -14470,5 +14496,161 @@ applyDevMode();
       }
       btn.classList.add("is-active");
     }
+  });
+})();
+
+/* ============================================================
+   개발자 인사말 — txt fetch + 챕터 파싱 + 보상카드
+   ============================================================ */
+(function initDevLetter() {
+  const openBtn = document.getElementById("open-dev-letter");
+  const backBtn = document.getElementById("back-from-dev-letter");
+  const introEl = document.getElementById("devletter-intro-text");
+  const chaptersEl = document.getElementById("devletter-chapters");
+  const feedbackBtn = document.getElementById("devletter-feedback-btn");
+  const reward = document.getElementById("devletter-reward");
+  const rewardFortuneEl = document.getElementById("devletter-reward-fortune");
+  const rewardCloseBtn = document.getElementById("devletter-reward-close");
+
+  if (!openBtn) return;
+
+  const FORTUNES = [
+    "퇴근길에 만 원짜리 한 장 발견함",
+    "오늘 밤 출동 없이 긴 밤 보냄",
+    "매수한 주식 5% 상승함",
+    "오늘 점심으로 제일 좋아하는 메뉴 나옴",
+  ];
+  const READ_FLAG = "devLetterFullyRead_v1";
+
+  let loaded = false;
+  let totalChapters = 0;
+
+  function pickFortune() {
+    return FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  function parseLetter(raw) {
+    // 줄 단위, [개발자가 전하는 글] 제거, 숫자. 제목 = 챕터 시작
+    const lines = raw.replace(/\r\n/g, "\n").split("\n");
+    let intro = [];
+    const chapters = [];
+    let cur = null;
+    let inBody = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      if (trimmed === "[개발자가 전하는 글]") { inBody = true; continue; }
+
+      const m = trimmed.match(/^(\d+)\.\s*(.+)$/);
+      if (m && inBody) {
+        if (cur) chapters.push(cur);
+        cur = { num: m[1], title: m[2], body: [] };
+        continue;
+      }
+
+      if (cur) {
+        cur.body.push(line);
+      } else if (!inBody && trimmed) {
+        intro.push(line);
+      }
+    }
+    if (cur) chapters.push(cur);
+
+    // 챕터에 본문 없으면 다음 라인이 본문일 가능성 — 위 파서가 처리함
+    chapters.forEach(c => { c.body = c.body.join("\n").replace(/^\n+|\n+$/g, ""); });
+    return { intro: intro.join("\n").trim().replace(/\\\s*$/, ""), chapters };
+  }
+
+  function render(data) {
+    introEl.textContent = data.intro;
+    chaptersEl.innerHTML = "";
+    totalChapters = data.chapters.length;
+    data.chapters.forEach((c) => {
+      const det = document.createElement("details");
+      det.className = "devletter-chapter";
+      det.innerHTML = `
+        <summary class="devletter-chapter-summary">
+          <span class="devletter-chapter-num">${escapeHtml(String(c.num).padStart(2,"0"))}</span>
+          <span class="devletter-chapter-title">${escapeHtml(c.title)}</span>
+        </summary>
+        <div class="devletter-chapter-body">${escapeHtml(c.body)}</div>
+      `;
+      det.addEventListener("toggle", checkAllOpen);
+      chaptersEl.appendChild(det);
+    });
+  }
+
+  function checkAllOpen() {
+    if (localStorage.getItem(READ_FLAG)) return;
+    const all = chaptersEl.querySelectorAll("details.devletter-chapter");
+    if (!all.length) return;
+    const openCount = Array.from(all).filter(d => d.open).length;
+    if (openCount >= totalChapters) {
+      try { localStorage.setItem(READ_FLAG, "1"); } catch {}
+      setTimeout(showReward, 350);
+    }
+  }
+
+  function showReward() {
+    if (!reward) return;
+    rewardFortuneEl.textContent = pickFortune();
+    reward.classList.remove("hidden");
+    reward.setAttribute("aria-hidden", "false");
+  }
+  function hideReward() {
+    if (!reward) return;
+    reward.classList.add("hidden");
+    reward.setAttribute("aria-hidden", "true");
+  }
+
+  async function loadLetter() {
+    if (loaded) return;
+    try {
+      const res = await fetch("documents/소개글.txt", { cache: "no-cache" });
+      if (!res.ok) throw new Error("fetch failed " + res.status);
+      const text = await res.text();
+      const data = parseLetter(text);
+      render(data);
+      loaded = true;
+    } catch (e) {
+      introEl.textContent = "글을 불러오지 못했습니다. (documents/소개글.txt)";
+      chaptersEl.innerHTML = "";
+      console.error("[devletter] load failed:", e);
+    }
+  }
+
+  openBtn.addEventListener("click", () => {
+    loadLetter();
+    if (typeof showScreen === "function") {
+      showScreen("developer-letter");
+    } else {
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      document.getElementById("screen-developer-letter").classList.add("active");
+    }
+  });
+
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      if (typeof showScreen === "function") showScreen("home");
+    });
+  }
+
+  if (feedbackBtn) {
+    feedbackBtn.addEventListener("click", () => {
+      const contact = document.getElementById("open-contact");
+      if (contact) contact.click();
+    });
+  }
+
+  if (rewardCloseBtn) rewardCloseBtn.addEventListener("click", hideReward);
+  if (reward) reward.addEventListener("click", (e) => {
+    if (e.target === reward) hideReward();
   });
 })();

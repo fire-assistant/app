@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>예방업무 어시스턴트</title>
   <link rel="stylesheet" href="./styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap">
   <link rel="manifest" href="./manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -436,7 +439,13 @@
           <h2 class="guide-hero-title">6가지 도구, 이렇게 쓰세요</h2>
           <p class="guide-hero-desc">각 기능을 탭하면 사용법과 주의사항을 확인할 수 있습니다.</p>
         </div>
-        <button id="open-intro-video" class="guide-intro-video-btn" type="button">소개 영상 보기</button>
+        <div class="guide-hero-btns">
+          <button id="open-intro-video" class="guide-intro-video-btn" type="button">소개 영상 보기</button>
+          <button id="open-dev-letter" class="guide-dev-letter-btn" type="button">
+            <span class="dev-letter-stamp">개발자<br>로부터</span>
+            <span class="dev-letter-text">📮 개발자 인사말</span>
+          </button>
+        </div>
       </div>
 
       <!-- Tool cards -->
@@ -571,42 +580,155 @@
 
       <!-- 설치 안내 -->
       <p class="section-label" style="margin-top:24px;">앱처럼 설치하기</p>
-      <div class="info-box blue">
-        <div class="ib-title">📲 바탕화면·홈 화면에 바로가기 추가</div>
-        메인화면 하단의 <strong>바로가기 추가</strong> 버튼을 누르면 기기에 맞는 방법을 안내해 드립니다.<br><br>
-        <strong>PC</strong> — .url 바로가기 파일을 다운로드해서 바탕화면에 놓으면 더블클릭으로 열 수 있습니다.<br>
-        <strong>안드로이드</strong> — Chrome에서 "홈 화면에 추가"하면 앱 아이콘이 생성됩니다.<br>
-        <strong>아이폰</strong> — 사파리 하단 공유버튼 → "홈 화면에 추가"를 탭하세요.
-      </div>
-      <div class="info-box amber">
-        <div class="ib-title">✅ 앱으로 설치하면 좋은 점</div>
-        주소창 없이 전체화면으로 실행되고, 한 번 로딩 후에는 인터넷 없이도 기본 기능을 사용할 수 있습니다.
+      <div class="guide-info-card">
+        <div class="guide-info-head">
+          <div class="guide-tool-icon mc-blue">📲</div>
+          <div class="guide-info-meta">
+            <span class="guide-info-kicker">INSTALL</span>
+            <span class="guide-info-title">바탕화면·홈 화면에 바로가기 추가</span>
+          </div>
+        </div>
+        <div class="guide-info-body">
+          <p>메인화면 하단의 <strong>바로가기 추가</strong> 버튼을 누르면 기기에 맞는 방법이 안내됩니다.</p>
+          <div class="guide-info-rows">
+            <div class="guide-info-row">
+              <span class="guide-info-row-label">PC</span>
+              <span class="guide-info-row-text">.url 파일을 다운로드해 바탕화면에 두고 더블클릭으로 실행</span>
+            </div>
+            <div class="guide-info-row">
+              <span class="guide-info-row-label">Android</span>
+              <span class="guide-info-row-text">Chrome 메뉴 → <strong>홈 화면에 추가</strong></span>
+            </div>
+            <div class="guide-info-row">
+              <span class="guide-info-row-label">iPhone</span>
+              <span class="guide-info-row-text">Safari 공유 버튼 → <strong>홈 화면에 추가</strong></span>
+            </div>
+          </div>
+          <p class="guide-info-note">✅ 설치 후엔 주소창 없이 전체화면으로 실행되며, 한 번 로딩 뒤에는 인터넷 없이도 기본 기능을 사용할 수 있습니다.</p>
+        </div>
       </div>
 
       <!-- 화면 설정 -->
       <p class="section-label">화면 설정</p>
-      <div class="info-box blue">
-        <div class="ib-title">🌸 / 🌙 / ☀️ 테마 전환</div>
-        화면 우측 상단 아이콘 버튼을 누를 때마다 테마가 순환됩니다. 선택한 테마는 기기에 저장됩니다.<br><br>
-        <strong>🌸 벚꽃</strong> — 기본 테마. 분홍 계열 배경에 벚꽃 꽃잎이 떨어지는 애니메이션이 적용됩니다.<br>
-        <strong>🌙 다크</strong> — 어두운 배경의 다크 모드입니다.<br>
-        <strong>☀️ 공공기관</strong> — 흰 배경에 네이비 포인트의 공공기관 스타일 테마입니다.
+      <div class="guide-info-card">
+        <div class="guide-info-head">
+          <div class="guide-tool-icon mc-purple">🎨</div>
+          <div class="guide-info-meta">
+            <span class="guide-info-kicker">THEME</span>
+            <span class="guide-info-title">테마 전환</span>
+          </div>
+        </div>
+        <div class="guide-info-body">
+          <p>화면 우측 상단 아이콘을 누를 때마다 테마가 순환됩니다. 선택한 테마는 기기에 저장됩니다.</p>
+          <div class="guide-theme-chips">
+            <div class="guide-theme-chip">
+              <div class="guide-theme-chip-swatch theme-swatch-blossom">🌸</div>
+              <div class="guide-theme-chip-meta">
+                <span class="guide-theme-chip-name">벚꽃</span>
+                <span class="guide-theme-chip-desc">분홍 계열 + 꽃잎 애니메이션</span>
+              </div>
+            </div>
+            <div class="guide-theme-chip">
+              <div class="guide-theme-chip-swatch theme-swatch-dark">🌙</div>
+              <div class="guide-theme-chip-meta">
+                <span class="guide-theme-chip-name">다크</span>
+                <span class="guide-theme-chip-desc">어두운 배경 + 빨간 포인트</span>
+              </div>
+            </div>
+            <div class="guide-theme-chip">
+              <div class="guide-theme-chip-swatch theme-swatch-official">☀️</div>
+              <div class="guide-theme-chip-meta">
+                <span class="guide-theme-chip-name">낮</span>
+                <span class="guide-theme-chip-desc">흰 배경 + 네이비 포인트의 밝은 모드</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 알림판 -->
       <p class="section-label">메인화면 알림판</p>
-      <div class="info-box blue">
-        <div class="ib-title">📌 날짜 계산 결과 저장</div>
-        법정기한 계산기에서 계산 후 <strong>"메인화면에 표시"</strong> 버튼을 누르면 메인화면 오른쪽 알림판에 기한이 표시됩니다. D-7 이내 기한은 빨간색으로 강조됩니다.
+      <div class="guide-info-card">
+        <div class="guide-info-head">
+          <div class="guide-tool-icon mc-amber">📌</div>
+          <div class="guide-info-meta">
+            <span class="guide-info-kicker">DASHBOARD</span>
+            <span class="guide-info-title">계산 결과 저장 · D-day 알림</span>
+          </div>
+        </div>
+        <div class="guide-info-body">
+          <p>법정기한 계산기에서 계산 후 <strong>"메인화면에 표시"</strong> 버튼을 누르면 메인화면 알림판에 기한이 저장됩니다.</p>
+          <div class="guide-info-rows">
+            <div class="guide-info-row">
+              <span class="guide-info-row-label">D-7 이내</span>
+              <span class="guide-info-row-text">빨간색으로 강조 표시되어 다가오는 기한을 한눈에 확인</span>
+            </div>
+            <div class="guide-info-row">
+              <span class="guide-info-row-label">정렬</span>
+              <span class="guide-info-row-text">기한이 임박한 순서대로 자동 정렬</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 참고사항 -->
       <p class="section-label">참고사항</p>
-      <div class="info-box amber" style="margin-bottom:8px;">
-        <div class="ib-title">⚠️ 이 앱은 참고용입니다</div>
-        표시되는 결과는 현행 법령 기준으로 자동 산출한 참고값입니다. 건축허가 연도·현장 조건 등에 따라 실제와 다를 수 있으므로, 반드시 예방과 담당자 또는 관련 법령을 통해 교차검증하세요.
+      <div class="guide-info-card warn">
+        <div class="guide-info-head">
+          <div class="guide-tool-icon mc-red">⚠️</div>
+          <div class="guide-info-meta">
+            <span class="guide-info-kicker">DISCLAIMER</span>
+            <span class="guide-info-title">이 앱은 참고용입니다</span>
+          </div>
+        </div>
+        <div class="guide-info-body">
+          <p>표시되는 결과는 <strong>현행 법령 기준</strong>으로 자동 산출한 참고값입니다.</p>
+          <p>건축허가 연도·현장 조건·경과규정 등에 따라 실제 적용과 다를 수 있으므로, 반드시 <strong>예방과 담당자</strong> 또는 <strong>관련 법령</strong>을 통해 교차검증하시기 바랍니다.</p>
+        </div>
       </div>
 
+    </div>
+  </section>
+
+  <section id="screen-developer-letter" class="screen">
+    <div class="topbar">
+      <button id="back-from-dev-letter" class="back-btn" type="button">←</button>
+      <span class="tb-title">개발자 인사말</span>
+    </div>
+    <div class="scroll-content">
+      <div class="devletter-paper">
+        <div class="devletter-head">
+          <div class="devletter-stamp">
+            <div class="devletter-stamp-inner">
+              <span class="devletter-stamp-line1">개발자</span>
+              <span class="devletter-stamp-line2">로부터</span>
+            </div>
+          </div>
+          <div class="devletter-intro">
+            <p id="devletter-intro-text"></p>
+          </div>
+        </div>
+
+        <div class="devletter-divider">— 본문 —</div>
+
+        <div id="devletter-chapters" class="devletter-chapters"></div>
+
+        <div class="devletter-sign">— 한 센터 대원 드림</div>
+
+        <button id="devletter-feedback-btn" class="devletter-feedback-btn" type="button">
+          📮 피드백 보내기
+        </button>
+
+        <div id="devletter-reward" class="devletter-reward hidden" role="dialog" aria-hidden="true">
+          <div class="devletter-reward-card">
+            <div class="devletter-reward-stamp">정독<br>완료</div>
+            <h3 class="devletter-reward-title">여기까지 읽어주셔서,<br>진심으로 감사합니다.</h3>
+            <p class="devletter-reward-sub">오늘의 운세</p>
+            <p id="devletter-reward-fortune" class="devletter-reward-fortune"></p>
+            <button id="devletter-reward-close" class="devletter-reward-close" type="button">닫기</button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
