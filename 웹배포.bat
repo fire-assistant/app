@@ -36,6 +36,8 @@ if exist video xcopy /Y /E /I video docs\video > nul
 if exist video xcopy /Y /E /I video www\video  > nul
 if exist loading xcopy /Y /E /I loading docs\loading > nul
 if exist loading xcopy /Y /E /I loading www\loading  > nul
+if exist documents xcopy /Y /E /I documents docs\documents > nul
+if exist documents xcopy /Y /E /I documents www\documents  > nul
 if not exist .nojekyll     type nul > .nojekyll
 if not exist docs\.nojekyll type nul > docs\.nojekyll
 if not exist www\.nojekyll  type nul > www\.nojekyll
@@ -67,6 +69,7 @@ git reset --soft origin/main
 git add docs/
 git add www/
 if exist loading git add loading/
+if exist documents git add documents/
 git add sw.js
 if exist video git add video/
 git add capacitor.config.json
