@@ -1252,15 +1252,193 @@ input:focus-visible {
   line-height: 1.6;
 }
 
-/* ?�?� Occupancy step-based wizard ?�?� */
-.occ-full-card {
-  width: 100%;
+/* ── Occupancy calculator (1-screen segmented design) ── */
+.occ-calc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
 }
 
-.occ-category-list {
+.occ-ref-card {
+  padding: 16px;
+}
+
+.occ-section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 8px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 8px;
+}
+.occ-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.occ-section-label + .occ-section-label,
+.occ-segmented + .occ-section-label,
+.occ-subchips + .occ-section-label {
+  margin-top: 14px;
+}
+
+.occ-segmented {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.occ-segmented[data-occ-segmented="staffing"] {
+  grid-template-columns: 1fr 1fr;
+}
+.occ-segmented > button {
+  padding: 11px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), box-shadow var(--transition);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.occ-segmented > button:hover {
+  color: var(--text);
+  background: var(--surface3);
+}
+.occ-segmented > button.active {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 2px 10px -2px rgba(217, 48, 37, 0.5);
+}
+
+@media (max-width: 560px) {
+  .occ-segmented {
+    grid-template-columns: 1fr 1fr;
+  }
+  .occ-segmented > button {
+    font-size: 12px;
+    padding: 10px 6px;
+  }
+}
+
+.occ-subchips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.occ-subchip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.occ-subchip:hover {
+  border-color: var(--border2);
+  color: var(--text);
+}
+.occ-subchip.active {
+  background: var(--red-dim2);
+  border-color: var(--red);
+  color: var(--red-soft);
+}
+
+.occ-formula-hint {
+  margin: 4px 0 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border-left: 3px solid var(--red-soft);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  letter-spacing: -0.1px;
+}
+
+.occ-input-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.occ-result-card {
+  position: relative;
+  padding: 18px 20px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(217, 48, 37, 0.10), rgba(217, 48, 37, 0.02));
+  border: 1px solid rgba(217, 48, 37, 0.22);
+  transition: opacity var(--transition);
+}
+.occ-result-card:not(.has-result) {
+  opacity: 0.55;
+  background: var(--surface2);
+  border-color: var(--border);
+}
+.occ-result-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.occ-result-num {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--red-soft);
+  letter-spacing: -1px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.occ-result-num span {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.occ-result-formula {
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: -0.1px;
+}
+.occ-result-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 4px 0;
+}
+
+.occ-note {
+  margin: 14px 0 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.6;
 }
 
 .utility-tool-tabs {

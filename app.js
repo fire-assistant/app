@@ -5071,14 +5071,35 @@ document.getElementById("back-from-multiuse").addEventListener("click", () => sh
 // ── 수용인원 계산기 ──────────────────────────────────────────
 
 const occupancyState = {
-  tool: "occupancy", // "occupancy" | "staffing"
-  step: "category",  // "category" | "lodging_sub" | "assembly_sub" | "input"
-  type: "lodging_bed",
+  tool: "occupancy",
+  category: "lodging",         // "lodging" | "classroom" | "assembly" | "other"
+  subType: "lodging_bed",      // sub for lodging/assembly
   values: {},
   staffingTargetType: "apartment",
   staffingHouseholds: "",
   staffingArea: "",
 };
+
+function getEffectiveOccType() {
+  const c = occupancyState.category;
+  if (c === "classroom") return "classroom";
+  if (c === "other") return "other";
+  return occupancyState.subType;
+}
+
+function buildOccFormula(type, vals) {
+  const n = (v) => parseFloat(v) || 0;
+  switch (type) {
+    case "lodging_bed":   return `${n(vals.staff)} + ${n(vals.singleBeds)} + ${n(vals.doubleBeds)}×2`;
+    case "lodging_no_bed":return `${n(vals.staff)} + ⌊${n(vals.area)} ÷ 3⌋`;
+    case "classroom":     return `⌊${n(vals.area)} ÷ 1.9⌋`;
+    case "assembly_free": return `⌊${n(vals.area)} ÷ 4.6⌋`;
+    case "assembly_fixed":return `${n(vals.seats)}`;
+    case "assembly_bench":return `⌊${n(vals.benchWidth)} × ${n(vals.benchCount || 1)} ÷ 0.45⌋`;
+    case "other":         return `⌊${n(vals.area)} ÷ 3⌋`;
+    default: return "";
+  }
+}
 
 function getOccupancyBackStep(type) {
   if (["lodging_bed", "lodging_no_bed"].includes(type)) return "lodging_sub";
@@ -5154,7 +5175,8 @@ function getOccupancyFields(type) {
 function renderOccupancyCalculator() {
   const root = document.getElementById("occupancy-content");
   const tool = occupancyState.tool || "occupancy";
-  const prevActiveId = document.activeElement?.id;
+  const prevActiveField = document.activeElement?.dataset?.occField;
+  const prevActiveStaffing = document.activeElement?.id === "utility-staffing-value";
 
   const tabsHTML = `
     <div class="utility-tool-tabs">
@@ -5170,7 +5192,6 @@ function renderOccupancyCalculator() {
       const btn = e.target.closest("[data-util-tool]");
       if (btn && tabs.contains(btn)) {
         occupancyState.tool = btn.dataset.utilTool;
-        if (occupancyState.tool === "occupancy") occupancyState.step = "category";
         renderOccupancyCalculator();
         root.scrollTop = 0;
       }
@@ -5180,45 +5201,45 @@ function renderOccupancyCalculator() {
   // ── 보조자 선임인원 탭 ────────────────────────────────────────────────
   if (tool === "staffing") {
     const targetType = occupancyState.staffingTargetType;
-    const staffingValue = targetType === "apartment" ? occupancyState.staffingHouseholds : occupancyState.staffingArea;
-    const staffingResult = getAssistantStaffingResult(targetType, staffingValue);
     const isApartment = targetType === "apartment";
-    const inputLabel = isApartment ? "세대수" : "연면적";
+    const staffingValue = isApartment ? occupancyState.staffingHouseholds : occupancyState.staffingArea;
+    const inputLabel = isApartment ? "세대수" : "연면적 (㎡)";
     const inputPlaceholder = isApartment ? "예: 601" : "예: 30001";
-    const helperText = isApartment
-      ? "해당 아파트의 세대수를 300으로 나누고 소수점은 버립니다."
-      : "기숙사, 의료시설, 노유자시설, 수련시설, 숙박시설을 제외한 대상 기준입니다.<br>해당 특정소방대상물의 연면적을 15,000으로 나누고 소수점은 버립니다.";
-    const exampleText = isApartment
-      ? "예시: 299세대 0명 / 599세대 1명 / 601세대 2명"
-      : "예시: 14,999㎡ 0명 / 29,999㎡ 1명 / 30,001㎡ 2명";
-    const resultMarkup = staffingResult
-      ? `
-        <div class="assistant-staffing-result">
-          <div class="assistant-staffing-count">${staffingResult.count}<span>명</span></div>
-          <div class="assistant-staffing-meta">${staffingResult.targetLabel} / ${staffingResult.inputLabel} ${staffingResult.inputValue.toLocaleString()}${staffingResult.unitLabel}</div>
-          <div class="assistant-staffing-formula">계산식: ⌊${staffingResult.inputValue.toLocaleString()} ÷ ${staffingResult.divisor.toLocaleString()}⌋ = ${staffingResult.count}명</div>
-        </div>
-      `
-      : `<div class="assistant-staffing-empty">대상 구분과 값을 입력하면 선임인원이 바로 계산됩니다.</div>`;
+    const formulaHint = isApartment ? "세대수 ÷ 300 (소수점 버림)" : "연면적 ÷ 15,000 (소수점 버림)";
+    const staffingResult = getAssistantStaffingResult(targetType, staffingValue);
 
     root.innerHTML = `
       ${tabsHTML}
-      <section class="calc-card assistant-staffing-card">
-        <h3 class="calc-title">소방안전관리보조자 선임인원 계산기</h3>
-        <p class="calc-copy">선임대상·선임인원 기준에 따라 계산합니다.</p>
-        <div class="assistant-staffing-toggle">
-          <button class="calc-mode-btn${targetType === "apartment" ? " active" : ""}" type="button" data-staffing-target="apartment">아파트</button>
-          <button class="calc-mode-btn${targetType === "other" ? " active" : ""}" type="button" data-staffing-target="other">그 외</button>
+      <section class="occ-calc-card">
+        <div class="occ-section-label">대상 구분</div>
+        <div class="occ-segmented" data-occ-segmented="staffing">
+          <button type="button" data-staffing-target="apartment" class="${isApartment ? "active" : ""}">아파트</button>
+          <button type="button" data-staffing-target="other" class="${!isApartment ? "active" : ""}">그 외 대상</button>
         </div>
-        <div class="calc-form-row">
-          <label>${inputLabel}</label>
-          <input id="utility-staffing-value" class="calc-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="${inputPlaceholder}" value="${staffingValue}">
+
+        <div class="occ-formula-hint">${formulaHint}</div>
+
+        <div class="occ-input-grid">
+          <div class="calc-form-row">
+            <label>${inputLabel}</label>
+            <input id="utility-staffing-value" class="calc-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="${inputPlaceholder}" value="${staffingValue}">
+          </div>
         </div>
-        <p class="assistant-staffing-help">${helperText}</p>
-        ${resultMarkup}
-        <div class="assistant-staffing-examples">${exampleText}</div>
+
+        <div class="occ-result-card ${staffingResult ? "has-result" : ""}">
+          <div class="occ-result-label">선임인원</div>
+          ${staffingResult ? `
+            <div class="occ-result-num">${staffingResult.count}<span>명</span></div>
+            <div class="occ-result-formula">⌊${staffingResult.inputValue.toLocaleString()} ÷ ${staffingResult.divisor.toLocaleString()}⌋ = ${staffingResult.count}명</div>
+          ` : `
+            <div class="occ-result-empty">값을 입력하면 바로 계산됩니다</div>
+          `}
+        </div>
+
+        <p class="occ-note">※ 그 외 대상은 기숙사·의료시설·노유자시설·수련시설·숙박시설 제외 기준입니다.</p>
       </section>
-      <section class="calc-card">
+
+      <section class="wq-card occ-ref-card">
         <div class="info-box amber">
           <div class="ib-title">선임 대상</div>
           <b>가.</b> 300세대 이상인 아파트<br>
@@ -5235,16 +5256,19 @@ function renderOccupancyCalculator() {
         </div>
       </section>
     `;
-
     attachTabListeners();
+
     root.querySelectorAll("[data-staffing-target]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        occupancyState.staffingTargetType = btn.dataset.staffingTarget;
+        const next = btn.dataset.staffingTarget;
+        if (next === occupancyState.staffingTargetType) return;
+        occupancyState.staffingTargetType = next;
         occupancyState.staffingHouseholds = "";
         occupancyState.staffingArea = "";
         renderOccupancyCalculator();
       });
     });
+
     const staffingInput = root.querySelector("#utility-staffing-value");
     if (staffingInput) {
       staffingInput.addEventListener("input", (e) => {
@@ -5252,7 +5276,7 @@ function renderOccupancyCalculator() {
         occupancyState[key] = sanitizeAssistantNumericInput(e.target.value);
         renderOccupancyCalculator();
       });
-      if (prevActiveId === "utility-staffing-value") {
+      if (prevActiveStaffing) {
         staffingInput.focus();
         staffingInput.setSelectionRange(staffingInput.value.length, staffingInput.value.length);
       }
@@ -5260,157 +5284,114 @@ function renderOccupancyCalculator() {
     return;
   }
 
-  // ── 수용인원 탭 ────────────────────────────────────────────────────────
-  if (occupancyState.step === "category") {
-    root.innerHTML = `
-      ${tabsHTML}
-      <section class="wq-card occ-full-card">
-        <p class="wq-label">STEP 1</p>
-        <h2 class="wq-title">용도 선택</h2>
-        <p class="wq-sub">산정 방식이 다른 용도를 먼저 선택하세요.</p>
-        <div class="occ-category-list">
-          <button class="choice-button" data-occ-cat="lodging"><strong>숙박시설</strong><span>호텔·모텔·여관 등 — 침대 유무에 따라 산정 방식이 다릅니다</span></button>
-          <button class="choice-button" data-occ-cat="classroom"><strong>강의실·교무실·상담실·실습실·휴게실</strong><span>바닥면적 ÷ 1.9㎡</span></button>
-          <button class="choice-button" data-occ-cat="assembly"><strong>강당·문화집회·운동·종교시설</strong><span>좌석 형태에 따라 산정 방식이 다릅니다</span></button>
-          <button class="choice-button" data-occ-cat="other"><strong>그 밖의 특정소방대상물</strong><span>바닥면적 ÷ 3㎡</span></button>
-        </div>
-      </section>
-    `;
-    attachTabListeners();
-    root.querySelectorAll("[data-occ-cat]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const cat = btn.dataset.occCat;
-        if (cat === "lodging") {
-          occupancyState.step = "lodging_sub";
-        } else if (cat === "assembly") {
-          occupancyState.step = "assembly_sub";
-        } else {
-          occupancyState.step = "input";
-          occupancyState.type = cat === "classroom" ? "classroom" : "other";
-          occupancyState.values = {};
-        }
-        renderOccupancyCalculator();
-      });
-    });
-    return;
-  }
-
-  if (occupancyState.step === "lodging_sub") {
-    root.innerHTML = `
-      ${tabsHTML}
-      <section class="wq-card occ-full-card">
-        <p class="wq-label">STEP 2</p>
-        <h2 class="wq-title">숙박시설</h2>
-        <p class="wq-sub">침대 여부에 따라 산정 방식이 달라집니다.</p>
-        <div class="occ-category-list">
-          <button class="choice-button" data-occ-type="lodging_bed"><strong>침대가 있는 숙박시설</strong><span>종사자 수 + 침대 수 (2인용은 2개로 산정)</span></button>
-          <button class="choice-button" data-occ-type="lodging_no_bed"><strong>침대가 없는 숙박시설</strong><span>종사자 수 + 숙박 바닥면적 ÷ 3㎡</span></button>
-        </div>
-        <button class="btn btn-ghost" style="width:100%;margin-top:12px;" data-occ-back>← 이전으로</button>
-      </section>
-    `;
-    attachTabListeners();
-    root.querySelectorAll("[data-occ-type]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        occupancyState.type = btn.dataset.occType;
-        occupancyState.step = "input";
-        occupancyState.values = {};
-        renderOccupancyCalculator();
-      });
-    });
-    root.querySelector("[data-occ-back]").addEventListener("click", () => {
-      occupancyState.step = "category";
-      renderOccupancyCalculator();
-    });
-    return;
-  }
-
-  if (occupancyState.step === "assembly_sub") {
-    root.innerHTML = `
-      ${tabsHTML}
-      <section class="wq-card occ-full-card">
-        <p class="wq-label">STEP 2</p>
-        <h2 class="wq-title">강당·문화집회·운동·종교시설</h2>
-        <p class="wq-sub">좌석 형태를 선택하세요.</p>
-        <div class="occ-category-list">
-          <button class="choice-button" data-occ-type="assembly_free"><strong>자유석</strong><span>바닥면적 ÷ 4.6㎡</span></button>
-          <button class="choice-button" data-occ-type="assembly_fixed"><strong>고정 의자</strong><span>의자 수</span></button>
-          <button class="choice-button" data-occ-type="assembly_bench"><strong>긴 의자</strong><span>의자 너비 × 개수 ÷ 0.45m</span></button>
-        </div>
-        <button class="btn btn-ghost" style="width:100%;margin-top:12px;" data-occ-back>← 이전으로</button>
-      </section>
-    `;
-    attachTabListeners();
-    root.querySelectorAll("[data-occ-type]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        occupancyState.type = btn.dataset.occType;
-        occupancyState.step = "input";
-        occupancyState.values = {};
-        renderOccupancyCalculator();
-      });
-    });
-    root.querySelector("[data-occ-back]").addEventListener("click", () => {
-      occupancyState.step = "category";
-      renderOccupancyCalculator();
-    });
-    return;
-  }
-
-  // step === "input"
-  const type = occupancyState.type;
-  const typeInfo = occupancyTypes.find((t) => t.key === type);
-  const fields = getOccupancyFields(type);
+  // ── 수용인원 탭 ──────────────────────────────────────────────────────
+  const cat = occupancyState.category;
+  const effType = getEffectiveOccType();
+  const typeInfo = occupancyTypes.find((t) => t.key === effType);
+  const fields = getOccupancyFields(effType);
   const fieldValues = occupancyState.values || {};
-  const inputStep = ["lodging_bed", "lodging_no_bed", "assembly_free", "assembly_fixed", "assembly_bench"].includes(type) ? 3 : 2;
+  const allFilled = fields.every((f) => {
+    const v = fieldValues[f.key];
+    return v !== undefined && v !== "";
+  });
+  const calcResult = allFilled ? calcOccupancy(effType, fieldValues) : null;
+
+  const subTypesByCat = {
+    lodging: [
+      { key: "lodging_bed",    label: "침대 있음" },
+      { key: "lodging_no_bed", label: "침대 없음" },
+    ],
+    assembly: [
+      { key: "assembly_free",  label: "자유석" },
+      { key: "assembly_fixed", label: "고정 의자" },
+      { key: "assembly_bench", label: "긴 의자" },
+    ],
+  };
+  const subList = subTypesByCat[cat];
 
   root.innerHTML = `
     ${tabsHTML}
-    <section class="wq-card occ-full-card">
-      <p class="wq-label">STEP ${inputStep}</p>
-      <h2 class="wq-title">${typeInfo.label}</h2>
-      <p class="wq-sub">${typeInfo.desc}<br><span style="font-size:11px;color:var(--text-dim);">※ 복도·계단·화장실 바닥면적은 포함하지 않습니다.</span></p>
-      ${fields.map((f) => `
-        <div class="calc-form-row">
-          <label>${f.label}</label>
-          <input class="calc-input" type="number" min="0" step="0.1" placeholder="${f.placeholder}" data-occ-field="${f.key}" value="${fieldValues[f.key] ?? ""}">
+    <section class="occ-calc-card">
+      <div class="occ-section-label">용도</div>
+      <div class="occ-segmented" data-occ-segmented="category">
+        <button type="button" data-occ-cat="lodging"  class="${cat === "lodging"  ? "active" : ""}">숙박시설</button>
+        <button type="button" data-occ-cat="classroom" class="${cat === "classroom" ? "active" : ""}">강의실·교무실</button>
+        <button type="button" data-occ-cat="assembly"  class="${cat === "assembly"  ? "active" : ""}">강당·집회·운동</button>
+        <button type="button" data-occ-cat="other"    class="${cat === "other"    ? "active" : ""}">그 밖의 대상</button>
+      </div>
+
+      ${subList ? `
+        <div class="occ-section-label">세부 유형</div>
+        <div class="occ-subchips">
+          ${subList.map((s) => `
+            <button type="button" class="occ-subchip ${occupancyState.subType === s.key ? "active" : ""}" data-occ-sub="${s.key}">${s.label}</button>
+          `).join("")}
         </div>
-      `).join("")}
-      <button class="btn btn-ghost" style="width:100%;margin-top:14px;" data-occ-back>← 이전으로</button>
+      ` : ""}
+
+      <div class="occ-formula-hint">${typeInfo.desc}</div>
+
+      <div class="occ-input-grid">
+        ${fields.map((f) => `
+          <div class="calc-form-row">
+            <label>${f.label}</label>
+            <input class="calc-input" id="occ-field-${f.key}" type="number" min="0" step="0.1" placeholder="${f.placeholder}" data-occ-field="${f.key}" value="${fieldValues[f.key] ?? ""}">
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="occ-result-card ${calcResult !== null ? "has-result" : ""}">
+        <div class="occ-result-label">산정 결과</div>
+        ${calcResult !== null ? `
+          <div class="occ-result-num">${calcResult.toLocaleString()}<span>명</span></div>
+          <div class="occ-result-formula">${buildOccFormula(effType, fieldValues)} = ${calcResult}명</div>
+        ` : `
+          <div class="occ-result-empty">값을 모두 입력하면 바로 계산됩니다</div>
+        `}
+      </div>
+
+      <p class="occ-note">※ 복도·계단·화장실 바닥면적은 포함하지 않습니다. 소수점 이하는 반올림합니다.</p>
     </section>
   `;
-
   attachTabListeners();
-  root.querySelector("[data-occ-back]").addEventListener("click", () => {
-    occupancyState.step = getOccupancyBackStep(type);
-    renderOccupancyCalculator();
+
+  root.querySelectorAll("[data-occ-cat]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const newCat = btn.dataset.occCat;
+      if (newCat === occupancyState.category) return;
+      occupancyState.category = newCat;
+      if (newCat === "lodging")  occupancyState.subType = "lodging_bed";
+      if (newCat === "assembly") occupancyState.subType = "assembly_free";
+      occupancyState.values = {};
+      renderOccupancyCalculator();
+    });
+  });
+
+  root.querySelectorAll("[data-occ-sub]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const newSub = btn.dataset.occSub;
+      if (newSub === occupancyState.subType) return;
+      occupancyState.subType = newSub;
+      occupancyState.values = {};
+      renderOccupancyCalculator();
+    });
   });
 
   root.querySelectorAll("[data-occ-field]").forEach((input) => {
     input.addEventListener("input", () => {
       if (!occupancyState.values) occupancyState.values = {};
       occupancyState.values[input.dataset.occField] = input.value;
-      const fields2 = getOccupancyFields(occupancyState.type);
-      const allFilled = fields2.every((f) => {
-        const v = occupancyState.values[f.key];
-        return v !== undefined && v !== "";
-      });
-      const resultEl = root.querySelector(".calc-result");
-      if (allFilled) {
-        const newResult = calcOccupancy(occupancyState.type, occupancyState.values);
-        if (resultEl) {
-          resultEl.querySelector(".calc-result-date").textContent = `${newResult.toLocaleString()} 명`;
-        } else {
-          const currentTypeInfo = occupancyTypes.find((t) => t.key === occupancyState.type);
-          const newResultEl = document.createElement("section");
-          newResultEl.className = "calc-result";
-          newResultEl.innerHTML = `<div class="calc-result-label">산정 결과</div><div class="calc-result-date">${newResult.toLocaleString()} 명</div><div class="calc-result-meta">${currentTypeInfo.label} 기준 법정 수용인원입니다.<br>소수점 이하는 반올림합니다.</div>`;
-          root.appendChild(newResultEl);
-        }
-      } else if (resultEl) {
-        resultEl.remove();
-      }
+      renderOccupancyCalculator();
     });
   });
+
+  if (prevActiveField) {
+    const el = root.querySelector(`#occ-field-${prevActiveField}`);
+    if (el) {
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    }
+  }
 }
 
 screens.occupancy = document.getElementById("screen-occupancy");
@@ -5419,8 +5400,8 @@ screens.facilities = document.getElementById("screen-facilities");
 document.getElementById("open-occupancy-calculator").addEventListener("click", () => {
   trackMenuClick("유틸리티도구함");
   occupancyState.tool = "occupancy";
-  occupancyState.step = "category";
-  occupancyState.type = "lodging_bed";
+  occupancyState.category = "lodging";
+  occupancyState.subType = "lodging_bed";
   occupancyState.values = {};
   renderOccupancyCalculator();
   showScreen("occupancy");
