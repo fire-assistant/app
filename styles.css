@@ -7580,10 +7580,10 @@ html[data-theme="blossom"] .ilgu-panel-action {
 
 .guide-hero-btns {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
   flex-shrink: 0;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .guide-dev-letter-btn {
@@ -7651,12 +7651,12 @@ html[data-theme="dark"] .guide-dev-letter-btn {
   position: relative;
   max-width: 720px;
   margin: 0 auto;
-  padding: 28px 22px 24px;
+  padding: 28px 22px 24px 36px;
   background: #fffbf2;
   background-image:
     linear-gradient(to right, rgba(217,48,37,0.18) 0, rgba(217,48,37,0.18) 1px, transparent 1px),
     repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(60,40,20,0.10) 27px, rgba(60,40,20,0.10) 28px);
-  background-position: 38px 0, 0 0;
+  background-position: 22px 0, 0 0;
   background-repeat: no-repeat, repeat;
   color: #2a1f12;
   border-radius: 6px;
@@ -7667,54 +7667,44 @@ html[data-theme="dark"] .devletter-paper {
   background-image:
     linear-gradient(to right, rgba(255,120,110,0.35) 0, rgba(255,120,110,0.35) 1px, transparent 1px),
     repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(255,230,200,0.08) 27px, rgba(255,230,200,0.08) 28px);
-  background-position: 38px 0, 0 0;
+  background-position: 22px 0, 0 0;
   background-repeat: no-repeat, repeat;
   color: #f0e5d3;
 }
 
 .devletter-head {
   display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 16px;
+  grid-template-columns: 100px 1fr;
+  gap: 14px;
   align-items: start;
-  padding-left: 30px;
+  padding-left: 0;
 }
 
-.devletter-stamp {
-  width: 105px;
-  height: 105px;
+.devletter-avatar {
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
-  border: 3px double var(--red, #d93025);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: rotate(-8deg);
-  background: transparent;
+  overflow: hidden;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px rgba(217,48,37,0.2);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.06);
+  background: #e9e7e3;
 }
-.devletter-stamp-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: var(--red, #d93025);
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  line-height: 1.1;
-  font-family: var(--font-base, system-ui), sans-serif;
+.devletter-avatar svg,
+.devletter-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
-.devletter-stamp-line1 { font-size: 18px; }
-.devletter-stamp-line2 { font-size: 18px; }
 
 .devletter-intro {
   padding-top: 4px;
-  min-height: 100px;
+  min-height: 96px;
 }
 .devletter-intro p {
   margin: 0;
-  font-family: 'Gaegu', var(--font-base, system-ui), sans-serif;
-  font-size: 18px;
-  line-height: 28px;
+  font-size: 14px;
+  line-height: 1.85;
   white-space: pre-wrap;
   word-break: keep-all;
 }
@@ -7733,7 +7723,7 @@ html[data-theme="dark"] .devletter-divider { color: rgba(255,230,200,0.45); }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-left: 30px;
+  padding-left: 0;
 }
 
 .devletter-chapter {
@@ -7783,7 +7773,7 @@ html[data-theme="dark"] .devletter-divider { color: rgba(255,230,200,0.45); }
 }
 
 .devletter-sign {
-  margin: 28px 30px 6px;
+  margin: 28px 4px 6px;
   text-align: right;
   font-family: 'Gaegu', var(--font-base, system-ui), sans-serif;
   font-size: 20px;
@@ -7914,10 +7904,18 @@ html[data-theme="dark"] .devletter-reward-stamp { background: #1e1810; }
   .guide-hero { flex-direction: column; align-items: stretch; }
   .guide-hero-btns { flex-direction: row; align-items: stretch; }
   .guide-hero-btns > button { flex: 1; }
+  #screen-developer-letter .scroll-content { padding: 10px 8px 80px; }
+  .devletter-paper {
+    padding: 22px 14px 20px 22px;
+    background-position: 12px 0, 0 0;
+  }
   .devletter-head {
     grid-template-columns: 1fr;
-    padding-left: 30px;
+    gap: 12px;
+    padding-left: 0;
   }
-  .devletter-stamp { margin: 0 auto; }
-  .devletter-intro p { font-size: 17px; }
+  .devletter-avatar { margin: 0 auto; }
+  .devletter-intro p { font-size: 14px; }
+  .devletter-chapter-body { padding-left: 10px; }
+  .devletter-sign { margin: 24px 2px 6px; }
 }
