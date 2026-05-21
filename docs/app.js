@@ -3258,7 +3258,13 @@ function buildExtraItems(input, options = {}) {
     }
   } else if (["lodging", "elderly", "medical"].includes(input.occupancyType)) {
     items.push({ name: "방염", reason: `${facilityNames[input.occupancyType]}은 방염 규정 적용 대상입니다.` });
-  } else if (input.occupancyType === "neighborhood" && floors >= 11) {
+  } else if (input.occupancyType === "religious") {
+    if ((input.pd || 0) >= YD.D20110707) {
+      items.push({ name: "방염", reason: "2011년 7월 7일 이후 허가된 종교시설은 방염 규정 적용 대상입니다." });
+    } else if (floors >= 11) {
+      items.push({ name: "방염", reason: "11층 이상 건물은 방염 규정 적용 대상입니다." });
+    }
+  } else if ((input.occupancyType === "neighborhood" || input.occupancyType === "sales") && floors >= 11) {
     items.push({ name: "방염", reason: "11층 이상 건물은 방염 규정 적용 대상입니다." });
   }
 
@@ -3291,6 +3297,17 @@ function ensureEmergencyElevatorSmokeControl(results, input, options = {}) {
 
   smokeControl.status = "required";
   smokeControl.reason = "비상용 승강기 승강장 부속실에 제연설비를 설치해야 합니다.";
+}
+
+// 자세한 버전(분법 이후) 공통: 30층 이상 특정소방대상물 자동화재속보설비 (2011.11.23 ~ 2022.11.30)
+function ensureAutoFireNotify30F(results, input) {
+  const pd = input.pd || input.permitDateInt || 0;
+  if (pd < YD.D20111123 || pd >= YD.D20221201) return;
+  if ((input.aboveGroundFloors || 0) < 30) return;
+  const item = results.find((r) => r.name === "자동화재속보설비");
+  if (!item || item.status === "required") return;
+  item.status = "required";
+  item.reason = "층수가 30층 이상인 특정소방대상물입니다. (2011.11.23~2022.11.30 공통 설치 기준)";
 }
 
 function suppressBefore2004LowRiseEscapeItems(results, input) {
@@ -5525,6 +5542,7 @@ const YD = {
   D20061207: 20061207,
   D20080229: 20080229,
   D20110707: 20110707,
+  D20111123: 20111123, // 자동화재속보설비 30층 이상 공통 편입 (2011.11.23 ~ 2022.11.30)
   D20120205: 20120205, // 노유자 생활시설 구분 신설 (2012년 2월)
   D20120215: 20120215, // 정신의료기관 간이스프링클러 신설 (2012년 2월)
   D20120914: 20120914,
@@ -5691,6 +5709,20 @@ const yearState = {
     yReligiousHasStage: "no",
     yReligiousStageArea: "",
     yReligiousHasGasFacility: "no",
+    // 판매시설 전용
+    ySalesArea: "",
+    ySalesHasLargeTargetFloor: "no",
+    ySalesFirstSecondFloorArea: "750",
+    ySalesIndoorParkingArea: "",
+    ySalesMechanicalParkingCapacity: "",
+    ySalesElectricalRoomArea: "",
+    ySalesOccupancy500Plus: "no",
+    ySalesOccupancy100Plus: "no",
+    ySalesIsTraditionalMarket: "no",
+    ySalesIsLargeStore: "no",
+    ySalesHasRestaurantKitchen: "no",
+    ySalesHas24HourStaff: "no",
+    ySalesHasGasFacility: "no",
   },
 };
 
@@ -5722,6 +5754,7 @@ const yearSteps = [
       { value: "elderly", label: "노유자시설", description: "요양원·복지관·어린이집·아동센터 등" },
       { value: "medical", label: "의료시설", description: "종합병원·병원·요양병원·정신의료기관 등" },
       { value: "religious", label: "종교시설", description: "교회·성당·사찰·사당·기도원 등" },
+      { value: "sales", label: "판매시설", description: "백화점·대형마트·쇼핑센터·상점·전통시장 등" },
     ],
   },
   {
@@ -6556,6 +6589,123 @@ const yearSteps = [
     condition: (ya, pd) => ya.yOccupancyType === "religious" && pd >= YD.D20110707,
   },
 
+  // ── 판매시설 전용 스텝 (분법 이후) ──
+  {
+    key: "ySalesArea",
+    type: "ynumber",
+    title: "판매시설로 사용하는 바닥면적 합계(㎡)",
+    help: "스프링클러설비·연결살수설비 판단에 사용됩니다. 건물 전체를 판매시설로 사용하면 연면적과 같게 입력하세요.",
+    placeholder: "예: 4000",
+    min: 0,
+    step: 0.1,
+    condition: (ya) => ya.yOccupancyType === "sales",
+  },
+  {
+    key: "ySalesIsTraditionalMarket",
+    type: "ychoice",
+    title: "전통시장에 해당합니까?",
+    help: "전통시장은 면적과 무관하게 자동화재탐지설비(2018.6.27~)·자동화재속보설비(2018.6.27~)·화재알림설비(2022.12.1~) 설치 대상입니다.",
+    options: [
+      { value: "yes", label: "예 (전통시장)", description: "「전통시장 및 상점가 육성을 위한 특별법」상 전통시장" },
+      { value: "no", label: "아니오", description: "전통시장이 아닌 일반 판매시설" },
+    ],
+    condition: (ya) => ya.yOccupancyType === "sales",
+  },
+  {
+    key: "ySalesIsLargeStore",
+    type: "ychoice",
+    title: "대규모점포에 해당합니까?",
+    help: "「유통산업발전법」상 대규모점포(백화점·대형마트·쇼핑센터 등)는 인명구조기구·휴대용비상조명등·상업용 주방자동소화장치 판단에 사용됩니다.",
+    options: [
+      { value: "yes", label: "예 (대규모점포)", description: "백화점·대형마트·쇼핑센터·전문점·할인점 등" },
+      { value: "no", label: "아니오", description: "대규모점포가 아닌 일반 판매시설" },
+    ],
+    condition: (ya) => ya.yOccupancyType === "sales",
+  },
+  {
+    key: "ySalesOccupancy500Plus",
+    type: "ychoice",
+    title: "수용인원이 500명 이상입니까?",
+    help: "스프링클러설비 설치 여부를 판단합니다. 수용인원 산정은 소방관계법령에 따릅니다.",
+    options: [
+      { value: "yes", label: "예 (500명 이상)", description: "수용인원이 500명 이상인 경우" },
+      { value: "no", label: "아니오 (500명 미만)", description: "수용인원이 500명 미만인 경우" },
+    ],
+    condition: (ya) => ya.yOccupancyType === "sales",
+  },
+  {
+    key: "ySalesOccupancy100Plus",
+    type: "ychoice",
+    title: "수용인원이 100명 이상입니까?",
+    help: "대규모점포의 인명구조기구(공기호흡기)·휴대용비상조명등 설치 여부 판단(과거 기준)에 사용됩니다.",
+    options: [
+      { value: "yes", label: "예 (100명 이상)", description: "수용인원이 100명 이상인 경우" },
+      { value: "no", label: "아니오 (100명 미만)", description: "수용인원이 100명 미만인 경우" },
+    ],
+    condition: (ya) => ya.yOccupancyType === "sales" && ya.ySalesIsLargeStore === "yes",
+  },
+  {
+    key: "ySalesHasRestaurantKitchen",
+    type: "ychoice",
+    title: "대규모점포에 입점한 일반음식점의 주방이 있습니까?",
+    help: "2022년 12월 1일 이후 대규모점포에 입점한 일반음식점 주방에는 상업용 주방자동소화장치를 설치해야 합니다.",
+    options: [
+      { value: "yes", label: "있음", description: "대규모점포 입점 일반음식점 주방이 있음" },
+      { value: "no", label: "없음", description: "해당 주방이 없음" },
+    ],
+    condition: (ya, pd) => ya.yOccupancyType === "sales" && ya.ySalesIsLargeStore === "yes" && pd >= YD.D20221201,
+  },
+  {
+    key: "ySalesHas24HourStaff",
+    type: "ychoice",
+    title: "방재실 등에 24시간 화재를 감시하는 사람이 근무합니까?",
+    help: "2022년 12월 1일 이후에는 화재 수신기가 설치된 장소에 24시간 감시자가 근무하면 자동화재속보설비를 설치하지 않을 수 있습니다.",
+    options: [
+      { value: "yes", label: "예", description: "24시간 화재 감시 근무자가 상주함" },
+      { value: "no", label: "아니오", description: "24시간 감시 근무자가 없음" },
+    ],
+    condition: (ya, pd) => ya.yOccupancyType === "sales" && pd >= YD.D20221201 && ya.ySalesIsTraditionalMarket === "yes",
+  },
+  {
+    key: "ySalesHasLargeTargetFloor",
+    type: "ychoice",
+    title: "지하층·무창층·4층 이상 층 중 바닥면적 300㎡ 이상인 층이 있습니까?",
+    help: "옥내소화전설비 설치 여부를 판단합니다. (판매시설 기준: 연면적 1,500㎡ 이상 또는 해당 층 300㎡ 이상)",
+    options: [
+      { value: "yes", label: "예", description: "해당 층이 있음" },
+      { value: "no", label: "아니오", description: "해당 층이 없음" },
+    ],
+    condition: (ya) => ya.yOccupancyType === "sales" && (parseFloat(ya.yTotalArea) || 0) < 1500 && !yearIsAutoAreaMode(),
+  },
+  {
+    key: "ySalesFirstSecondFloorArea",
+    type: "ynumber",
+    title: "지상 1층·2층 바닥면적 합계(㎡)",
+    help: "옥외소화전 설치 여부를 판단합니다. 해당 없으면 0을 입력하세요.",
+    placeholder: "예: 0",
+    min: 0,
+    step: 0.1,
+    condition: (ya) => ya.yOccupancyType === "sales" && (parseFloat(ya.yTotalArea) || 0) >= 9000 && !yearIsAutoAreaMode(),
+  },
+  {
+    key: "ySalesParkingElecSet",
+    type: "ycompound",
+    title: "주차장·전기실 정보를 입력하세요",
+    help: "물분무등소화설비 판단에 사용됩니다. 해당 없으면 0을 입력하세요.",
+    condition: (ya) => ya.yOccupancyType === "sales",
+  },
+  {
+    key: "ySalesHasGasFacility",
+    type: "ychoice",
+    title: "가스시설이 설치돼 있습니까?",
+    help: "가스시설이 설치된 판매시설은 가스누설경보기를 설치해야 합니다.",
+    options: [
+      { value: "yes", label: "예", description: "주방 등 가스시설이 설치돼 있음" },
+      { value: "no", label: "아니오", description: "가스시설이 없음" },
+    ],
+    condition: (ya) => ya.yOccupancyType === "sales",
+  },
+
   // ── 소방법 분법 이전(~2004.5.29) 근린생활시설 전용 스텝 ──
   {
     key: "yBefore2004FacilitySubtype",
@@ -6811,6 +6961,7 @@ const yearStepOrder = new Map([
   "yLodgingArea",
   "yElderlyArea",
   "yMedicalArea",
+  "ySalesArea",
 
   // 용도 세부 질문
   "yBefore2004FacilitySubtype",
@@ -6834,6 +6985,12 @@ const yearStepOrder = new Map([
   "yReligiousIsSacrificialBuilding",
   "yReligiousHasStage",
   "yReligiousStageArea",
+  "ySalesIsTraditionalMarket",
+  "ySalesIsLargeStore",
+  "ySalesOccupancy500Plus",
+  "ySalesOccupancy100Plus",
+  "ySalesHasRestaurantKitchen",
+  "ySalesHas24HourStaff",
 
   // 조건 보정 질문
   "yHasLargeTargetFloor",
@@ -6868,12 +7025,15 @@ const yearStepOrder = new Map([
   "yElderlyFirstSecondFloorArea",
   "yMedicalFirstSecondFloorArea",
   "yReligiousFirstSecondFloorArea",
+  "ySalesHasLargeTargetFloor",
+  "ySalesFirstSecondFloorArea",
   "yFirstSecondFloorArea",
   "yParkingElecSet",
   "yLodgingParkingElecSet",
   "yElderlyParkingElecSet",
   "yMedicalParkingElecSet",
   "yReligiousParkingElecSet",
+  "ySalesParkingElecSet",
   "yBefore2004LodgingParkingElecSet",
   "yBefore2004MedicalParkingElecSet",
   "yBefore2004ElderlyParkingElecSet",
@@ -6889,6 +7049,7 @@ const yearStepOrder = new Map([
   "yElderlyHasGasFacility",
   "yMedicalHasGasFacility",
   "yReligiousHasGasFacility",
+  "ySalesHasGasFacility",
 
   // 다중이용업소 질문
   "yHasMultiuseBusiness",
@@ -6925,6 +7086,7 @@ const YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY = {
   elderly: new Set(["yElderlyHasLargeTargetFloor", "yElderlyHasFloor500Plus", "yElderlyFirstSecondFloorArea", "yElderlyBasementAreaForSmoke"]),
   medical: new Set(["yMedicalHasLargeTargetFloor", "yMedicalHasFloor500Plus", "yMedicalFirstSecondFloorArea", "yMedicalBasementAreaForSmoke"]),
   religious: new Set(["yReligiousHasLargeTargetFloor", "yReligiousFirstSecondFloorArea"]),
+  sales: new Set(["ySalesHasLargeTargetFloor", "ySalesFirstSecondFloorArea"]),
 };
 
 function sortByYearStepOrder(activeSteps) {
@@ -7122,7 +7284,7 @@ function yearGetActiveSteps() {
 }
 
 // 자세한 버전(분법 이후) 면적 자동산정 지원 용도
-const YEAR_AUTO_OCCUPANCY_TYPES = ["neighborhood", "lodging", "elderly", "medical", "religious"];
+const YEAR_AUTO_OCCUPANCY_TYPES = ["neighborhood", "lodging", "elderly", "medical", "religious", "sales"];
 
 // 자동산정 모드 여부 (지원 용도 + 토글 ON, 분법 이전/이후 공통)
 function yearIsAutoAreaMode() {
@@ -7264,6 +7426,9 @@ function yearApplyAutoCalc() {
     case "religious":
       ya.yReligiousHasLargeTargetFloor = yearAutoDeriveLargeFloor(600);
       break;
+    case "sales":
+      ya.ySalesHasLargeTargetFloor = yearAutoDeriveLargeFloor(300);
+      break;
   }
 }
 
@@ -7278,6 +7443,7 @@ function yearRecalcF12() {
   yearState.answers.yElderlyFirstSecondFloorArea = s;
   yearState.answers.yMedicalFirstSecondFloorArea = s;
   yearState.answers.yReligiousFirstSecondFloorArea = s;
+  yearState.answers.ySalesFirstSecondFloorArea = s;
 }
 
 function yearRecalcSmokeAreaTargets() {
@@ -7595,6 +7761,12 @@ function yearRenderCompoundStep(step) {
     wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yReligiousElectricalRoomArea", ya.yReligiousElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
   }
 
+  if (step.key === "ySalesParkingElecSet") {
+    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "ySalesIndoorParkingArea", ya.ySalesIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "ySalesMechanicalParkingCapacity", ya.ySalesMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
+    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "ySalesElectricalRoomArea", ya.ySalesElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+  }
+
   if (step.key === "yBefore2004ReligiousParkingElecSet") {
     wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yBefore2004ReligiousIndoorParkingArea", ya.yBefore2004ReligiousIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
     wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yBefore2004ReligiousMechanicalParkingCapacity", ya.yBefore2004ReligiousMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
@@ -7889,6 +8061,20 @@ function yearNormalizeAnswers() {
     religiousHasStage: ya.yReligiousHasStage === "yes",
     religiousStageArea: parseFloat(ya.yReligiousStageArea) || 0,
     religiousHasGasFacility: ya.yReligiousHasGasFacility === "yes",
+    // 판매시설 전용
+    salesArea: parseFloat(ya.ySalesArea) || 0,
+    salesHasLargeTargetFloor: ya.ySalesHasLargeTargetFloor === "yes",
+    salesFirstSecondFloorArea: parseFloat(ya.ySalesFirstSecondFloorArea) || 0,
+    salesIndoorParkingArea: parseFloat(ya.ySalesIndoorParkingArea) || 0,
+    salesMechanicalParkingCapacity: parseInt(ya.ySalesMechanicalParkingCapacity) || 0,
+    salesElectricalRoomArea: parseFloat(ya.ySalesElectricalRoomArea) || 0,
+    salesOccupancy500Plus: ya.ySalesOccupancy500Plus === "yes",
+    salesOccupancy100Plus: ya.ySalesOccupancy100Plus === "yes",
+    salesIsTraditionalMarket: ya.ySalesIsTraditionalMarket === "yes",
+    salesIsLargeStore: ya.ySalesIsLargeStore === "yes",
+    salesHasRestaurantKitchen: ya.ySalesHasRestaurantKitchen === "yes",
+    salesHas24HourStaff: ya.ySalesHas24HourStaff === "yes",
+    salesHasGasFacility: ya.ySalesHasGasFacility === "yes",
   };
 }
 
@@ -9944,7 +10130,7 @@ function yearEvaluateNeighborhood(inp) {
 
   // ── 무선통신보조설비 ──
   const radioBase = inp.basementAreaSum >= 3000 || (inp.basementFloors >= 3 && inp.basementAreaSum >= 1000);
-  const radioHigh = pd >= YD.D20120914 && inp.aboveGroundFloors >= 30;
+  const radioHigh = pd >= YD.D20111123 && inp.aboveGroundFloors >= 30;
   results.push(makeResult(categories.fireSupport, "무선통신보조설비", "",
     radioBase || radioHigh ? "required" : "notRequired",
     inp.basementAreaSum >= 3000 ? "지하층 바닥면적 합계가 3,000㎡ 이상입니다." :
@@ -10170,7 +10356,7 @@ function yearEvaluateLodging(inp) {
 
   // ── 무선통신보조설비 ──
   const radioBase = ba >= 3000 || (bf >= 3 && ba >= 1000);
-  const radioHigh = pd >= YD.D20120914 && ag >= 30;
+  const radioHigh = pd >= YD.D20111123 && ag >= 30;
   results.push(makeResult(categories.fireSupport, "무선통신보조설비", "",
     radioBase || radioHigh ? "required" : "notRequired",
     ba >= 3000 ? "지하층 바닥면적 합계가 3,000㎡ 이상입니다." :
@@ -10448,7 +10634,7 @@ function yearEvaluateElderly(inp) {
 
   // ── 무선통신보조설비 ──
   const radioBase = ba >= 3000 || (bf >= 3 && ba >= 1000);
-  const radioHigh = pd >= YD.D20120914 && ag >= 30;
+  const radioHigh = pd >= YD.D20111123 && ag >= 30;
   results.push(makeResult(categories.fireSupport, "무선통신보조설비", "",
     radioBase || radioHigh ? "required" : "notRequired",
     ba >= 3000 ? "지하층 바닥면적 합계가 3,000㎡ 이상입니다." :
@@ -10775,7 +10961,7 @@ function yearEvaluateMedical(inp) {
 
   // ── 무선통신보조설비 ──
   const radioBase = ba >= 3000 || (bf >= 3 && ba >= 1000);
-  const radioHigh = pd >= YD.D20120914 && ag >= 30;
+  const radioHigh = pd >= YD.D20111123 && ag >= 30;
   results.push(makeResult(categories.fireSupport, "무선통신보조설비", "",
     radioBase || radioHigh ? "required" : "notRequired",
     ba >= 3000 ? "지하층 바닥면적 합계가 3,000㎡ 이상입니다." :
@@ -10980,7 +11166,268 @@ function yearEvaluateReligious(inp) {
 
   // ── 무선통신보조설비 ──
   const radioBase = ba >= 3000 || (bf >= 3 && ba >= 1000);
-  const radioHigh = pd >= YD.D20120914 && ag >= 30;
+  const radioHigh = pd >= YD.D20111123 && ag >= 30;
+  results.push(makeResult(categories.fireSupport, "무선통신보조설비", "",
+    radioBase || radioHigh ? "required" : "notRequired",
+    ba >= 3000 ? "지하층 바닥면적 합계가 3,000㎡ 이상입니다." :
+    bf >= 3 && ba >= 1000 ? "지하층이 3층 이상이고 지하층 바닥면적 합계가 1,000㎡ 이상입니다." :
+    radioHigh ? "지상층수가 30층 이상으로 16층 이상 부분에 설치 대상입니다." :
+    "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  return results;
+}
+
+function yearEvaluateSales(inp) {
+  const results = [];
+  const { pd } = inp;
+  const ag = inp.aboveGroundFloors;
+  const bf = inp.basementFloors;
+  const ba = inp.basementAreaSum;
+  const ta = inp.totalArea;
+  const tf = inp.totalFloors;
+  const wl = inp.windowlessArea;
+  const sa = inp.salesArea;
+  const bsmtAvg = bf > 0 ? ba / bf : 0;
+
+  const hasBasement150 = bf > 0 && bsmtAvg >= 150;
+  const hasBasement300 = bf > 0 && bsmtAvg >= 300;
+  const hasBasement450 = bf > 0 && bsmtAvg >= 450;
+  const hasWindowless150 = inp.hasWindowlessFloor && wl >= 150;
+  const hasWindowless300 = inp.hasWindowlessFloor && wl >= 300;
+  const hasWindowless450 = inp.hasWindowlessFloor && wl >= 450;
+
+  // ── 소화기구 ──
+  results.push(makeResult(categories.extinguishing, "소화기구", "",
+    ta >= 33 ? "required" : "notRequired",
+    ta >= 33 ? "연면적이 33㎡ 이상입니다." : "연면적이 33㎡ 미만입니다.", ""));
+
+  // ── 상업용 주방자동소화장치 (2022년 12월 1일 신설: 대규모점포 입점 일반음식점 주방) ──
+  let kitchenReq = false;
+  let kitchenReason = "";
+  if (pd < YD.D20221201) {
+    kitchenReason = "2022년 12월 1일 이전에는 상업용 주방자동소화장치 의무 규정이 없었습니다.";
+  } else if (inp.salesIsLargeStore && inp.salesHasRestaurantKitchen) {
+    kitchenReq = true;
+    kitchenReason = "대규모점포에 입점한 일반음식점의 주방에는 상업용 주방자동소화장치를 설치해야 합니다.";
+  } else {
+    kitchenReason = "대규모점포 입점 일반음식점 주방에 해당하지 않아 설치 대상이 아닙니다.";
+  }
+  results.push(makeResult(categories.extinguishing, "상업용 주방자동소화장치", "",
+    kitchenReq ? "required" : "notRequired", kitchenReason, ""));
+
+  // ── 옥내소화전설비 (판매시설: 연면적 1,500㎡ 이상 또는 지하·무창·4층 이상 층 300㎡ 이상) ──
+  const indoorHydrantReq = ta >= 1500 || hasBasement300 || hasWindowless300 || inp.salesHasLargeTargetFloor;
+  results.push(makeResult(categories.extinguishing, "옥내소화전설비", "",
+    indoorHydrantReq ? "required" : "notRequired",
+    ta >= 1500 ? "연면적이 1,500㎡ 이상인 판매시설입니다." :
+    hasBasement300 ? "지하층 평균 바닥면적이 300㎡ 이상입니다." :
+    hasWindowless300 ? "무창층 바닥면적이 300㎡ 이상입니다." :
+    inp.salesHasLargeTargetFloor ? "지하층·무창층·4층 이상 층 중 바닥면적 300㎡ 이상인 층이 있습니다." :
+    "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  // ── 스프링클러설비 (2014.7.8 면적 잣대 통합) ──
+  let sprinklerReq = false;
+  let sprinklerReason = "";
+  if (pd >= YD.D20140708) {
+    sprinklerReq = sa >= 5000 || inp.salesOccupancy500Plus;
+    sprinklerReason = sa >= 5000 ? "판매시설 바닥면적 합계가 5,000㎡ 이상입니다. (전층)" :
+      inp.salesOccupancy500Plus ? "수용인원이 500명 이상입니다. (전층)" :
+      "바닥면적 합계 5,000㎡ 미만이고 수용인원 500명 미만이어서 설치 대상이 아닙니다.";
+  } else {
+    const threshold = ag <= 3 ? 6000 : 5000;
+    sprinklerReq = sa >= threshold || inp.salesOccupancy500Plus;
+    sprinklerReason = sa >= threshold ? `${ag <= 3 ? "3층 이하 건축물로 바닥면적 합계 6,000㎡" : "4층 이상 건축물로 바닥면적 합계 5,000㎡"} 이상입니다. (전층)` :
+      inp.salesOccupancy500Plus ? "수용인원이 500명 이상입니다. (전층)" :
+      `${ag <= 3 ? "바닥면적 합계 6,000㎡" : "바닥면적 합계 5,000㎡"} 미만이고 수용인원 500명 미만이어서 설치 대상이 아닙니다.`;
+  }
+  results.push(makeResult(categories.extinguishing, "스프링클러설비", "",
+    sprinklerReq ? "required" : "notRequired", sprinklerReason, ""));
+
+  // ── 물분무등소화설비 ──
+  const waterSprayReq = inp.salesIndoorParkingArea >= 200 || inp.salesMechanicalParkingCapacity >= 20 || inp.salesElectricalRoomArea >= 300;
+  results.push(makeResult(categories.extinguishing, "물분무등소화설비", "",
+    waterSprayReq ? "required" : "notRequired",
+    buildWaterSprayReason(0, inp.salesIndoorParkingArea, inp.salesMechanicalParkingCapacity, inp.salesElectricalRoomArea), ""));
+
+  // ── 옥외소화전설비 ──
+  results.push(makeResult(categories.extinguishing, "옥외소화전설비", "",
+    inp.salesFirstSecondFloorArea >= 9000 ? "required" : "notRequired",
+    inp.salesFirstSecondFloorArea >= 9000 ? "지상 1층과 2층의 바닥면적 합계가 9,000㎡ 이상입니다." :
+    "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  // ── 비상경보설비 ──
+  const emergAlarmReq = ta >= 400 || hasBasement150 || hasWindowless150;
+  results.push(makeResult(categories.alarm, "비상경보설비", "",
+    emergAlarmReq ? "required" : "notRequired",
+    ta >= 400 ? "연면적이 400㎡ 이상입니다." :
+    hasBasement150 ? "지하층 바닥면적이 150㎡ 이상입니다." :
+    hasWindowless150 ? "무창층 바닥면적이 150㎡ 이상입니다." :
+    "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  // ── 자동화재탐지설비 (판매시설: 연면적 1,000㎡ + 전통시장 무조건(2018.6.27~) + 6층 이상(2019.8.6~)) ──
+  const autoDetByMarket = pd >= YD.D20180627 && inp.salesIsTraditionalMarket;
+  const autoDetBy6F = pd >= YD.D20190806 && ag >= 6;
+  const autoDetReq = ta >= 1000 || autoDetByMarket || autoDetBy6F;
+  results.push(makeResult(categories.alarm, "자동화재탐지설비", "",
+    autoDetReq ? "required" : "notRequired",
+    ta >= 1000 ? "연면적이 1,000㎡ 이상인 판매시설입니다." :
+    autoDetByMarket ? "전통시장은 면적과 무관하게 설치 대상입니다." :
+    autoDetBy6F ? "층수가 6층 이상인 건축물입니다." :
+    "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  // ── 시각경보기 (자동화재탐지설비 대상 판매시설에 함께 설치) ──
+  results.push(makeResult(categories.alarm, "시각경보기", "",
+    autoDetReq ? "required" : "notRequired",
+    autoDetReq ? "자동화재탐지설비 설치 대상 판매시설에 함께 설치해야 합니다." :
+    "자동화재탐지설비 설치 대상이 아닙니다.", ""));
+
+  // ── 화재알림설비 (2022년 12월 1일 신설: 판매시설 중 전통시장) ──
+  let fireNotifyReq = false;
+  let fireNotifyReason = "";
+  if (pd < YD.D20221201) {
+    fireNotifyReason = "2022년 12월 1일 이전에는 화재알림설비 의무 규정이 없었습니다.";
+  } else if (inp.salesIsTraditionalMarket) {
+    fireNotifyReq = true;
+    fireNotifyReason = "전통시장은 화재알림설비를 설치해야 합니다.";
+  } else {
+    fireNotifyReason = "전통시장이 아니어서 설치 대상이 아닙니다.";
+  }
+  results.push(makeResult(categories.alarm, "화재알림설비", "",
+    fireNotifyReq ? "required" : "notRequired", fireNotifyReason, ""));
+
+  // ── 비상방송설비 (2022.12.1 '지하층 제외' 삭제) ──
+  const broadcastFloorCond = pd >= YD.D20221201 ? tf >= 11 : ag >= 11;
+  const broadcastReq = ta >= 3500 || broadcastFloorCond || bf >= 3;
+  results.push(makeResult(categories.alarm, "비상방송설비", "",
+    broadcastReq ? "required" : "notRequired",
+    ta >= 3500 ? "연면적이 3,500㎡ 이상입니다." :
+    broadcastFloorCond ? (pd >= YD.D20221201 ? "지하층을 포함한 층수가 11층 이상입니다." : "지상층수가 11층 이상입니다.") :
+    bf >= 3 ? "지하층수가 3층 이상입니다." :
+    "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  // ── 자동화재속보설비 (전통시장(2018.6.27~) + 24h 면제(2022.12.1~). 30층 공통 기준은 별도 적용) ──
+  let autoNotifyReq = false;
+  let autoNotifyReason = "";
+  const notifyByMarket = pd >= YD.D20180627 && inp.salesIsTraditionalMarket;
+  if (notifyByMarket) {
+    if (pd >= YD.D20221201 && inp.salesHas24HourStaff) {
+      autoNotifyReq = false;
+      autoNotifyReason = "전통시장이지만 24시간 화재 감시 근무자가 있어 자동화재속보설비를 설치하지 않을 수 있습니다.";
+    } else {
+      autoNotifyReq = true;
+      autoNotifyReason = "전통시장은 자동화재속보설비를 설치해야 합니다.";
+    }
+  } else {
+    autoNotifyReason = pd < YD.D20180627
+      ? "현재 입력 기준으로는 설치 대상이 아닙니다."
+      : "전통시장이 아니어서 설치 대상이 아닙니다.";
+  }
+  results.push(makeResult(categories.alarm, "자동화재속보설비", "",
+    autoNotifyReq ? "required" : "notRequired", autoNotifyReason, ""));
+
+  // ── 가스누설경보기 ──
+  results.push(makeResult(categories.alarm, "가스누설경보기", "",
+    inp.salesHasGasFacility ? "required" : "notRequired",
+    inp.salesHasGasFacility ? "가스시설이 설치된 판매시설입니다." :
+    "가스시설이 없어 설치 대상이 아닙니다.", ""));
+
+  // ── 피난기구 (3층 이상 10층 이하) ──
+  results.push(makeResult(categories.evacuation, "피난기구(구조대·완강기 등)", "",
+    ag >= 3 ? "required" : "notRequired",
+    ag >= 3 ? "3층 이상 10층 이하 층에 피난기구를 설치해야 합니다." :
+    "3층 이상 층이 없어 설치 대상이 아닙니다.", ""));
+
+  // ── 인명구조기구(공기호흡기) (대규모점포: 2011.7.7~ 수용100명, 2022.12.1~ 무조건) ──
+  let airReq = false;
+  let airReason = "";
+  if (!inp.salesIsLargeStore) {
+    airReason = "대규모점포가 아니어서 공기호흡기 설치 대상이 아닙니다.";
+  } else if (pd >= YD.D20221201) {
+    airReq = true;
+    airReason = "대규모점포는 수용인원과 무관하게 공기호흡기를 비치해야 합니다.";
+  } else if (inp.salesOccupancy100Plus) {
+    airReq = true;
+    airReason = "수용인원 100명 이상인 대규모점포로 공기호흡기를 비치해야 합니다.";
+  } else {
+    airReason = "수용인원이 100명 미만이어서 설치 대상이 아닙니다.";
+  }
+  results.push(makeResult(categories.evacuation, "인명구조기구(공기호흡기)", "",
+    airReq ? "required" : "notRequired", airReason, ""));
+
+  // ── 유도등 ──
+  results.push(makeResult(categories.evacuation, "유도등(피난구유도등·통로유도등)", "", "required",
+    "모든 판매시설에 피난구유도등, 통로유도등, 유도표지를 설치해야 합니다.", ""));
+
+  // ── 비상조명등 ──
+  const emLightReq = (tf >= 5 && ta >= 3000) || hasBasement450 || hasWindowless450;
+  results.push(makeResult(categories.evacuation, "비상조명등", "",
+    emLightReq ? "required" : "notRequired",
+    tf >= 5 && ta >= 3000 ? "전체 층수가 5층 이상이고 연면적이 3,000㎡ 이상입니다." :
+    hasBasement450 ? "지하층 바닥면적이 450㎡ 이상입니다." :
+    hasWindowless450 ? "무창층 바닥면적이 450㎡ 이상입니다." :
+    "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  // ── 휴대용 비상조명등 (대규모점포: ~2011.7.6 수용100명, 2011.7.7~ 무조건) ──
+  let portableReq = false;
+  let portableReason = "";
+  if (!inp.salesIsLargeStore) {
+    portableReason = "대규모점포가 아니어서 휴대용 비상조명등 설치 대상이 아닙니다.";
+  } else if (pd >= YD.D20110707) {
+    portableReq = true;
+    portableReason = "대규모점포는 수용인원과 무관하게 휴대용 비상조명등을 비치해야 합니다.";
+  } else if (inp.salesOccupancy100Plus) {
+    portableReq = true;
+    portableReason = "수용인원 100명 이상인 대규모점포로 휴대용 비상조명등을 비치해야 합니다.";
+  } else {
+    portableReason = "수용인원이 100명 미만이어서 설치 대상이 아닙니다.";
+  }
+  results.push(makeResult(categories.evacuation, "휴대용비상조명등", "",
+    portableReq ? "required" : "notRequired", portableReason, ""));
+
+  // ── 소화용수설비 ──
+  results.push(makeResult(categories.waterSupply, "상수도소화용수설비", "",
+    ta >= 5000 ? "required" : "notRequired",
+    ta >= 5000 ? "연면적이 5,000㎡ 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  // ── 제연설비 (판매시설: 지하층 또는 무창층 바닥면적 합계 1,000㎡ 이상) ──
+  const smokeBasement1000 = ba >= 1000;
+  const smokeWindowless1000 = inp.hasWindowlessFloor && wl >= 1000;
+  const smokeReq = smokeBasement1000 || smokeWindowless1000;
+  results.push(makeResult(categories.fireSupport, "제연설비", "",
+    smokeReq ? "required" : "notRequired",
+    smokeBasement1000 ? "지하층 바닥면적 합계가 1,000㎡ 이상입니다." :
+    smokeWindowless1000 ? "무창층 바닥면적이 1,000㎡ 이상입니다." :
+    "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  // ── 연결송수관설비 ──
+  const standpipeReq = (tf >= 5 && ta >= 6000) || tf >= 7 || (bf >= 3 && ba >= 1000);
+  results.push(makeResult(categories.fireSupport, "연결송수관설비", "",
+    standpipeReq ? "required" : "notRequired",
+    tf >= 5 && ta >= 6000 ? "전체 층수가 5층 이상이고 연면적이 6,000㎡ 이상입니다." :
+    tf >= 7 ? "전체 층수가 7층 이상입니다." :
+    bf >= 3 && ba >= 1000 ? "지하층이 3층 이상이고 지하층 바닥면적 합계가 1,000㎡ 이상입니다." :
+    "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  // ── 연결살수설비 (판매시설: 해당 용도 1,000㎡ 또는 지하층 150㎡) ──
+  const drencherReq = sa >= 1000 || ba >= 150;
+  results.push(makeResult(categories.fireSupport, "연결살수설비", "",
+    drencherReq ? "required" : "notRequired",
+    sa >= 1000 ? "판매시설 해당 용도 바닥면적 합계가 1,000㎡ 이상입니다." :
+    ba >= 150 ? "지하층 바닥면적 합계가 150㎡ 이상입니다." :
+    "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  // ── 비상콘센트설비 (2014.7.8 '지하층 포함' 삭제 → 순수 지상 11층) ──
+  const consentFloorCond = pd >= YD.D20140708 ? ag >= 11 : tf >= 11;
+  const emConsentReq = consentFloorCond || (bf >= 3 && ba >= 1000);
+  results.push(makeResult(categories.fireSupport, "비상콘센트설비", "",
+    emConsentReq ? "required" : "notRequired",
+    consentFloorCond ? (pd >= YD.D20140708 ? "지상층수가 11층 이상입니다." : "지하층을 포함한 층수가 11층 이상입니다.") :
+    bf >= 3 && ba >= 1000 ? "지하층이 3층 이상이고 지하층 바닥면적 합계가 1,000㎡ 이상입니다." :
+    "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+
+  // ── 무선통신보조설비 ──
+  const radioBase = ba >= 3000 || (bf >= 3 && ba >= 1000);
+  const radioHigh = pd >= YD.D20111123 && ag >= 30;
   results.push(makeResult(categories.fireSupport, "무선통신보조설비", "",
     radioBase || radioHigh ? "required" : "notRequired",
     ba >= 3000 ? "지하층 바닥면적 합계가 3,000㎡ 이상입니다." :
@@ -11104,6 +11551,30 @@ function yearBuildReligiousExceptionItems(results, inp) {
   const drencher = results.find((r) => r.name === "연결살수설비");
   const waterSpray = results.find((r) => r.name === "물분무등소화설비");
   const parkingCondition = inp.religiousIndoorParkingArea >= 200 || inp.religiousMechanicalParkingCapacity >= 20;
+
+  if (sprinkler && sprinkler.status === "required" && drencher && drencher.status === "required") {
+    exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상으로 봅니다." });
+  }
+  if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+  }
+  if (waterSpray && waterSpray.status === "required" && parkingCondition) {
+    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
+  }
+  if (!exceptionItems.length) {
+    exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
+  }
+  return exceptionItems;
+}
+
+function yearBuildSalesExceptionItems(results, inp) {
+  const exceptionItems = [];
+  const autoDetection = results.find((r) => r.name === "자동화재탐지설비");
+  const emergencyAlarm = results.find((r) => r.name === "비상경보설비");
+  const sprinkler = results.find((r) => r.name === "스프링클러설비");
+  const drencher = results.find((r) => r.name === "연결살수설비");
+  const waterSpray = results.find((r) => r.name === "물분무등소화설비");
+  const parkingCondition = inp.salesIndoorParkingArea >= 200 || inp.salesMechanicalParkingCapacity >= 20;
 
   if (sprinkler && sprinkler.status === "required" && drencher && drencher.status === "required") {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상으로 봅니다." });
@@ -11384,6 +11855,9 @@ function yearShowResults() {
     } else if (kind === "religious") {
       parts.push(`1·2층 ${inp.religiousFirstSecondFloorArea}㎡`);
       parts.push(`600㎡ 이상 층 ${inp.religiousHasLargeTargetFloor ? "있음" : "없음"}`);
+    } else if (kind === "sales") {
+      parts.push(`1·2층 ${inp.salesFirstSecondFloorArea}㎡`);
+      parts.push(`300㎡ 이상 층 ${inp.salesHasLargeTargetFloor ? "있음" : "없음"}`);
     }
     return `<br><span style="font-size:11px;opacity:0.85;">※ 면적 자동산정 적용: ${parts.join(", ")} (직사각형·전 층 동일 용도 가정)</span>`;
   };
@@ -11412,6 +11886,14 @@ function yearShowResults() {
     results = yearEvaluateReligious(inp);
     exceptionItems = yearBuildReligiousExceptionItems(results, inp);
     summaryHtml = `<div class="ib-title">입력값 기준</div>종교시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층${autoNoteParts("religious")}`;
+  } else if (inp.occupancyType === "sales") {
+    results = yearEvaluateSales(inp);
+    exceptionItems = yearBuildSalesExceptionItems(results, inp);
+    const salesTags = [];
+    if (inp.salesIsTraditionalMarket) salesTags.push("전통시장");
+    if (inp.salesIsLargeStore) salesTags.push("대규모점포");
+    const salesTagStr = salesTags.length ? `(${salesTags.join("·")})` : "";
+    summaryHtml = `<div class="ib-title">입력값 기준</div>판매시설${salesTagStr}, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 판매 사용면적 ${inp.salesArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층${autoNoteParts("sales")}`;
   } else {
     results = yearEvaluateNeighborhood(inp);
     exceptionItems = yearBuildNeighborhoodExceptionItems(results, inp);
@@ -11419,6 +11901,7 @@ function yearShowResults() {
   }
 
   ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
+  ensureAutoFireNotify30F(results, inp);
 
   const excludedNames = new Set(exceptionItems.filter((e) => e.category === "설치 제외").map((e) => e.name));
   const hasParkingReplacement = exceptionItems.some((e) => e.category === "대체설비" && e.name === "주차장 관련 스프링클러설비 대체 가능");
@@ -11432,6 +11915,7 @@ function yearShowResults() {
     if (inp.occupancyType === "lodging") elecArea = inp.lodgingElectricalRoomArea;
     else if (inp.occupancyType === "elderly") elecArea = inp.elderlyElectricalRoomArea;
     else if (inp.occupancyType === "medical") elecArea = inp.medicalElectricalRoomArea;
+    else if (inp.occupancyType === "sales") elecArea = inp.salesElectricalRoomArea;
     else elecArea = inp.electricalRoomArea;
 
     if (elecArea < 300) {
@@ -14060,9 +14544,12 @@ applyDevMode();
   }
 
   function setPosition(x, y) {
-    const maxX = window.innerWidth - root.offsetWidth - 8;
+    const btnLeft = button.offsetLeft;
+    const btnW = button.offsetWidth;
+    const minX = 8 - btnLeft;
+    const maxX = window.innerWidth - 8 - btnLeft - btnW;
     const maxY = window.innerHeight - root.offsetHeight - 8;
-    root.style.left = Math.max(8, Math.min(x, maxX)) + "px";
+    root.style.left = Math.max(minX, Math.min(x, maxX)) + "px";
     root.style.top = Math.max(8, Math.min(y, maxY)) + "px";
     root.style.right = "auto";
     root.style.bottom = "auto";
@@ -14461,8 +14948,10 @@ applyDevMode();
     const step = function () {
       if (!canWander()) { stopWander(); return; }
       wanderX += wanderDir * WANDER_SPEED;
-      const maxX = window.innerWidth - root.offsetWidth - 8;
-      if (wanderX <= 8) { wanderX = 8; wanderDir = 1; setStateIfChanged("running-right"); }
+      const btnLeft = button.offsetLeft;
+      const minX = 8 - btnLeft;
+      const maxX = window.innerWidth - 8 - btnLeft - button.offsetWidth;
+      if (wanderX <= minX) { wanderX = minX; wanderDir = 1; setStateIfChanged("running-right"); }
       else if (wanderX >= maxX) { wanderX = maxX; wanderDir = -1; setStateIfChanged("running-left"); }
       const y = parseFloat(root.style.top) || root.getBoundingClientRect().top;
       setPosition(wanderX, y);
