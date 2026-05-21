@@ -7571,7 +7571,7 @@ function yearRenderNumberStep(step) {
   }
   input.value = yearState.answers[step.key] ?? "";
   // 용도별 바닥면적 필드는 연면적을 초과할 수 없음
-  const areaFields = ["yNeighborhoodArea", "yLodgingArea", "yElderlyArea", "yMedicalArea"];
+  const areaFields = ["yNeighborhoodArea", "yLodgingArea", "yElderlyArea", "yMedicalArea", "ySalesArea"];
   if (areaFields.includes(step.key)) {
     const ta = parseFloat(yearState.answers.yTotalArea) || 0;
     if (ta > 0) input.max = String(ta);
@@ -7592,6 +7592,7 @@ function yearRenderNumberStep(step) {
       yearState.answers.yNeighborhoodArea = e.target.value;
       yearState.answers.yElderlyArea = e.target.value;
       yearState.answers.yMedicalArea = e.target.value;
+      yearState.answers.ySalesArea = e.target.value;
       yearRecalcF12();
     }
     // 층수 변경 시 1·2층 면적 재계산
