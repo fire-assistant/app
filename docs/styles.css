@@ -668,6 +668,90 @@ input:focus-visible {
   border-color: var(--border);
 }
 
+/* ── 메뉴 선택 화면 (탭 진입 첫 화면) ── */
+.menu-select .wq-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-select .wq-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.choice-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.choice-card .cc-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 20px;
+  margin: 0;
+}
+
+.choice-card .cc-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: var(--text);
+}
+
+.choice-card .cc-num {
+  display: block;
+  margin: 0 0 2px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+}
+
+.choice-card strong {
+  display: block;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.choice-card .cc-desc {
+  display: block;
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+
+.choice-card .cc-arrow {
+  flex-shrink: 0;
+  margin: 0;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-dim);
+  transition: transform var(--transition), color var(--transition);
+}
+
+.choice-card:hover .cc-arrow {
+  transform: translateX(2px);
+  color: var(--text-muted);
+}
+
 .year-static-choice.year-static-choice-disabled {
   opacity: 0.92;
 }

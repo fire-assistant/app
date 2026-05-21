@@ -12806,20 +12806,28 @@ function renderReportGuide(restoreScroll) {
     var selWrap = document.createElement('div');
     selWrap.className = 'scroll-content';
     selWrap.innerHTML = `
-      <section class="wq-card">
+      <section class="wq-card menu-select">
         <p class="wq-label">자체점검 가이드</p>
         <h2 class="wq-title">어떤 내용이 필요하세요?</h2>
         <p class="wq-sub">목적에 맞는 항목을 선택하세요.</p>
         <div class="choice-list" style="margin-top:16px;">
-          <button id="rg-sel-inspection" class="choice-button" type="button">
-            <strong>🏢 작동·종합 대상 판독기</strong>
-            <span>작동기능점검과 종합정밀점검 대상 여부를 판정합니다.</span>
+          <button id="rg-sel-inspection" class="choice-button choice-card" type="button">
+            <span class="cc-icon mc-red">🏢</span>
+            <span class="cc-body">
+              <span class="cc-num">01</span>
+              <strong>작동·종합 대상 판독기</strong>
+              <span class="cc-desc">작동기능점검과 종합정밀점검 대상 여부를 판정합니다.</span>
+            </span>
+            <span class="cc-arrow">›</span>
           </button>
-          <button id="rg-sel-guide" class="choice-button" type="button">
-            <div class="choice-label-wrap">
-              <strong>📋 자체점검 보고서 읽는법</strong>
-            </div>
-            <span>자체점검 실시결과 보고서 작성·읽기 안내</span>
+          <button id="rg-sel-guide" class="choice-button choice-card" type="button">
+            <span class="cc-icon mc-blue">📋</span>
+            <span class="cc-body">
+              <span class="cc-num">02</span>
+              <strong>자체점검 보고서 읽는법</strong>
+              <span class="cc-desc">자체점검 실시결과 보고서 작성·읽기 안내</span>
+            </span>
+            <span class="cc-arrow">›</span>
           </button>
         </div>
       </section>

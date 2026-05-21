@@ -198,20 +198,28 @@
       <span class="tb-title">소방시설 탐색기</span>
     </div>
     <div class="scroll-content">
-      <section class="wq-card">
+      <section class="wq-card menu-select">
         <p class="wq-label">모드 선택</p>
         <h2 class="wq-title">어떤 방식으로 탐색할까요?</h2>
         <p class="wq-sub">목적에 맞는 버전을 선택하세요.</p>
         <div class="choice-list" style="margin-top:16px;">
-          <button id="explorer-select-simple" class="choice-button" type="button">
-            <strong>⚡ 간단한 버전</strong>
-            <span>현행 법령 기준으로 빠르게 도출합니다. 건축허가일 없이도 바로 사용할 수 있습니다.</span>
+          <button id="explorer-select-simple" class="choice-button choice-card" type="button">
+            <span class="cc-icon mc-amber">⚡</span>
+            <span class="cc-body">
+              <span class="cc-num">01</span>
+              <strong>간단한 버전</strong>
+              <span class="cc-desc">현행 법령 기준으로 빠르게 도출합니다. 건축허가일 없이도 바로 사용할 수 있습니다.</span>
+            </span>
+            <span class="cc-arrow">›</span>
           </button>
-          <button id="explorer-select-detailed" class="choice-button" type="button">
-            <div class="choice-label-wrap">
-              <strong>🔍 자세한 버전</strong>
-            </div>
-            <span>건축허가일을 기준으로 당시 법령을 적용한 상세 결과를 도출합니다.</span>
+          <button id="explorer-select-detailed" class="choice-button choice-card" type="button">
+            <span class="cc-icon mc-blue">🔍</span>
+            <span class="cc-body">
+              <span class="cc-num">02</span>
+              <strong>자세한 버전</strong>
+              <span class="cc-desc">건축허가일을 기준으로 당시 법령을 적용한 상세 결과를 도출합니다.</span>
+            </span>
+            <span class="cc-arrow">›</span>
           </button>
         </div>
       </section>
@@ -758,18 +766,28 @@
       <span class="tb-title">다중이용업소 탐색기</span>
     </div>
     <div class="scroll-content">
-      <section class="wq-card">
+      <section class="wq-card menu-select">
         <p class="wq-label">메뉴 선택</p>
         <h2 class="wq-title">어떤 작업을 하시겠어요?</h2>
         <p class="wq-sub">목적에 맞는 항목을 선택하세요.</p>
         <div class="choice-list" style="margin-top:16px;">
-          <button id="multiuse-select-decoder" class="choice-button" type="button">
-            <strong>🔍 다중이용업소 해당 여부 판독기</strong>
-            <span>업종·면적·층수 등 조건을 입력하면 다중이용업소 해당 여부를 판독합니다.</span>
+          <button id="multiuse-select-decoder" class="choice-button choice-card" type="button">
+            <span class="cc-icon mc-blue">🔍</span>
+            <span class="cc-body">
+              <span class="cc-num">01</span>
+              <strong>다중이용업소 해당 여부 판독기</strong>
+              <span class="cc-desc">업종·면적·층수 등 조건을 입력하면 다중이용업소 해당 여부를 판독합니다.</span>
+            </span>
+            <span class="cc-arrow">›</span>
           </button>
-          <button id="multiuse-select-safety" class="choice-button" type="button">
-            <strong>🛡 다중이용업소에 설치할 안전시설 탐색</strong>
-            <span>다중이용업소에 설치해야 하는 소방·안전시설을 확인합니다.</span>
+          <button id="multiuse-select-safety" class="choice-button choice-card" type="button">
+            <span class="cc-icon mc-green">🛡</span>
+            <span class="cc-body">
+              <span class="cc-num">02</span>
+              <strong>다중이용업소에 설치할 안전시설 탐색</strong>
+              <span class="cc-desc">다중이용업소에 설치해야 하는 소방·안전시설을 확인합니다.</span>
+            </span>
+            <span class="cc-arrow">›</span>
           </button>
         </div>
       </section>
@@ -798,22 +816,28 @@
       <span class="tb-title">실험실</span>
     </div>
     <div class="scroll-content">
-      <section class="wq-card">
+      <section class="wq-card menu-select">
         <p class="wq-label">LAB</p>
         <h2 class="wq-title">실험 중인 기능</h2>
         <p class="wq-sub">앞으로 만들 기능들을 먼저 다듬고 시험하는 공간입니다.</p>
         <div class="choice-list" style="margin-top:16px;">
-          <button id="open-layout-learn" class="choice-button" type="button">
-            <div class="choice-label-wrap">
+          <button id="open-layout-learn" class="choice-button choice-card" type="button">
+            <span class="cc-icon mc-blue">🗺️</span>
+            <span class="cc-body">
+              <span class="cc-num">01</span>
               <strong>소방시설 배치 배우기</strong>
-            </div>
-            <span>건물 구조를 입력하고 소방시설 배치를 시각화합니다.</span>
+              <span class="cc-desc">건물 구조를 입력하고 소방시설 배치를 시각화합니다.</span>
+            </span>
+            <span class="cc-arrow">›</span>
           </button>
-          <button id="lab-open-multiuse-safety" class="choice-button" type="button">
-            <div class="choice-label-wrap">
-              <strong>🛡 다중이용업소 안전시설 탐색</strong>
-            </div>
-            <span>다중이용업소에 설치해야 하는 소방·안전시설을 확인합니다.</span>
+          <button id="lab-open-multiuse-safety" class="choice-button choice-card" type="button">
+            <span class="cc-icon mc-green">🛡</span>
+            <span class="cc-body">
+              <span class="cc-num">02</span>
+              <strong>다중이용업소 안전시설 탐색</strong>
+              <span class="cc-desc">다중이용업소에 설치해야 하는 소방·안전시설을 확인합니다.</span>
+            </span>
+            <span class="cc-arrow">›</span>
           </button>
         </div>
       </section>
