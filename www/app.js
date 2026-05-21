@@ -5296,11 +5296,31 @@ function renderOccupancyCalculator() {
     });
 
     const staffingInput = root.querySelector("#utility-staffing-value");
+    const staffingResultCard = root.querySelector(".occ-result-card");
     if (staffingInput) {
       staffingInput.addEventListener("input", (e) => {
         const key = occupancyState.staffingTargetType === "apartment" ? "staffingHouseholds" : "staffingArea";
-        occupancyState[key] = sanitizeAssistantNumericInput(e.target.value);
-        renderOccupancyCalculator();
+        const sanitized = sanitizeAssistantNumericInput(e.target.value);
+        occupancyState[key] = sanitized;
+        // 입력란을 재생성하지 않고 결과만 갱신 (안드로이드 WebView 숫자 역순 입력 버그 방지)
+        if (e.target.value !== sanitized) {
+          const pos = Math.max(0, e.target.selectionStart - (e.target.value.length - sanitized.length));
+          e.target.value = sanitized;
+          e.target.setSelectionRange(pos, pos);
+        }
+        if (staffingResultCard) {
+          const r = getAssistantStaffingResult(occupancyState.staffingTargetType, sanitized);
+          staffingResultCard.classList.toggle("has-result", !!r);
+          staffingResultCard.innerHTML = `
+            <div class="occ-result-label">선임인원</div>
+            ${r ? `
+              <div class="occ-result-num">${r.count}<span>명</span></div>
+              <div class="occ-result-formula">⌊${r.inputValue.toLocaleString()} ÷ ${r.divisor.toLocaleString()}⌋ = ${r.count}명</div>
+            ` : `
+              <div class="occ-result-empty">값을 입력하면 바로 계산됩니다</div>
+            `}
+          `;
+        }
       });
       if (prevActiveStaffing) {
         staffingInput.focus();
@@ -5403,11 +5423,27 @@ function renderOccupancyCalculator() {
     });
   });
 
+  const occResultCard = root.querySelector(".occ-result-card");
   root.querySelectorAll("[data-occ-field]").forEach((input) => {
     input.addEventListener("input", () => {
       if (!occupancyState.values) occupancyState.values = {};
       occupancyState.values[input.dataset.occField] = input.value;
-      renderOccupancyCalculator();
+      // 입력란을 재생성하지 않고 결과만 갱신 (number 입력 커서 역순 입력 버그 방지)
+      if (occResultCard) {
+        const vals = occupancyState.values;
+        const filled = fields.every((f) => vals[f.key] !== undefined && vals[f.key] !== "");
+        const res = filled ? calcOccupancy(effType, vals) : null;
+        occResultCard.classList.toggle("has-result", res !== null);
+        occResultCard.innerHTML = `
+          <div class="occ-result-label">산정 결과</div>
+          ${res !== null ? `
+            <div class="occ-result-num">${res.toLocaleString()}<span>명</span></div>
+            <div class="occ-result-formula">${buildOccFormula(effType, vals)} = ${res}명</div>
+          ` : `
+            <div class="occ-result-empty">값을 모두 입력하면 바로 계산됩니다</div>
+          `}
+        `;
+      }
     });
   });
 
