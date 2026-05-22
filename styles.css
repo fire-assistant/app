@@ -4064,6 +4064,15 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   margin-left: auto;
 }
 
+.topbar .ilgu-summon-btn {
+  margin-left: auto;
+  margin-right: 3px;
+}
+
+.topbar .ilgu-summon-btn + .theme-toggle-btn {
+  margin-left: 0;
+}
+
 .home-header-right {
   display: flex;
   flex-direction: column;
