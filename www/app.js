@@ -6643,7 +6643,13 @@ const yearSteps = [
       { value: "yes", label: "예 (500명 이상)", description: "수용인원이 500명 이상인 경우" },
       { value: "no", label: "아니오 (500명 미만)", description: "수용인원이 500명 미만인 경우" },
     ],
-    condition: (ya) => ya.yOccupancyType === "sales",
+    condition: (ya, pd) => {
+      if (ya.yOccupancyType !== "sales") return false;
+      const salesArea = parseFloat(ya.ySalesArea) || 0;
+      const aboveGroundFloors = parseInt(ya.yAboveGroundFloors, 10) || 0;
+      const threshold = pd >= YD.D20140708 ? 5000 : (aboveGroundFloors <= 3 ? 6000 : 5000);
+      return salesArea < threshold;
+    },
   },
   {
     key: "ySalesOccupancy100Plus",
@@ -6654,7 +6660,7 @@ const yearSteps = [
       { value: "yes", label: "예 (100명 이상)", description: "수용인원이 100명 이상인 경우" },
       { value: "no", label: "아니오 (100명 미만)", description: "수용인원이 100명 미만인 경우" },
     ],
-    condition: (ya) => ya.yOccupancyType === "sales" && ya.ySalesIsLargeStore === "yes",
+    condition: () => false,
   },
   {
     key: "ySalesHasRestaurantKitchen",
@@ -8087,7 +8093,7 @@ function yearNormalizeAnswers() {
     salesMechanicalParkingCapacity: parseInt(ya.ySalesMechanicalParkingCapacity) || 0,
     salesElectricalRoomArea: parseFloat(ya.ySalesElectricalRoomArea) || 0,
     salesOccupancy500Plus: ya.ySalesOccupancy500Plus === "yes",
-    salesOccupancy100Plus: ya.ySalesOccupancy100Plus === "yes",
+    salesOccupancy100Plus: ya.ySalesIsLargeStore === "yes",
     salesIsTraditionalMarket: ya.ySalesIsTraditionalMarket === "yes",
     salesIsLargeStore: ya.ySalesIsLargeStore === "yes",
     salesHasRestaurantKitchen: ya.ySalesHasRestaurantKitchen === "yes",
@@ -14495,6 +14501,7 @@ applyDevMode();
   const RUNNING_SHEET = "./assets/pets/mailpup/references/running.png";
   const SALUTING_SHEET = "./assets/pets/mailpup/references/saluting.png";
   const EATING_SHEET = "./assets/pets/mailpup/references/eating.png";
+  const STUDYING_SHEET = "./assets/pets/mailpup/references/studying.png";
   const CELL_W = 96;
   const CELL_H = 104;
   const RUNNING_CELL_W = 118;
@@ -14503,6 +14510,8 @@ applyDevMode();
   const SALUTING_CELL_H = 118;
   const EATING_CELL_W = 118;
   const EATING_CELL_H = 118;
+  const STUDYING_CELL_W = 118;
+  const STUDYING_CELL_H = 118;
   const MIN_PET_SCALE = 0.7;
   const MAX_PET_SCALE = 2;
   const MOBILE_MEDIA = "(max-width: 768px)";
@@ -14513,6 +14522,7 @@ applyDevMode();
     "running-left": { row: 0, frames: 4, ms: 210, sheet: RUNNING_SHEET, frameW: RUNNING_CELL_W, frameH: RUNNING_CELL_H },
     saluting: { row: 0, frames: 4, ms: 220, sheet: SALUTING_SHEET, frameW: SALUTING_CELL_W, frameH: SALUTING_CELL_H },
     eating: { row: 0, frames: 4, ms: 240, sheet: EATING_SHEET, frameW: EATING_CELL_W, frameH: EATING_CELL_H },
+    studying: { row: 0, frames: 4, ms: 240, sheet: STUDYING_SHEET, frameW: STUDYING_CELL_W, frameH: STUDYING_CELL_H },
     waving: { row: 3, frames: 4, ms: 220 },
     jumping: { row: 4, frames: 5, ms: 190 },
     failed: { row: 5, frames: 8, ms: 220 },
@@ -14667,6 +14677,14 @@ applyDevMode();
     }));
   }
 
+  function saveCurrentPosition() {
+    const rect = root.getBoundingClientRect();
+    localStorage.setItem("ilguAssistantPosition", JSON.stringify({
+      x: rect.left,
+      y: rect.top,
+    }));
+  }
+
   function setState(name, options) {
     if (transitionMode && !(options && options.force)) return;
     if (!states[name]) name = "idle";
@@ -14696,6 +14714,15 @@ applyDevMode();
   function setStateIfChanged(name) {
     if (transitionMode) return;
     if (currentState !== name) setState(name);
+  }
+
+  function holdStateFrame(name, frameIndex, options) {
+    if (transitionMode && !(options && options.force)) return;
+    if (!states[name]) name = "idle";
+    currentState = name;
+    frame = Math.max(0, Math.min(frameIndex, states[name].frames - 1));
+    clearInterval(timer);
+    paintFrame();
   }
 
   function openPanel(title, body, actions) {
@@ -14759,7 +14786,7 @@ applyDevMode();
     behaviorMode = "idle";
     transitionMode = "entering";
     const token = ++transitionToken;
-    setState("saluting", { force: true });
+    holdStateFrame("saluting", 2, { force: true });
     const house = document.createElement("div");
     house.className = "ilgu-house";
     house.textContent = "🏠";
@@ -14771,7 +14798,7 @@ applyDevMode();
       root.classList.remove("is-entering");
       house.remove();
       enterTimer = null;
-      setState("saluting", { force: true });
+      holdStateFrame("saluting", 2, { force: true });
       transitionMode = null;
       setTimeout(function () {
         if (token === transitionToken) setState("idle");
@@ -14809,6 +14836,7 @@ applyDevMode();
     localStorage.setItem("ilguAssistantDisabled", "true");
     localStorage.removeItem("ilguAssistantVisible");
     root.classList.remove("is-open");
+    saveCurrentPosition();
     playLeavingAnimation(() => {
       root.style.display = "none";
       setState("idle");
@@ -15020,11 +15048,15 @@ applyDevMode();
     root.style.display = "flex";
 
     if (opts.bottomRight) {
-      localStorage.removeItem("ilguAssistantPosition");
-      root.style.left = "";
-      root.style.top = "";
-      root.style.right = "";
-      root.style.bottom = "";
+      const saved = readPosition();
+      if (saved) {
+        setPosition(saved.x, saved.y);
+      } else {
+        root.style.left = "";
+        root.style.top = "";
+        root.style.right = "";
+        root.style.bottom = "";
+      }
     } else if (opts.anchor) {
       const rect = opts.anchor.getBoundingClientRect();
       const x = rect.right - (root.offsetWidth || 374);
@@ -15060,7 +15092,7 @@ applyDevMode();
   let wanderPauseUntil = 0;
   let nextBehaviorAt = 0;
   let behaviorMode = "idle";
-  const idleBehaviorStates = ["eating"];
+  const idleBehaviorStates = ["eating", "studying"];
 
   function canWander() {
     if (transitionMode) return false;
@@ -15125,7 +15157,7 @@ applyDevMode();
       stopIdleBehavior();
       nextBehaviorAt = Date.now() + 3000 + Math.random() * 5000;
     } else {
-      if (Math.random() < 0.35) {
+      if (Math.random() < 0.55) {
         behaviorMode = "idle-animation";
         stopWander();
         setState(idleBehaviorStates[Math.floor(Math.random() * idleBehaviorStates.length)]);

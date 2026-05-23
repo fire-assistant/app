@@ -6643,7 +6643,13 @@ const yearSteps = [
       { value: "yes", label: "예 (500명 이상)", description: "수용인원이 500명 이상인 경우" },
       { value: "no", label: "아니오 (500명 미만)", description: "수용인원이 500명 미만인 경우" },
     ],
-    condition: (ya) => ya.yOccupancyType === "sales",
+    condition: (ya, pd) => {
+      if (ya.yOccupancyType !== "sales") return false;
+      const salesArea = parseFloat(ya.ySalesArea) || 0;
+      const aboveGroundFloors = parseInt(ya.yAboveGroundFloors, 10) || 0;
+      const threshold = pd >= YD.D20140708 ? 5000 : (aboveGroundFloors <= 3 ? 6000 : 5000);
+      return salesArea < threshold;
+    },
   },
   {
     key: "ySalesOccupancy100Plus",
@@ -6654,7 +6660,7 @@ const yearSteps = [
       { value: "yes", label: "예 (100명 이상)", description: "수용인원이 100명 이상인 경우" },
       { value: "no", label: "아니오 (100명 미만)", description: "수용인원이 100명 미만인 경우" },
     ],
-    condition: (ya) => ya.yOccupancyType === "sales" && ya.ySalesIsLargeStore === "yes",
+    condition: () => false,
   },
   {
     key: "ySalesHasRestaurantKitchen",
@@ -8087,7 +8093,7 @@ function yearNormalizeAnswers() {
     salesMechanicalParkingCapacity: parseInt(ya.ySalesMechanicalParkingCapacity) || 0,
     salesElectricalRoomArea: parseFloat(ya.ySalesElectricalRoomArea) || 0,
     salesOccupancy500Plus: ya.ySalesOccupancy500Plus === "yes",
-    salesOccupancy100Plus: ya.ySalesOccupancy100Plus === "yes",
+    salesOccupancy100Plus: ya.ySalesIsLargeStore === "yes",
     salesIsTraditionalMarket: ya.ySalesIsTraditionalMarket === "yes",
     salesIsLargeStore: ya.ySalesIsLargeStore === "yes",
     salesHasRestaurantKitchen: ya.ySalesHasRestaurantKitchen === "yes",

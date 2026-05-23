@@ -1,4 +1,4 @@
-const CACHE = 'fireapp-v248';
+const CACHE = 'fireapp-v251';
 
 const PRECACHE_FILES = [
   './index.html',
@@ -11,6 +11,7 @@ const PRECACHE_FILES = [
   './assets/pets/mailpup/references/running.png',
   './assets/pets/mailpup/references/saluting.png',
   './assets/pets/mailpup/references/eating.png',
+  './assets/pets/mailpup/references/studying.png',
   './assets/pets/mailpup/pet.json',
   './assets/pets/mailpup/summon.png',
   './assets/pets/mailpup/summon-face.png',
