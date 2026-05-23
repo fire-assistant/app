@@ -12704,8 +12704,27 @@ history.replaceState({ screen: 'home' }, '');
 
   var _lastBackEventTime = 0;
   var _exitArmedAt = 0;
+  var _exitArmTimer = null;
   var DUPLICATE_BACK_EVENT_MS = 80;
   var EXIT_CONFIRM_MS = 900;
+
+  function clearExitArm() {
+    _exitArmedAt = 0;
+    if (_exitArmTimer) {
+      clearTimeout(_exitArmTimer);
+      _exitArmTimer = null;
+    }
+    if (getCurrentScreen() === "home" && history.state && history.state.exitArmed) {
+      history.replaceState({ screen: "home", exitArmed: false }, '');
+    }
+  }
+
+  function armExit() {
+    _exitArmedAt = Date.now();
+    history.pushState({ screen: "home", exitArmed: true }, '');
+    if (_exitArmTimer) clearTimeout(_exitArmTimer);
+    _exitArmTimer = setTimeout(clearExitArm, EXIT_CONFIRM_MS);
+  }
 
   function handleBack() {
     var now = Date.now();
@@ -12719,18 +12738,19 @@ history.replaceState({ screen: 'home' }, '');
     _lastBackEventTime = now;
 
     if (current === "home") {
-      if (now - _exitArmedAt <= EXIT_CONFIRM_MS) {
-        _exitArmedAt = 0;
+      const exitStateArmed = !!(history.state && history.state.exitArmed);
+      if (exitStateArmed && _exitArmedAt > 0 && now - _exitArmedAt <= EXIT_CONFIRM_MS) {
+        clearExitArm();
         doHandleBack(current);
       } else {
-        _exitArmedAt = now;
+        clearExitArm();
+        armExit();
         showToast("한 번 더 누르면 앱이 종료됩니다.");
-        history.pushState({ screen: "home" }, '');
       }
       return;
     }
 
-    _exitArmedAt = 0;
+    clearExitArm();
 
     _suppressHistoryPush = true;
     let needRePush = false;
