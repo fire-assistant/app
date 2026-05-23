@@ -12702,7 +12702,18 @@ history.replaceState({ screen: 'home' }, '');
     return false;
   }
 
+  var _lastBackTime = 0;
+  var BACK_DEBOUNCE_MS = 400;
+
   function handleBack() {
+    var now = Date.now();
+    if (now - _lastBackTime < BACK_DEBOUNCE_MS) {
+      // 너무 빠른 연속 입력 → pop만 취소하고 무시
+      history.pushState({ screen: getCurrentScreen() }, '');
+      return;
+    }
+    _lastBackTime = now;
+
     const current = getCurrentScreen();
     _suppressHistoryPush = true;
     let needRePush = false;
