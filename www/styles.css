@@ -4073,6 +4073,15 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   margin-left: 0;
 }
 
+@media (max-width: 899px) {
+  .topbar .theme-toggle-btn {
+    margin-right: -10px;
+  }
+  .topbar .ilgu-summon-btn {
+    margin-right: -7px;
+  }
+}
+
 .home-header-right {
   display: flex;
   flex-direction: column;

@@ -26,9 +26,9 @@ const PATCH_NOTES = {
   date: "2026-05-07",
   items: [
     { type: "notice",  text: "법적기준이 아닙니다. 참고만해주세요!" },
-    { type: "new",     text: "① 인트로 영상 추가<br>&nbsp;&nbsp;&nbsp;(이용안내에서 다시보기 가능)<br>② 법정기한계산기 공휴일 자동반영<br>③ 벚꽃테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면🌙버튼 누르세요)" },
-    { type: "improve", text: "메인화면 메뉴 배치 및 이름 변경 등" },
-    { type: "fix",     text: "소방시설 배치 배우기 추가 및 수정중" },
+    { type: "new",     text: "① 소방시설 탐색기 '판매시설'용도 추가<br>② 법정기한계산기 공휴일 자동반영<br>③ 벚꽃테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면🌙버튼 누르세요)" },
+    { type: "improve", text: "메인화면 메뉴 배치 및 이름, UI 변경 등" },
+    { type: "fix",     text: "유틸리티 도구함 숫자입력 버그 개선" },
   ],
 };
 // ────────────────────────────────────────────────────────────────────────
@@ -14189,6 +14189,11 @@ applyDevMode();
     modal.classList.add('hidden');
     localStorage.setItem('lastPatchSeen', today);
   });
+
+  var lastSeen = localStorage.getItem('lastPatchSeen');
+  if (lastSeen !== today) {
+    modal.classList.remove('hidden');
+  }
 })();
 
 // ── 홈 검색 기능 ─────────────────────────────────────────────────
