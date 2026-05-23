@@ -1,4 +1,5 @@
 history.scrollRestoration = 'manual';
+let _suppressHistoryPush = false;
 
 if (new URLSearchParams(location.search).has('reset-intro')) {
   try { localStorage.removeItem('introVideoSeen'); } catch {}
@@ -1367,6 +1368,9 @@ function showScreen(name) {
     gtag("event", "screen_view", {
       screen_name: screenLabels[name] || name,
     });
+  }
+  if (!_suppressHistoryPush && name !== 'home') {
+    history.pushState({ screen: name }, '');
   }
 }
 
@@ -12605,6 +12609,7 @@ renderHomeReminders();
   });
 })();
 showScreen("home");
+history.replaceState({ screen: 'home' }, '');
 
 // ── Android 뒤로가기 버튼 ─────────────────────────────────────
 (function initBackButton() {
@@ -12612,81 +12617,107 @@ showScreen("home");
     return Object.keys(screens).find(k => screens[k].classList.contains("active")) || "home";
   }
 
-  function handleBack() {
-    const current = getCurrentScreen();
-
+  // true 반환 = 화면 내부 이동(re-push 필요), false = 다른 screen으로 전환(re-push 불필요)
+  function doHandleBack(current) {
     if (current === "home") {
       if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
         window.Capacitor.Plugins.App.exitApp();
       }
-      return;
+      return false;
     }
 
     // 연도별 탐색기
     if (current === "explorerYear") {
+      const yearMultiuseCard = document.getElementById("year-multiuse-safety-card");
+      if (yearMultiuseCard && !yearMultiuseCard.classList.contains("hidden")) {
+        document.getElementById("year-back-to-main-result").click();
+        return true;
+      }
       const yearResultCard = document.getElementById("year-result-card");
       if (yearResultCard && !yearResultCard.classList.contains("hidden")) {
-        document.getElementById("year-restart-btn").click();
-        return;
+        document.getElementById("year-result-prev-btn").click();
+        return true;
       }
       if (yearState.currentStep > 0) {
         yearMoveStep(-1);
-        return;
+        return true;
       }
+      showScreen("explorerSelect");
+      return false;
     }
 
     // 소방시설탐색기
     if (current === "explorer") {
+      if (vizCard && !vizCard.classList.contains("hidden")) {
+        showExplorerCard("main-result");
+        scrollToTop();
+        return true;
+      }
       const multiuseCard = document.getElementById("multiuse-safety-card");
       if (multiuseCard && !multiuseCard.classList.contains("hidden")) {
-        document.getElementById("back-to-main-result").click();
-        return;
+        showExplorerCard("main-result");
+        scrollToTop();
+        return true;
       }
       const resultCard = document.getElementById("result-card");
       if (resultCard && !resultCard.classList.contains("hidden")) {
-        document.getElementById("restart-explorer").click();
-        return;
+        // 결과 → 첫 번째 질문
+        state.currentStep = 0;
+        showExplorerCard("question");
+        renderCurrentStep();
+        scrollToTop();
+        return true;
       }
       if (state.currentStep > 0) {
-        document.getElementById("prev-step").click();
-        return;
+        moveStep(-1);
+        return true;
       }
+      // 첫 질문 → explorerSelect (또는 multiuseSelect)
+      if (explorerRuntime.mode === "multiuse-only") {
+        showScreen("multiuseSelect");
+      } else {
+        showScreen("explorerSelect");
+      }
+      return false;
     }
 
     // 작동·종합 대상 판독기
     if (current === "inspection") {
-      if (inspectionState.history.length > 0) {
+      if (typeof inspectionState !== "undefined" && inspectionState.history && inspectionState.history.length > 0) {
         inspectionBack();
-        return;
+        return true;
       }
     }
 
     // 다중이용업소 판독기
     if (current === "multiuse") {
-      if (multiuseState.history.length > 0) {
+      if (typeof multiuseState !== "undefined" && multiuseState.history && multiuseState.history.length > 0) {
         multiuseBack();
-        return;
+        return true;
       }
     }
 
-    // 수용인원 계산기
-    if (current === "occupancy") {
-      if (occupancyState.step !== "category") {
-        occupancyState.step = getOccupancyBackStep(occupancyState.type);
-        renderOccupancyCalculator();
-        return;
-      }
-    }
-
+    // 그 외 모든 화면 → 홈으로
     showScreen("home");
+    return false;
   }
 
-  function setup() {
-    const App = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
-    if (App) {
-      App.addListener("backButton", handleBack);
+  function handleBack() {
+    const current = getCurrentScreen();
+    _suppressHistoryPush = true;
+    let needRePush = false;
+    try {
+      needRePush = doHandleBack(current);
+    } finally {
+      _suppressHistoryPush = false;
+    }
+    if (needRePush) {
+      history.pushState({ screen: current }, '');
     }
   }
+
+  // 네이티브 MainActivity.onBackPressed()에서 직접 호출하는 글로벌 함수
+  window._appHandleBack = handleBack;
 
   // Capacitor 네이티브 뒤로가기 리스너
   if (window.Capacitor) {
@@ -12699,18 +12730,12 @@ showScreen("home");
         _capBackDone = true;
       }
     }
-    // 즉시 시도 + load 후 재시도 (브릿지 초기화 지연 대비)
     setup();
     window.addEventListener("load", setup);
   }
 
-  // 네이티브 MainActivity.onBackPressed()에서 직접 호출하는 글로벌 함수
-  window._appHandleBack = handleBack;
-
-  // history/popstate 방식: 브라우저 및 Capacitor 폴백 모두 커버
-  history.pushState({ app: true }, "");
+  // history/popstate 방식 (브라우저 PWA 및 폴백)
   window.addEventListener("popstate", function () {
-    history.pushState({ app: true }, "");
     handleBack();
   });
 })();
