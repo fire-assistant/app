@@ -14469,16 +14469,19 @@ applyDevMode();
 
 (function initIlguAssistant() {
   const SHEET = "./assets/pets/mailpup/spritesheet.webp";
+  const RUNNING_SHEET = "./assets/pets/mailpup/references/running.png";
   const CELL_W = 96;
   const CELL_H = 104;
+  const RUNNING_CELL_W = 118;
+  const RUNNING_CELL_H = 118;
   const MIN_PET_SCALE = 0.7;
   const MAX_PET_SCALE = 2;
   const MOBILE_MEDIA = "(max-width: 768px)";
   const MOBILE_DEVICE_RE = /Android|iPhone|iPad|iPod|Mobile/i;
   const states = {
     idle: { row: 0, frames: 6, ms: 260 },
-    "running-right": { row: 1, frames: 8, ms: 180 },
-    "running-left": { row: 2, frames: 8, ms: 180 },
+    "running-right": { row: 0, frames: 4, ms: 210, sheet: RUNNING_SHEET, frameW: RUNNING_CELL_W, frameH: RUNNING_CELL_H, flip: true },
+    "running-left": { row: 0, frames: 4, ms: 210, sheet: RUNNING_SHEET, frameW: RUNNING_CELL_W, frameH: RUNNING_CELL_H },
     waving: { row: 3, frames: 4, ms: 220 },
     jumping: { row: 4, frames: 5, ms: 190 },
     failed: { row: 5, frames: 8, ms: 220 },
@@ -14645,7 +14648,15 @@ applyDevMode();
 
   function paintFrame() {
     const state = states[currentState];
-    sprite.style.backgroundPosition = (-frame * CELL_W) + "px " + (-state.row * CELL_H) + "px";
+    const frameW = state.frameW || CELL_W;
+    const frameH = state.frameH || CELL_H;
+    const sheet = state.sheet || SHEET;
+    sprite.style.width = frameW + "px";
+    sprite.style.height = frameH + "px";
+    sprite.style.backgroundImage = 'url("' + sheet + '")';
+    sprite.style.backgroundSize = state.sheet ? (frameW * state.frames) + "px " + frameH + "px" : "";
+    sprite.style.transform = (state.flip ? "scaleX(-1) " : "") + "scale(var(--ilgu-sprite-scale))";
+    sprite.style.backgroundPosition = (-frame * frameW) + "px " + (-state.row * frameH) + "px";
   }
 
   function setStateIfChanged(name) {

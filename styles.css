@@ -138,9 +138,14 @@ input:focus-visible {
 }
 
 .tb-title {
+  flex: 1;
+  min-width: 0;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .scroll-content {
@@ -2488,11 +2493,14 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   z-index: 5;
   display: flex;
   gap: 0;
+  width: calc(100% + 32px);
+  max-width: none;
   margin: 0 -16px 4px;
   padding: 0 16px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
   overflow-x: auto;
+  overscroll-behavior-x: contain;
   scrollbar-width: none;
 }
 @media (min-width: 900px) {
