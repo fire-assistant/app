@@ -12702,19 +12702,36 @@ history.replaceState({ screen: 'home' }, '');
     return false;
   }
 
-  var _lastBackTime = 0;
-  var BACK_DEBOUNCE_MS = 400;
+  var _lastBackEventTime = 0;
+  var _exitArmedAt = 0;
+  var DUPLICATE_BACK_EVENT_MS = 80;
+  var EXIT_CONFIRM_MS = 900;
 
   function handleBack() {
     var now = Date.now();
-    if (now - _lastBackTime < BACK_DEBOUNCE_MS) {
-      // 너무 빠른 연속 입력 → pop만 취소하고 무시
+    const current = getCurrentScreen();
+
+    if (now - _lastBackEventTime < DUPLICATE_BACK_EVENT_MS) {
+      // 같은 물리 입력이 native + popstate로 중복 전달되는 경우만 무시
       history.pushState({ screen: getCurrentScreen() }, '');
       return;
     }
-    _lastBackTime = now;
+    _lastBackEventTime = now;
 
-    const current = getCurrentScreen();
+    if (current === "home") {
+      if (now - _exitArmedAt <= EXIT_CONFIRM_MS) {
+        _exitArmedAt = 0;
+        doHandleBack(current);
+      } else {
+        _exitArmedAt = now;
+        showToast("한 번 더 누르면 앱이 종료됩니다.");
+        history.pushState({ screen: "home" }, '');
+      }
+      return;
+    }
+
+    _exitArmedAt = 0;
+
     _suppressHistoryPush = true;
     let needRePush = false;
     try {
