@@ -14507,10 +14507,13 @@ applyDevMode();
 (function initIlguAssistant() {
   const SHEET = "./assets/pets/mailpup/spritesheet.webp";
   const RUNNING_SHEET = "./assets/pets/mailpup/references/running.png";
+  const SALUTING_SHEET = "./assets/pets/mailpup/references/saluting.png";
   const CELL_W = 96;
   const CELL_H = 104;
   const RUNNING_CELL_W = 118;
   const RUNNING_CELL_H = 118;
+  const SALUTING_CELL_W = 118;
+  const SALUTING_CELL_H = 118;
   const MIN_PET_SCALE = 0.7;
   const MAX_PET_SCALE = 2;
   const MOBILE_MEDIA = "(max-width: 768px)";
@@ -14519,6 +14522,7 @@ applyDevMode();
     idle: { row: 0, frames: 6, ms: 260 },
     "running-right": { row: 0, frames: 4, ms: 210, sheet: RUNNING_SHEET, frameW: RUNNING_CELL_W, frameH: RUNNING_CELL_H, flip: true },
     "running-left": { row: 0, frames: 4, ms: 210, sheet: RUNNING_SHEET, frameW: RUNNING_CELL_W, frameH: RUNNING_CELL_H },
+    saluting: { row: 0, frames: 4, ms: 220, sheet: SALUTING_SHEET, frameW: SALUTING_CELL_W, frameH: SALUTING_CELL_H },
     waving: { row: 3, frames: 4, ms: 220 },
     jumping: { row: 4, frames: 5, ms: 190 },
     failed: { row: 5, frames: 8, ms: 220 },
@@ -14597,6 +14601,8 @@ applyDevMode();
   let suppressClick = false;
   let activeTarget = null;
   let petScale = 1;
+  let transitionMode = null;
+  let transitionToken = 0;
 
   sprite.style.backgroundImage = 'url("' + SHEET + '")';
   applyPetScale(readPetScale());
@@ -14671,7 +14677,8 @@ applyDevMode();
     }));
   }
 
-  function setState(name) {
+  function setState(name, options) {
+    if (transitionMode && !(options && options.force)) return;
     if (!states[name]) name = "idle";
     currentState = name;
     frame = 0;
@@ -14697,6 +14704,7 @@ applyDevMode();
   }
 
   function setStateIfChanged(name) {
+    if (transitionMode) return;
     if (currentState !== name) setState(name);
   }
 
@@ -14739,6 +14747,7 @@ applyDevMode();
 
   function cancelLeaving() {
     if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
+    if (transitionMode === "leaving") transitionMode = null;
     root.classList.remove("is-leaving");
     const existing = root.querySelector(".ilgu-house");
     if (existing) existing.remove();
@@ -14746,6 +14755,7 @@ applyDevMode();
 
   function cancelEntering() {
     if (enterTimer) { clearTimeout(enterTimer); enterTimer = null; }
+    if (transitionMode === "entering") transitionMode = null;
     root.classList.remove("is-entering");
     const existing = root.querySelector(".ilgu-house");
     if (existing) existing.remove();
@@ -14754,7 +14764,12 @@ applyDevMode();
   function playEnteringAnimation(onDone) {
     cancelEntering();
     cancelLeaving();
-    setState("waving");
+    if (typeof stopWander === "function") { try { stopWander(); } catch {} }
+    cancelPetThrow();
+    behaviorMode = "idle";
+    transitionMode = "entering";
+    const token = ++transitionToken;
+    setState("saluting", { force: true });
     const house = document.createElement("div");
     house.className = "ilgu-house";
     house.textContent = "🏠";
@@ -14762,11 +14777,15 @@ applyDevMode();
     root.appendChild(house);
     root.classList.add("is-entering");
     enterTimer = setTimeout(function () {
+      if (transitionMode !== "entering" || token !== transitionToken) return;
       root.classList.remove("is-entering");
       house.remove();
       enterTimer = null;
-      setState("waving");
-      setTimeout(function () { setState("idle"); }, 800);
+      setState("saluting", { force: true });
+      transitionMode = null;
+      setTimeout(function () {
+        if (token === transitionToken) setState("idle");
+      }, 800);
       onDone();
     }, 1500);
   }
@@ -14774,7 +14793,11 @@ applyDevMode();
   function playLeavingAnimation(onDone) {
     cancelLeaving();
     if (typeof stopWander === "function") { try { stopWander(); } catch {} }
-    setState("failed");
+    cancelPetThrow();
+    behaviorMode = "idle";
+    transitionMode = "leaving";
+    const token = ++transitionToken;
+    setState("failed", { force: true });
     const house = document.createElement("div");
     house.className = "ilgu-house";
     house.textContent = "🏠";
@@ -14782,9 +14805,11 @@ applyDevMode();
     root.appendChild(house);
     root.classList.add("is-leaving");
     leaveTimer = setTimeout(() => {
+      if (transitionMode !== "leaving" || token !== transitionToken) return;
       root.classList.remove("is-leaving");
       house.remove();
       leaveTimer = null;
+      transitionMode = null;
       onDone();
     }, 1500);
   }
@@ -15047,6 +15072,9 @@ applyDevMode();
   let behaviorMode = "idle";
 
   function canWander() {
+    if (transitionMode) return false;
+    if (root.classList.contains("is-entering")) return false;
+    if (root.classList.contains("is-leaving")) return false;
     if (root.style.display === "none") return false;
     if (root.classList.contains("is-open")) return false;
     if (root.classList.contains("dragging")) return false;
