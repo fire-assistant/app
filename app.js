@@ -12768,20 +12768,6 @@ history.replaceState({ screen: 'home' }, '');
   window._appHandleBack = handleBack;
 
   // Capacitor 네이티브 뒤로가기 리스너
-  if (window.Capacitor) {
-    var _capBackDone = false;
-    function setup() {
-      if (_capBackDone) return;
-      var App = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
-      if (App) {
-        App.addListener("backButton", handleBack);
-        _capBackDone = true;
-      }
-    }
-    setup();
-    window.addEventListener("load", setup);
-  }
-
   // history/popstate 방식 (브라우저 PWA 및 폴백)
   window.addEventListener("popstate", function () {
     handleBack();
@@ -14508,12 +14494,15 @@ applyDevMode();
   const SHEET = "./assets/pets/mailpup/spritesheet.webp";
   const RUNNING_SHEET = "./assets/pets/mailpup/references/running.png";
   const SALUTING_SHEET = "./assets/pets/mailpup/references/saluting.png";
+  const EATING_SHEET = "./assets/pets/mailpup/references/eating.png";
   const CELL_W = 96;
   const CELL_H = 104;
   const RUNNING_CELL_W = 118;
   const RUNNING_CELL_H = 118;
   const SALUTING_CELL_W = 118;
   const SALUTING_CELL_H = 118;
+  const EATING_CELL_W = 118;
+  const EATING_CELL_H = 118;
   const MIN_PET_SCALE = 0.7;
   const MAX_PET_SCALE = 2;
   const MOBILE_MEDIA = "(max-width: 768px)";
@@ -14523,6 +14512,7 @@ applyDevMode();
     "running-right": { row: 0, frames: 4, ms: 210, sheet: RUNNING_SHEET, frameW: RUNNING_CELL_W, frameH: RUNNING_CELL_H, flip: true },
     "running-left": { row: 0, frames: 4, ms: 210, sheet: RUNNING_SHEET, frameW: RUNNING_CELL_W, frameH: RUNNING_CELL_H },
     saluting: { row: 0, frames: 4, ms: 220, sheet: SALUTING_SHEET, frameW: SALUTING_CELL_W, frameH: SALUTING_CELL_H },
+    eating: { row: 0, frames: 4, ms: 240, sheet: EATING_SHEET, frameW: EATING_CELL_W, frameH: EATING_CELL_H },
     waving: { row: 3, frames: 4, ms: 220 },
     jumping: { row: 4, frames: 5, ms: 190 },
     failed: { row: 5, frames: 8, ms: 220 },
@@ -15070,6 +15060,7 @@ applyDevMode();
   let wanderPauseUntil = 0;
   let nextBehaviorAt = 0;
   let behaviorMode = "idle";
+  const idleBehaviorStates = ["eating"];
 
   function canWander() {
     if (transitionMode) return false;
@@ -15112,9 +15103,14 @@ applyDevMode();
     }
   }
 
+  function stopIdleBehavior() {
+    if (idleBehaviorStates.includes(currentState)) setState("idle");
+  }
+
   function behaviorTick() {
     if (!canWander()) {
       if (wanderRAF) stopWander();
+      stopIdleBehavior();
       nextBehaviorAt = Date.now() + 1500;
       behaviorMode = "idle";
       return;
@@ -15124,10 +15120,20 @@ applyDevMode();
       behaviorMode = "idle";
       stopWander();
       nextBehaviorAt = Date.now() + 3000 + Math.random() * 5000;
+    } else if (behaviorMode === "idle-animation") {
+      behaviorMode = "idle";
+      stopIdleBehavior();
+      nextBehaviorAt = Date.now() + 3000 + Math.random() * 5000;
     } else {
-      behaviorMode = "wander";
-      startWander();
-      nextBehaviorAt = Date.now() + 4000 + Math.random() * 6000;
+      if (Math.random() < 0.35) {
+        behaviorMode = "idle-animation";
+        setState(idleBehaviorStates[Math.floor(Math.random() * idleBehaviorStates.length)]);
+        nextBehaviorAt = Date.now() + 3200 + Math.random() * 1800;
+      } else {
+        behaviorMode = "wander";
+        startWander();
+        nextBehaviorAt = Date.now() + 4000 + Math.random() * 6000;
+      }
     }
   }
   setInterval(behaviorTick, 300);
