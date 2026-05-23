@@ -15127,6 +15127,7 @@ applyDevMode();
     } else {
       if (Math.random() < 0.35) {
         behaviorMode = "idle-animation";
+        stopWander();
         setState(idleBehaviorStates[Math.floor(Math.random() * idleBehaviorStates.length)]);
         nextBehaviorAt = Date.now() + 3200 + Math.random() * 1800;
       } else {
