@@ -4000,6 +4000,78 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   line-height: 1.6;
 }
 
+.ilgu-home-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.ilgu-home-confirm-box {
+  width: min(360px, calc(100vw - 40px));
+  padding: 22px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp 0.18s ease;
+}
+
+.ilgu-home-confirm-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ilgu-home-confirm-face {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.ilgu-home-confirm-kicker {
+  margin-bottom: 3px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--red-soft);
+}
+
+.ilgu-home-confirm-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.ilgu-home-confirm-desc {
+  margin: 0 0 18px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.ilgu-home-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ilgu-home-confirm-actions .btn {
+  min-height: 42px;
+  padding: 10px 12px;
+}
+
 .contact-confirm-email {
   display: flex;
   align-items: center;
@@ -7500,8 +7572,11 @@ html[data-intro-active="true"] .ilgu-summon-btn {
 }
 
 .ilgu-assistant-panel {
+  position: absolute;
+  right: calc(var(--ilgu-pet-button-w) + 10px);
+  bottom: 8px;
   width: min(282px, calc(100vw - 112px));
-  margin-bottom: 8px;
+  margin-bottom: 0;
   padding: 12px;
   border: 1px solid var(--border2);
   border-radius: 14px;
@@ -7512,6 +7587,11 @@ html[data-intro-active="true"] .ilgu-summon-btn {
   -webkit-backdrop-filter: blur(18px);
   pointer-events: auto;
   display: none;
+}
+
+.ilgu-assistant.panel-right .ilgu-assistant-panel {
+  right: auto;
+  left: calc(100% + 10px);
 }
 
 .ilgu-assistant.is-open .ilgu-assistant-panel {
