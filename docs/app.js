@@ -3634,6 +3634,60 @@ function getApiHolidaySet() {
   return result;
 }
 
+function attachHorizontalSwipeNavigation(root, getOptions) {
+  if (!root || root.dataset.swipeNavBound === "true") return;
+  root.dataset.swipeNavBound = "true";
+
+  let startX = 0;
+  let startY = 0;
+  let pointerId = null;
+  let ignoreSwipe = false;
+
+  const interactiveSelector = [
+    "button",
+    "input",
+    "select",
+    "textarea",
+    "a",
+    "[contenteditable='true']",
+    ".dc-mode-tabs",
+    ".utility-tool-tabs",
+  ].join(",");
+
+  root.addEventListener("pointerdown", (event) => {
+    if (event.pointerType && event.pointerType !== "touch") return;
+    pointerId = event.pointerId;
+    startX = event.clientX;
+    startY = event.clientY;
+    ignoreSwipe = !!event.target.closest(interactiveSelector);
+  }, { passive: true });
+
+  root.addEventListener("pointerup", (event) => {
+    if (pointerId !== event.pointerId || ignoreSwipe) return;
+    pointerId = null;
+
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+
+    const options = getOptions();
+    if (!options || !Array.isArray(options.keys) || !options.current || typeof options.onChange !== "function") return;
+
+    const currentIndex = options.keys.indexOf(options.current);
+    if (currentIndex < 0) return;
+
+    const nextIndex = dx < 0
+      ? Math.min(currentIndex + 1, options.keys.length - 1)
+      : Math.max(currentIndex - 1, 0);
+    const next = options.keys[nextIndex];
+    if (next && next !== options.current) options.onChange(next);
+  }, { passive: true });
+
+  root.addEventListener("pointercancel", () => {
+    pointerId = null;
+  }, { passive: true });
+}
+
 function renderDateCalculator() {
   const root = document.getElementById("date-content");
   const prevLeftScroll = root.querySelector(".date-left")?.scrollTop ?? 0;
@@ -4185,6 +4239,16 @@ function renderDateCalculator() {
     const inputLength = assistantInput.value.length;
     assistantInput.setSelectionRange(inputLength, inputLength);
   }
+
+  attachHorizontalSwipeNavigation(root, () => ({
+    keys: Object.keys(CALC_MODES),
+    current: state.dateCalc.mode,
+    onChange: (nextMode) => {
+      state.dateCalc.mode = nextMode;
+      state.dateCalc.selectMode = "base";
+      renderDateCalculator();
+    },
+  }));
 }
 
 function getFloatingTooltipElement() {
@@ -5184,6 +5248,16 @@ function renderOccupancyCalculator() {
     </div>
   `;
 
+  attachHorizontalSwipeNavigation(root, () => ({
+    keys: ["occupancy", "staffing"],
+    current: occupancyState.tool || "occupancy",
+    onChange: (nextTool) => {
+      occupancyState.tool = nextTool;
+      renderOccupancyCalculator();
+      root.scrollTop = 0;
+    },
+  }));
+
   function attachTabListeners() {
     const tabs = root.querySelector(".utility-tool-tabs");
     if (!tabs) return;
@@ -5208,7 +5282,10 @@ function renderOccupancyCalculator() {
     const staffingResult = getAssistantStaffingResult(targetType, staffingValue);
 
     root.innerHTML = `
-      ${tabsHTML}
+      <div class="utility-mode-header">
+        ${tabsHTML}
+      </div>
+      <div class="utility-tool-panel">
       <section class="occ-calc-card">
         <div class="occ-section-label">대상 구분</div>
         <div class="occ-segmented" data-occ-segmented="staffing">
@@ -5278,6 +5355,7 @@ function renderOccupancyCalculator() {
             <div class="dc-ref-text">그 밖의 대상: 1명. 야간·휴일에 이용되지 않는 것이 확인된 경우 선임 제외 가능</div>
           </div>
         </div>
+      </div>
       </div>
     `;
     attachTabListeners();
@@ -5354,7 +5432,10 @@ function renderOccupancyCalculator() {
   const subList = subTypesByCat[cat];
 
   root.innerHTML = `
-    ${tabsHTML}
+    <div class="utility-mode-header">
+      ${tabsHTML}
+    </div>
+    <div class="utility-tool-panel">
     <section class="occ-calc-card">
       <div class="occ-section-label">용도</div>
       <div class="occ-segmented" data-occ-segmented="category">
@@ -5396,6 +5477,7 @@ function renderOccupancyCalculator() {
 
       <p class="occ-note">※ 복도·계단·화장실 바닥면적은 포함하지 않습니다. 소수점 이하는 반올림합니다.</p>
     </section>
+    </div>
   `;
   attachTabListeners();
 
@@ -14130,6 +14212,7 @@ renderHomeReminders();
 
   let saved = localStorage.getItem('theme') || 'blossom';
   if (saved === 'light') saved = 'official';
+  if (saved === 'summer') saved = 'blossom';
   applyTheme(saved);
 
   document.addEventListener('click', e => {
@@ -16030,6 +16113,7 @@ applyDevMode();
   const STUDYING_SHEET = "./assets/pets/mailpup/references/studying.png";
   const DANCING_SHEET = "./assets/pets/mailpup/references/dancing.png";
   const PUSHUP_SHEET = "./assets/pets/mailpup/references/pushup.png";
+  const SLEEPING_SHEET = "./assets/pets/mailpup/references/sleeping.png";
   const CELL_W = 96;
   const CELL_H = 104;
   const RUNNING_CELL_W = 118;
@@ -16044,6 +16128,8 @@ applyDevMode();
   const DANCING_CELL_H = 118;
   const PUSHUP_CELL_W = 118;
   const PUSHUP_CELL_H = 118;
+  const SLEEPING_CELL_W = 118;
+  const SLEEPING_CELL_H = 118;
   const MIN_PET_SCALE = 0.7;
   const MAX_PET_SCALE = 2;
   const MOBILE_MEDIA = "(max-width: 768px)";
@@ -16057,6 +16143,7 @@ applyDevMode();
     studying: { row: 0, frames: 4, ms: 240, sheet: STUDYING_SHEET, frameW: STUDYING_CELL_W, frameH: STUDYING_CELL_H },
     dancing: { row: 0, frames: 8, ms: 240, sheet: DANCING_SHEET, frameW: DANCING_CELL_W, frameH: DANCING_CELL_H, cols: 4, rows: 2 },
     pushup: { row: 0, frames: 8, ms: 140, sheet: PUSHUP_SHEET, frameW: PUSHUP_CELL_W, frameH: PUSHUP_CELL_H, cols: 4, rows: 2, loops: 4 },
+    sleeping: { row: 0, frames: 4, ms: 280, sheet: SLEEPING_SHEET, frameW: SLEEPING_CELL_W, frameH: SLEEPING_CELL_H, cols: 4, rows: 3, loops: 6 },
     waving: { row: 3, frames: 4, ms: 220 },
     jumping: { row: 4, frames: 5, ms: 190 },
     failed: { row: 5, frames: 8, ms: 220 },
@@ -16244,7 +16331,9 @@ applyDevMode();
     clearInterval(timer);
     paintFrame();
     timer = setInterval(function () {
-      frame = (frame + 1) % states[currentState].frames;
+      const state = states[currentState];
+      if (state.holdLast && frame >= state.frames - 1) return;
+      frame = (frame + 1) % state.frames;
       paintFrame();
     }, states[currentState].ms);
   }
@@ -16725,7 +16814,7 @@ applyDevMode();
   let wanderPauseUntil = 0;
   let nextBehaviorAt = 0;
   let behaviorMode = "idle";
-  const idleBehaviorStates = ["eating", "studying", "dancing", "pushup"];
+  const idleBehaviorStates = ["eating", "studying", "dancing", "pushup", "sleeping"];
 
   function canWander() {
     if (transitionMode) return false;
@@ -16796,7 +16885,7 @@ applyDevMode();
         const idleState = idleBehaviorStates[Math.floor(Math.random() * idleBehaviorStates.length)];
         setState(idleState);
         const state = states[idleState];
-        nextBehaviorAt = Date.now() + (state.loops ? state.frames * state.ms * state.loops + 80 : 3200 + Math.random() * 1800);
+        nextBehaviorAt = Date.now() + (state.durationMs || (state.loops ? state.frames * state.ms * state.loops + 80 : 3200 + Math.random() * 1800));
       } else {
         behaviorMode = "wander";
         startWander();

@@ -1626,6 +1626,23 @@ html[data-theme="official"] #occupancy-content .dc-ref-row:not(:first-child) {
   border-top-color: rgba(0, 48, 135, 0.18);
 }
 
+#occupancy-content {
+  --utility-tool-width: 754px;
+}
+
+#occupancy-content .utility-tool-shell {
+  width: min(100%, var(--utility-tool-width));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#occupancy-content .utility-mode-header,
+#occupancy-content .utility-tool-panel {
+  width: min(100%, var(--utility-tool-width));
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .utility-tool-tabs {
   position: sticky;
   top: 60px;
@@ -1640,6 +1657,33 @@ html[data-theme="official"] #occupancy-content .dc-ref-row:not(:first-child) {
   overflow-x: auto;
   scrollbar-width: none;
 }
+
+#occupancy-content .utility-tool-shell > .utility-tool-tabs {
+  width: 100%;
+  max-width: none;
+  margin: 0 0 14px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+#occupancy-content .utility-mode-header > .utility-tool-tabs {
+  width: 100%;
+  max-width: none;
+  margin: 0 0 14px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+#occupancy-content .utility-tool-shell > .occ-calc-card,
+#occupancy-content .utility-tool-shell > .dc-ref-accordion {
+  width: 100%;
+}
+
+#occupancy-content .utility-tool-panel > .occ-calc-card,
+#occupancy-content .utility-tool-panel > .dc-ref-accordion {
+  width: 100%;
+}
+
 @media (min-width: 900px) {
   .utility-tool-tabs {
     top: 64px;
@@ -3650,7 +3694,8 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
 
   /* ?�?� Occupancy Calculator ??centered single column ?�?� */
   #occupancy-content > *:not(.utility-tool-tabs) {
-    max-width: 600px;
+    width: 100%;
+    max-width: var(--utility-tool-width, 754px);
     margin-left: auto;
     margin-right: auto;
   }
