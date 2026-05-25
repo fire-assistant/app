@@ -3679,6 +3679,7 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
     const next = options.keys[nextIndex];
     if (next && next !== options.current) {
       suppressClick = true;
+      root.dataset.swipeNavDirection = dx < 0 ? "next" : "prev";
       options.onChange(next);
     }
   };
@@ -3719,6 +3720,19 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
     event.preventDefault();
     event.stopPropagation();
   }, true);
+}
+
+function animateSwipeNavigation(root) {
+  const direction = root?.dataset?.swipeNavDirection;
+  if (direction !== "next" && direction !== "prev") return;
+
+  delete root.dataset.swipeNavDirection;
+  root.classList.remove("swipe-tab-enter-next", "swipe-tab-enter-prev");
+  void root.offsetWidth;
+  root.classList.add(direction === "next" ? "swipe-tab-enter-next" : "swipe-tab-enter-prev");
+  window.setTimeout(() => {
+    root.classList.remove("swipe-tab-enter-next", "swipe-tab-enter-prev");
+  }, 260);
 }
 
 function renderDateCalculator() {
@@ -4134,6 +4148,7 @@ function renderDateCalculator() {
       </div>
     </div>
   `;
+  animateSwipeNavigation(root);
 
   const syncDateSplitHeight = () => {
     const calSection = root.querySelector(".dc-cal-section");
@@ -5391,6 +5406,7 @@ function renderOccupancyCalculator() {
       </div>
       </div>
     `;
+    animateSwipeNavigation(root);
     attachTabListeners();
 
     root.querySelectorAll("[data-staffing-target]").forEach((btn) => {
@@ -5512,6 +5528,7 @@ function renderOccupancyCalculator() {
     </section>
     </div>
   `;
+  animateSwipeNavigation(root);
   attachTabListeners();
 
   root.querySelectorAll("[data-occ-cat]").forEach((btn) => {
