@@ -1172,23 +1172,6 @@ function getActiveSteps() {
   return sortBySimpleAfter2004Order(activeSteps);
 }
 
-const screenLabels = {
-  home: "홈",
-  explorerSelect: "소방시설 탐색기",
-  explorer: "소방시설 탐색기",
-  explorerYear: "소방시설 탐색기",
-  date: "법정기한 계산기",
-  inspection: "작동·종합 대상 판독기",
-  multiuseSelect: "다중이용업소 탐색기",
-  multiuse: "다중이용업소 탐색기",
-  guide: "이용 안내",
-  reportGuide: "자체점검 가이드",
-  occupancy: "유틸리티 도구함",
-  lab: "실험실",
-  facilities: "소방시설 도감",
-  layoutLearn: "소방시설 배치 배우기",
-};
-
 let ilguLoadingFrame = null;
 let ilguSpriteTimer = null;
 let ilguSpawnTimer = null;
@@ -1364,11 +1347,6 @@ function showScreen(name) {
     scrollable.scrollTop = 0;
   }
   window.scrollTo(0, 0);
-  if (typeof gtag === "function") {
-    gtag("event", "screen_view", {
-      screen_name: screenLabels[name] || name,
-    });
-  }
   if (!_suppressHistoryPush && name !== 'home') {
     history.pushState({ screen: name }, '');
   }
@@ -5054,37 +5032,33 @@ document.getElementById("open-explorer").addEventListener("click", () => {
 });
 document.getElementById("back-from-explorer-select").addEventListener("click", () => showScreen("home"));
 document.getElementById("explorer-select-simple").addEventListener("click", () => {
-  trackMenuClick("소방시설탐색기-간단한버전");
+  trackMenuClick("소방시설 탐색기-간단한버전");
   explorerRuntime.mode = "default";
   applyExplorerModeUI();
   showScreen("explorer");
   restartExplorer();
 });
 document.getElementById("explorer-select-detailed").addEventListener("click", () => {
+  trackMenuClick("소방시설 탐색기-자세한버전");
   showScreen("explorerYear");
   yearWizardRestart();
 });
 document.getElementById("open-date-calculator").addEventListener("click", () => {
-  trackMenuClick("법정기한계산기");
+  trackMenuClick("법정기한 계산기");
   showScreen("date");
   renderDateCalculator();
-});
-document.getElementById("open-inspection-decoder").addEventListener("click", () => {
-  trackMenuClick("자체점검가이드-작동종합대상판독기");
-  inspectionRestart();
-  showScreen("inspection");
 });
 document.getElementById("open-multiuse-decoder").addEventListener("click", () => {
   showScreen("multiuseSelect");
 });
 document.getElementById("back-from-multiuse-select").addEventListener("click", () => showScreen("home"));
 document.getElementById("multiuse-select-decoder").addEventListener("click", () => {
-  trackMenuClick("다중이용업소해당여부판독기");
+  trackMenuClick("다중이용업소 탐색기-해당여부 판독기");
   multiuseRestart();
   showScreen("multiuse");
 });
 document.getElementById("multiuse-select-safety").addEventListener("click", () => {
-  trackMenuClick("다중이용업소에설치할안전시설탐색");
+  trackMenuClick("다중이용업소 탐색기-안전시설 탐색");
   explorerRuntime.mode = "multiuse-only";
   explorerRuntime.from = "multiuseSelect";
   applyExplorerModeUI();
@@ -5484,7 +5458,7 @@ screens.occupancy = document.getElementById("screen-occupancy");
 screens.lab = document.getElementById("screen-lab");
 screens.facilities = document.getElementById("screen-facilities");
 document.getElementById("open-occupancy-calculator").addEventListener("click", () => {
-  trackMenuClick("유틸리티도구함");
+  trackMenuClick("유틸리티 도구함");
   occupancyState.tool = "occupancy";
   occupancyState.category = "lodging";
   occupancyState.subType = "lodging_bed";
@@ -5494,7 +5468,7 @@ document.getElementById("open-occupancy-calculator").addEventListener("click", (
 });
 document.getElementById("back-from-occupancy").addEventListener("click", () => showScreen("home"));
 document.getElementById("open-facilities").addEventListener("click", () => {
-  trackMenuClick("소방시설도감");
+  trackMenuClick("소방시설 도감");
   showScreen("facilities");
   if (typeof window.initFacilities === "function") window.initFacilities();
 });
@@ -5504,7 +5478,6 @@ document.getElementById("back-from-inspection").addEventListener("click", () => 
   showScreen('reportGuide');
 });
 document.getElementById("open-lab").addEventListener("click", () => {
-  trackMenuClick("실험실");
   showScreen("lab");
 });
 document.getElementById("back-from-lab").addEventListener("click", () => showScreen("home"));
@@ -5517,7 +5490,6 @@ document.getElementById("lab-open-multiuse-safety").addEventListener("click", ()
   restartMultiuseOnly();
 });
 document.getElementById("open-layout-learn").addEventListener("click", () => {
-  trackMenuClick("소방시설배치배우기");
   showScreen("layoutLearn");
   if (typeof window.initLayoutLearn === "function") window.initLayoutLearn();
 });
@@ -7992,7 +7964,6 @@ function yearRenderChoiceStep(step) {
       yearState.answers[step.key] = option.value;
       // 분법 이전/이후 선택 시 허가일 기본값 자동 전환
       if (step.key === "yEraChoice") {
-        trackMenuClick(option.value === "before2004" ? "소방시설탐색기-자세한버전(소방법분법이전)" : "소방시설탐색기-자세한버전(소방법분법이후)");
         yearState.answers.yPermitDate = option.value === "before2004" ? "1992-07-28" : "2019-02-18";
       }
       yearRenderCurrentStep();
@@ -13720,7 +13691,7 @@ document.getElementById("year-restart-from-multiuse").addEventListener("click", 
 document.getElementById("back-from-date").addEventListener("click", () => showScreen("home"));
 document.getElementById("back-from-guide").addEventListener("click", () => showScreen("home"));
 document.getElementById("open-guide").addEventListener("click", () => {
-  trackMenuClick("이용안내");
+  trackMenuClick("이용 안내");
   showScreen("guide");
 });
 
@@ -14965,12 +14936,12 @@ function renderReportGuide(restoreScroll) {
     `;
     root.appendChild(selWrap);
     document.getElementById('rg-sel-inspection').addEventListener('click', function () {
-      trackMenuClick("자체점검가이드-작동종합대상판독기");
+      trackMenuClick("자체점검 가이드-작동·종합 대상 판독기");
       inspectionRestart();
       showScreen('inspection');
     });
     document.getElementById('rg-sel-guide').addEventListener('click', function () {
-      trackMenuClick("자체점검가이드-보고서읽는법");
+      trackMenuClick("자체점검 가이드-보고서 읽는법");
       rgState.mode = 'guide';
       rgState.tab = 'page1';
       renderReportGuide();
