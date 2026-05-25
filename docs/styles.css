@@ -7667,13 +7667,14 @@ html[data-intro-active="true"] .ilgu-summon-btn {
   bottom: -7px;
   width: 14px;
   height: 14px;
-  border-right: 2px solid rgba(236, 236, 236, 0.78);
-  border-bottom: 2px solid rgba(236, 236, 236, 0.78);
+  border-right: 2px solid var(--ilgu-resize-handle-color, rgba(236, 236, 236, 0.78));
+  border-bottom: 2px solid var(--ilgu-resize-handle-color, rgba(236, 236, 236, 0.78));
   background: transparent;
   cursor: nwse-resize;
   opacity: 0;
   pointer-events: auto;
-  transition: opacity var(--transition), transform var(--transition), border-color var(--transition);
+  filter: drop-shadow(0 0 2px var(--ilgu-resize-handle-shadow, rgba(0, 0, 0, 0.7)));
+  transition: opacity var(--transition), transform var(--transition), border-color var(--transition), filter var(--transition);
 }
 
 .ilgu-pet-button:hover .ilgu-resize-handle,
@@ -7685,6 +7686,17 @@ html[data-intro-active="true"] .ilgu-summon-btn {
 .ilgu-resize-handle:active {
   transform: scale(1.08);
   border-color: rgba(255, 106, 95, 0.9);
+}
+
+html[data-theme="light"] .ilgu-resize-handle,
+html[data-theme="official"] .ilgu-resize-handle {
+  --ilgu-resize-handle-color: rgba(217, 48, 37, 0.88);
+  --ilgu-resize-handle-shadow: rgba(255, 255, 255, 0.95);
+}
+
+html[data-theme="blossom"] .ilgu-resize-handle {
+  --ilgu-resize-handle-color: rgba(214, 71, 128, 0.9);
+  --ilgu-resize-handle-shadow: rgba(255, 255, 255, 0.95);
 }
 
 .ilgu-assistant-panel {

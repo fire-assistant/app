@@ -16190,8 +16190,9 @@ applyDevMode();
   const DANCING_CELL_H = 118;
   const PUSHUP_CELL_W = 118;
   const PUSHUP_CELL_H = 118;
-  const SLEEPING_CELL_W = 118;
-  const SLEEPING_CELL_H = 118;
+  const SLEEPING_CELL_W = 144;
+  const SLEEPING_CELL_H = 144;
+  const SLEEPING_RENDER_SCALE = 118 / 144;
   const MIN_PET_SCALE = 0.7;
   const MAX_PET_SCALE = 2;
   const MOBILE_MEDIA = "(max-width: 768px)";
@@ -16205,7 +16206,7 @@ applyDevMode();
     studying: { row: 0, frames: 4, ms: 240, sheet: STUDYING_SHEET, frameW: STUDYING_CELL_W, frameH: STUDYING_CELL_H },
     dancing: { row: 0, frames: 8, ms: 240, sheet: DANCING_SHEET, frameW: DANCING_CELL_W, frameH: DANCING_CELL_H, cols: 4, rows: 2 },
     pushup: { row: 0, frames: 8, ms: 140, sheet: PUSHUP_SHEET, frameW: PUSHUP_CELL_W, frameH: PUSHUP_CELL_H, cols: 4, rows: 2, loops: 4 },
-    sleeping: { row: 0, frames: 4, ms: 280, sheet: SLEEPING_SHEET, frameW: SLEEPING_CELL_W, frameH: SLEEPING_CELL_H, cols: 4, rows: 3, loops: 6 },
+    sleeping: { row: 0, frames: 12, ms: 200, sheet: SLEEPING_SHEET, frameW: SLEEPING_CELL_W, frameH: SLEEPING_CELL_H, cols: 4, rows: 3, loops: 2, renderScale: SLEEPING_RENDER_SCALE },
     waving: { row: 3, frames: 4, ms: 220 },
     jumping: { row: 4, frames: 5, ms: 190 },
     failed: { row: 5, frames: 8, ms: 220 },
@@ -16413,7 +16414,7 @@ applyDevMode();
     sprite.style.height = frameH + "px";
     sprite.style.backgroundImage = 'url("' + sheet + '")';
     sprite.style.backgroundSize = state.sheet ? (frameW * cols) + "px " + (frameH * rows) + "px" : "";
-    sprite.style.transform = (state.flip ? "scaleX(-1) " : "") + "scale(var(--ilgu-sprite-scale))";
+    sprite.style.transform = (state.flip ? "scaleX(-1) " : "") + "scale(var(--ilgu-sprite-scale)) scale(" + (state.renderScale || 1) + ")";
     sprite.style.backgroundPosition = (-frameCol * frameW) + "px " + (-frameRow * frameH) + "px";
   }
 
