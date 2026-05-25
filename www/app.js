@@ -23,11 +23,11 @@ function trackMenuClick(menuName) {
 
 // ── 패치노트 설정 (여기만 수정하면 됩니다) ──────────────────────────────
 const PATCH_NOTES = {
-  version: "v1.0.0",
+  version: "v1.0.1",
   date: "2026-05-24",
   items: [
-    { type: "notice",  text: "법적기준이 아닙니다. 참고만해주세요!" },
-    { type: "new",     text: "① 소방시설 탐색기 '판매시설'용도 추가<br>② 법정기한계산기 공휴일 자동반영<br>③ 벚꽃테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면🌙버튼 누르세요)" },
+    { type: "notice",  text: "이 사이트는 법적기준이 아닙니다. 참고만해주세요!" },
+    { type: "new",     text: "① 소방시설 탐색기 '판매시설, 공동주택'<br>&nbsp;&nbsp;&nbsp;&nbsp;용도 추가<br>② 법정기한계산기 공휴일 자동반영<br>③ 벚꽃테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면🌙버튼 누르세요)" },
     { type: "improve", text: "메인화면 메뉴 배치 및 이름, UI 변경 등" },
     { type: "fix",     text: "유틸리티 도구함 숫자입력 버그 개선" },
   ],
@@ -692,7 +692,7 @@ const CALC_MODES = {
     tableHead: ["구분", "제출 서류"],
     tableBody: [
       ["공통신고<br>서류", "① 소방안전관리보조자 선임신고서"],
-      ["자격증명<br>서류<br>(중 1택)", "① 소방안전관리보조자 자격증 사본<br>② 소방안전관리자 자격증 사본(특,1,2,3급)<br>③ 소방안전관리자 강습교육 수료증 사본(특,1,2,3급,<br>공공기관)<br>④ 국가기술자격증 사본(건축, 위험물, 안전관리 등)<br>⑤ 소방안전 관련 업무에 2년 이상 근무경력 증명서류"],
+      ["자격증명<br>서류<br>(중 1택)", "① 소방안전관리보조자 자격증 사본<br>② 소방안전관리자 자격증 사본(특,1,2,3급)<br>③ 소방안전관리자 강습교육 수료증 사본(특,1,2,3급,공공기관)<br>④ 국가기술자격증 사본(건축, 위험물, 안전관리 등)<br>⑤ 소방안전 관련 업무에 2년 이상 근무경력 증명서류"],
     ],
     extraSections: [
       {
@@ -16128,7 +16128,8 @@ applyDevMode();
   }
 
   const shouldShowAtStart = isDesktopDevModeEnabled() &&
-    localStorage.getItem("ilguAssistantDisabled") !== "true";
+    localStorage.getItem("ilguAssistantDisabled") !== "true" &&
+    localStorage.getItem("ilguAssistantVisible") === "true";
 
   window.addEventListener("appinstalled", function () {
     localStorage.setItem("ilguAssistantVisible", "true");
@@ -16186,6 +16187,13 @@ applyDevMode();
     }
 
     if (localStorage.getItem("ilguAssistantDisabled") === "true") {
+      closePanel();
+      root.style.display = "none";
+      setState("idle");
+      return true;
+    }
+
+    if (localStorage.getItem("ilguAssistantVisible") !== "true") {
       closePanel();
       root.style.display = "none";
       setState("idle");

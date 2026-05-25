@@ -3051,16 +3051,29 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
 }
 #date-content .calc-table td { background: var(--surface); }
 #date-content .calc-table tr:last-child td { border-bottom: none; }
+#date-content .dc-ref-body table.calc-table-manager {
+  table-layout: auto;
+}
 #date-content .calc-table-manager th:first-child,
 #date-content .calc-table-manager td:first-child {
-  width: 24%;
+  width: auto;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+#date-content .calc-table:not(.calc-table-manager):not(.calc-table-noncompliance) th:first-child,
+#date-content .calc-table:not(.calc-table-manager):not(.calc-table-noncompliance) td:first-child {
+  width: 26%;
+  word-break: keep-all;
 }
 #date-content .calc-table-manager th,
 #date-content .calc-table-manager td {
   vertical-align: top;
 }
 #date-content .calc-table-manager td:last-child {
-  line-height: 1.65;
+  line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: normal;
 }
 #date-content .dc-doc-item {
   display: block;
@@ -3068,7 +3081,7 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   text-indent: -1.35em;
 }
 #date-content .dc-doc-item + .dc-doc-item {
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 /* 보조자 인원 계산기 (별도 카드) */
