@@ -3642,33 +3642,30 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
   let startY = 0;
   let pointerId = null;
   let ignoreSwipe = false;
+  let suppressClick = false;
 
   const interactiveSelector = [
-    "button",
     "input",
     "select",
     "textarea",
-    "a",
     "[contenteditable='true']",
-    ".dc-mode-tabs",
-    ".utility-tool-tabs",
   ].join(",");
 
-  root.addEventListener("pointerdown", (event) => {
-    if (event.pointerType && event.pointerType !== "touch") return;
-    pointerId = event.pointerId;
-    startX = event.clientX;
-    startY = event.clientY;
-    ignoreSwipe = !!event.target.closest(interactiveSelector);
-  }, { passive: true });
+  const start = (x, y, target, id = null) => {
+    pointerId = id;
+    startX = x;
+    startY = y;
+    ignoreSwipe = !!target.closest?.(interactiveSelector);
+  };
 
-  root.addEventListener("pointerup", (event) => {
-    if (pointerId !== event.pointerId || ignoreSwipe) return;
+  const finish = (x, y, id = null) => {
+    if (id !== null && pointerId !== id) return;
+    if (ignoreSwipe) return;
     pointerId = null;
 
-    const dx = event.clientX - startX;
-    const dy = event.clientY - startY;
-    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+    const dx = x - startX;
+    const dy = y - startY;
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
 
     const options = getOptions();
     if (!options || !Array.isArray(options.keys) || !options.current || typeof options.onChange !== "function") return;
@@ -3680,12 +3677,48 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
       ? Math.min(currentIndex + 1, options.keys.length - 1)
       : Math.max(currentIndex - 1, 0);
     const next = options.keys[nextIndex];
-    if (next && next !== options.current) options.onChange(next);
+    if (next && next !== options.current) {
+      suppressClick = true;
+      options.onChange(next);
+    }
+  };
+
+  root.addEventListener("pointerdown", (event) => {
+    if (event.pointerType && event.pointerType !== "touch") return;
+    start(event.clientX, event.clientY, event.target, event.pointerId);
+  }, { passive: true });
+
+  root.addEventListener("pointerup", (event) => {
+    if (pointerId !== event.pointerId) return;
+    finish(event.clientX, event.clientY, event.pointerId);
+  }, { passive: true });
+
+  root.addEventListener("touchstart", (event) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+    start(touch.clientX, touch.clientY, event.target);
+  }, { passive: true });
+
+  root.addEventListener("touchend", (event) => {
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+    finish(touch.clientX, touch.clientY);
   }, { passive: true });
 
   root.addEventListener("pointercancel", () => {
     pointerId = null;
   }, { passive: true });
+
+  root.addEventListener("touchcancel", () => {
+    pointerId = null;
+  }, { passive: true });
+
+  root.addEventListener("click", (event) => {
+    if (!suppressClick) return;
+    suppressClick = false;
+    event.preventDefault();
+    event.stopPropagation();
+  }, true);
 }
 
 function renderDateCalculator() {
