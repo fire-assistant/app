@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>예방업무 어시스턴트</title>
-  <link rel="stylesheet" href="./styles.css?v=284">
+  <link rel="stylesheet" href="./styles.css?v=285">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap">
@@ -52,7 +52,7 @@
         window.location.reload();
       }
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js?v=284', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('./sw.js?v=285', { updateViaCache: 'none' })
           .then(function(reg) {
             reg.update();
             document.addEventListener('visibilitychange', function() {
@@ -1052,9 +1052,9 @@
   </div>
 
   <script src="./pdf.min.js"></script>
-  <script src="./app.js?v=284"></script>
-  <script src="./facilities-data.js"></script>
-  <script src="./facilities.js"></script>
+  <script src="./app.js?v=285"></script>
+  <script src="./facilities-data.js?v=285"></script>
+  <script src="./facilities.js?v=285"></script>
   <script src="./layout-learn.js"></script>
   <script>
   (() => {

@@ -25,6 +25,7 @@
   backBtn.addEventListener('click', () => showScreen('screen-home'));
 
   let initialized = false;
+  let activeTabIndex = 0;
 
   function init() {
     if (initialized) return;
@@ -52,17 +53,30 @@
       contentArea.appendChild(panel);
     });
 
+    function activateTab(idx) {
+      activeTabIndex = Number(idx);
+      tabBar.querySelectorAll('.rg-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.idx === String(activeTabIndex)));
+      contentArea.querySelectorAll('.fac-panel').forEach(p => p.classList.toggle('hidden', p.dataset.idx !== String(activeTabIndex)));
+      contentArea.scrollTop = 0;
+      if (typeof animateSwipeNavigation === 'function') animateSwipeNavigation(contentEl);
+    }
+
     tabBar.addEventListener('click', e => {
       const btn = e.target.closest('.rg-tab-btn');
       if (!btn) return;
-      const idx = btn.dataset.idx;
-      tabBar.querySelectorAll('.rg-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.idx === idx));
-      contentArea.querySelectorAll('.fac-panel').forEach(p => p.classList.toggle('hidden', p.dataset.idx !== idx));
-      contentArea.scrollTop = 0;
+      activateTab(btn.dataset.idx);
     });
 
     contentEl.appendChild(tabBar);
     contentEl.appendChild(contentArea);
+
+    if (typeof attachHorizontalSwipeNavigation === 'function') {
+      attachHorizontalSwipeNavigation(contentEl, () => ({
+        keys: FACILITIES_DATA.map((_, i) => String(i)),
+        current: String(activeTabIndex),
+        onChange: activateTab,
+      }));
+    }
   }
 
   window.initFacilities = init;

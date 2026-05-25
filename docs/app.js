@@ -15099,6 +15099,17 @@ function renderReportGuide(restoreScroll) {
     { id: 'sections', main: '4-8페이지', sub: '점검표' },
   ];
 
+  attachHorizontalSwipeNavigation(root, function () {
+    return {
+      keys: tabDefs.map(function (t) { return t.id; }),
+      current: rgState.tab,
+      onChange: function (nextTab) {
+        rgState.tab = nextTab;
+        renderReportGuide();
+      },
+    };
+  });
+
   var tabBar = document.createElement('div');
   tabBar.className = 'rg-tab-bar';
 
@@ -15129,6 +15140,7 @@ function renderReportGuide(restoreScroll) {
   if (rgState.tab === 'sections')  renderRgSections(content);
 
   root.appendChild(content);
+  animateSwipeNavigation(root);
 
   // 스크롤 위치 복원
   if (savedScroll > 0) {

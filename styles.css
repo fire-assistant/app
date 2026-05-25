@@ -155,15 +155,19 @@ input:focus-visible {
 }
 
 .scroll-content.swipe-tab-enter-next > *,
-.scroll-content.swipe-tab-enter-prev > * {
+.scroll-content.swipe-tab-enter-prev > *,
+.rg-outer.swipe-tab-enter-next > *,
+.rg-outer.swipe-tab-enter-prev > * {
   will-change: opacity, transform;
 }
 
-.scroll-content.swipe-tab-enter-next > * {
+.scroll-content.swipe-tab-enter-next > *,
+.rg-outer.swipe-tab-enter-next > * {
   animation: swipeTabInNext 0.22s cubic-bezier(0.22, 0.85, 0.28, 1) both;
 }
 
-.scroll-content.swipe-tab-enter-prev > * {
+.scroll-content.swipe-tab-enter-prev > *,
+.rg-outer.swipe-tab-enter-prev > * {
   animation: swipeTabInPrev 0.22s cubic-bezier(0.22, 0.85, 0.28, 1) both;
 }
 
@@ -191,7 +195,9 @@ input:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   .scroll-content.swipe-tab-enter-next > *,
-  .scroll-content.swipe-tab-enter-prev > * {
+  .scroll-content.swipe-tab-enter-prev > *,
+  .rg-outer.swipe-tab-enter-next > *,
+  .rg-outer.swipe-tab-enter-prev > * {
     animation: none;
   }
 }
