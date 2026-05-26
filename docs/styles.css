@@ -34,6 +34,7 @@
 
 html {
   height: 100%;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -1759,6 +1760,7 @@ html[data-theme="official"] #occupancy-content .dc-ref-row:not(:first-child) {
     padding: 0 20px 24px;
   }
   #occupancy-content {
+    width: 100%;
     max-width: 1280px;
     margin: 0 auto;
   }
