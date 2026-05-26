@@ -3732,7 +3732,7 @@ function animateSwipeNavigation(root) {
   root.classList.add(direction === "next" ? "swipe-tab-enter-next" : "swipe-tab-enter-prev");
   window.setTimeout(() => {
     root.classList.remove("swipe-tab-enter-next", "swipe-tab-enter-prev");
-  }, 260);
+  }, 380);
 }
 
 function renderDateCalculator() {
