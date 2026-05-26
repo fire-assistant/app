@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>예방업무 어시스턴트</title>
-  <link rel="stylesheet" href="./styles.css?v=293">
+  <link rel="stylesheet" href="./styles.css?v=296">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap">
@@ -52,7 +52,7 @@
         window.location.reload();
       }
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js?v=293', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('./sw.js?v=296', { updateViaCache: 'none' })
           .then(function(reg) {
             reg.update();
             document.addEventListener('visibilitychange', function() {
@@ -233,13 +233,12 @@
     </div>
 
     <div id="year-prog-wrap" class="wiz-prog-wrap">
-      <div class="wiz-step-info">
-        <span id="year-progress-text">1 / 10</span>
-        <span id="year-progress-percent">10%</span>
-      </div>
-      <div class="wiz-prog-bar">
-        <div id="year-progress-bar" class="wiz-prog-fill" style="width:10%;"></div>
-      </div>
+      <ol class="phase-steps" id="year-phase-steps">
+        <li><span class="ph-dot"></span><span class="ph-label">용도</span></li>
+        <li><span class="ph-dot"></span><span class="ph-label">규모</span></li>
+        <li><span class="ph-dot"></span><span class="ph-label">특수조건</span></li>
+        <li><span class="ph-dot"></span><span class="ph-label">결과</span></li>
+      </ol>
     </div>
 
     <div class="scroll-content">
@@ -321,14 +320,13 @@
       <span id="explorer-mode-badge" class="hidden" style="margin-left:8px;"></span>
     </div>
 
-    <div class="wiz-prog-wrap">
-      <div class="wiz-step-info">
-        <span id="progress-text">1 / 8</span>
-        <span id="progress-percent">12%</span>
-      </div>
-      <div class="wiz-prog-bar">
-        <div id="progress-bar" class="wiz-prog-fill"></div>
-      </div>
+    <div id="explorer-prog-wrap" class="wiz-prog-wrap">
+      <ol class="phase-steps" id="phase-steps">
+        <li><span class="ph-dot"></span><span class="ph-label">용도</span></li>
+        <li><span class="ph-dot"></span><span class="ph-label">규모</span></li>
+        <li><span class="ph-dot"></span><span class="ph-label">특수조건</span></li>
+        <li><span class="ph-dot"></span><span class="ph-label">결과</span></li>
+      </ol>
     </div>
 
     <div class="scroll-content">
@@ -373,25 +371,6 @@
           <button id="open-multiuse-safety" class="btn btn-primary hidden" type="button" style="flex:1;">안전시설 확인</button>
           <button id="result-back-to-select" class="btn btn-ghost" type="button" style="flex:1;">이전</button>
           <button id="restart-explorer" class="btn btn-ghost" type="button" style="flex:1;margin-top:0;">다시 입력</button>
-        </div>
-        <button id="open-viz-card" class="btn btn-primary" type="button" style="width:100%;margin-top:8px;">소방시설 설치 시각화 하기</button>
-      </section>
-
-      <section id="viz-card" class="result-card hidden">
-        <div class="rc-grade g-sp">소방시설 설치 시각화</div>
-        <div id="viz-summary" class="info-box blue"></div>
-        <div class="viz-layout">
-          <div class="viz-building-wrap">
-            <p class="section-label" style="margin-top:0;text-align:center;">건물 단면도</p>
-            <svg id="viz-building-svg" style="width:100%;color:#333;display:block;"></svg>
-          </div>
-          <div class="viz-list-wrap">
-            <p class="section-label" style="margin-top:0;">설치 필요한 소방시설</p>
-            <div id="viz-facility-list" style="display:flex;flex-direction:column;gap:6px;"></div>
-          </div>
-        </div>
-        <div style="margin-top:12px;">
-          <button id="viz-back-to-result" class="btn btn-ghost" type="button" style="width:100%;">← 판정 결과로</button>
         </div>
       </section>
 
@@ -449,7 +428,7 @@
         </div>
         <div class="guide-hero-btns">
           <button id="open-intro-video" class="guide-intro-video-btn" type="button">소개 영상 보기</button>
-          <button id="open-dev-letter" class="guide-intro-video-btn" type="button" hidden>개발자 인사말</button>
+          <button id="open-dev-letter" class="guide-intro-video-btn" type="button" hidden>개발자 이야기</button>
         </div>
       </div>
 
@@ -698,30 +677,18 @@
   <section id="screen-developer-letter" class="screen">
     <div class="topbar">
       <button id="back-from-dev-letter" class="back-btn" type="button">←</button>
-      <span class="tb-title">개발자 인사말</span>
+      <span class="tb-title">개발자 이야기</span>
     </div>
     <div class="scroll-content">
       <div class="devletter-paper">
         <div class="devletter-head">
-          <div class="devletter-avatar" aria-hidden="true">
-            <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="devletter-avatar-bg" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#e9e7e3"/>
-                  <stop offset="100%" stop-color="#cfcdc8"/>
-                </linearGradient>
-              </defs>
-              <rect width="110" height="110" fill="url(#devletter-avatar-bg)"/>
-              <circle cx="55" cy="42" r="18" fill="#ffffff" opacity="0.92"/>
-              <path d="M20,110 C20,80 35,68 55,68 C75,68 90,80 90,110 Z" fill="#ffffff" opacity="0.92"/>
-            </svg>
-          </div>
-          <div class="devletter-intro">
-            <p id="devletter-intro-text"></p>
-          </div>
+          <span class="devletter-kicker">운영자 노트</span>
+          <h1 class="devletter-title">같은 업무를 조금 덜 번거롭게</h1>
+          <p class="devletter-lead">대단한 전문가의 소개가 아니라, 같은 현장에서 일하는 한 대원이 남기는 짧은 이야기입니다.</p>
+          <p id="devletter-intro-text" class="devletter-intro"></p>
         </div>
 
-        <div class="devletter-divider">— 본문 —</div>
+        <div class="devletter-divider">이런 마음으로 만들었습니다</div>
 
         <div id="devletter-chapters" class="devletter-chapters"></div>
 
@@ -1052,9 +1019,9 @@
   </div>
 
   <script src="./pdf.min.js"></script>
-  <script src="./app.js?v=293"></script>
-  <script src="./facilities-data.js?v=293"></script>
-  <script src="./facilities.js?v=293"></script>
+  <script src="./app.js?v=296"></script>
+  <script src="./facilities-data.js?v=296"></script>
+  <script src="./facilities.js?v=296"></script>
   <script src="./layout-learn.js"></script>
   <script>
   (() => {

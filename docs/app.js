@@ -156,91 +156,6 @@ const steps = [
       { value: "no", label: "없음", description: "24시간 상주 근무자가 없음" },
     ],
   },
-  {
-    key: "hasMultiuseBusiness",
-    title: "다중이용업소가 있나요?",
-    help: "다중이용업소가 있으면 설치해야 하는 소방시설을 별도로 표시합니다.",
-    type: "choice",
-    onlyFor: "neighborhood",
-    options: [
-      { value: "yes", label: "예", description: "다중이용업소 추가 설치시설까지 확인" },
-      { value: "no", label: "아니오", description: "기존 근린생활시설 결과만 표시" },
-    ],
-  },
-  {
-    key: "multiuseSimpleSprinklerCheck",
-    title: "간이스프링클러설비 설치 대상인지 확인합니다.",
-    help: "해당되는 항목은 중복 선택할 수 있습니다. 하나라도 해당하면 간이스프링클러설비 설치대상입니다.",
-    type: "compound",
-    onlyFor: "neighborhood",
-  },
-  {
-    key: "multiuseOnSecondToTenthFloor",
-    title: "다중이용업소가 2층~10층 사이에 설치돼있나요?",
-    help: "맞다면 피난기구를 설치해야 합니다.",
-    type: "choice",
-    onlyFor: "neighborhood",
-    options: [
-      { value: "yes", label: "예", description: "2층부터 10층 사이에 설치돼 있음" },
-      { value: "no", label: "아니오", description: "해당 층 범위가 아님" },
-    ],
-  },
-  {
-    key: "multiuseOnGroundOrRefugeFloor",
-    title: "지상 1층이나 피난층에 설치돼있나요?",
-    help: "산후조리업이나 고시원에 해당할 때만 확인하며, 맞다면 간이스프링클러설비 대상에서 제외합니다.",
-    type: "choice",
-    onlyFor: "neighborhood",
-    options: [
-      { value: "yes", label: "예", description: "지상 1층 또는 피난층에 설치돼 있음" },
-      { value: "no", label: "아니오", description: "지상 1층 또는 피난층이 아님" },
-    ],
-  },
-  {
-    key: "multiuseUsesAV",
-    title: "'노래반주기 등 영상음향장치를 사용하는 영업장'인가요?",
-    help: "맞다면 자동화재탐지설비와 영상음향차단장치를 설치해야 합니다.",
-    type: "choice",
-    onlyFor: "neighborhood",
-    options: [
-      { value: "yes", label: "예", description: "영상음향장치를 사용함" },
-      { value: "no", label: "아니오", description: "영상음향장치를 사용하지 않음" },
-    ],
-  },
-  {
-    key: "multiuseHasGasFacility",
-    title: "가스시설을 사용하는 주방이나 난방시설이 있나요?",
-    help: "맞다면 가스누설경보기를 설치해야 합니다.",
-    type: "choice",
-    onlyFor: "neighborhood",
-    options: [
-      { value: "yes", label: "예", description: "가스시설을 사용함" },
-      { value: "no", label: "아니오", description: "가스시설을 사용하지 않음" },
-    ],
-  },
-  {
-    key: "multiuseHasRooms",
-    title: "영업장 내부에 구획된 실(室)이 있나요?",
-    help: "노래방 룸, 고시원 방 등 별도로 구획된 공간이 있는 경우입니다. 해당하면 영업장 내부 피난통로를 확보해야 합니다.",
-    type: "choice",
-    onlyFor: "neighborhood",
-    options: [
-      { value: "yes", label: "예", description: "구획된 룸·방 등이 있음" },
-      { value: "no", label: "아니오", description: "구획된 실이 없음" },
-    ],
-  },
-  {
-    key: "multiuseHasEvacuationRoute",
-    title: "영업장 내부 피난통로 또는 복도가 있는 영업장인가요?",
-    help: "맞다면 피난유도선을 설치해야 합니다.",
-    type: "choice",
-    onlyFor: "neighborhood",
-    options: [
-      { value: "yes", label: "예", description: "피난통로 또는 복도가 있음" },
-      { value: "no", label: "아니오", description: "해당 통로가 없음" },
-    ],
-  },
-
   // ── 숙박시설 전용 스텝 ──
   {
     key: "lodgingIsTouristHotel",
@@ -475,6 +390,76 @@ const steps = [
   },
   { key: "medicalFirstSecondFloorArea", title: "지상 1층과 2층의 바닥면적 합계는 얼마인가요?", help: "연면적이 9,000㎡ 이상일 때만 묻습니다.", type: "number", onlyFor: "medical", min: 0, step: 0.1, placeholder: "예: 9200" },
   { key: "medicalDetailSet", title: "주차·전기실 추가 조건을 입력해 주세요.", help: "해당 공간이 없으면 0으로 입력해 주세요.", type: "compound", onlyFor: "medical" },
+];
+
+// 다중이용업소 전용 탐색기(multiuse-only 모드)에서만 쓰는 질문. 메인 탐색기 steps[]와 완전 분리.
+const multiuseSteps = [
+  {
+    key: "multiuseSimpleSprinklerCheck",
+    title: "간이스프링클러설비 설치 대상인지 확인합니다.",
+    help: "해당되는 항목은 중복 선택할 수 있습니다. 하나라도 해당하면 간이스프링클러설비 설치대상입니다.",
+    type: "compound",
+  },
+  {
+    key: "multiuseOnSecondToTenthFloor",
+    title: "다중이용업소가 2층~10층 사이에 설치돼있나요?",
+    help: "맞다면 피난기구를 설치해야 합니다.",
+    type: "choice",
+    options: [
+      { value: "yes", label: "예", description: "2층부터 10층 사이에 설치돼 있음" },
+      { value: "no", label: "아니오", description: "해당 층 범위가 아님" },
+    ],
+  },
+  {
+    key: "multiuseOnGroundOrRefugeFloor",
+    title: "지상 1층이나 피난층에 설치돼있나요?",
+    help: "산후조리업이나 고시원에 해당할 때만 확인하며, 맞다면 간이스프링클러설비 대상에서 제외합니다.",
+    type: "choice",
+    options: [
+      { value: "yes", label: "예", description: "지상 1층 또는 피난층에 설치돼 있음" },
+      { value: "no", label: "아니오", description: "지상 1층 또는 피난층이 아님" },
+    ],
+  },
+  {
+    key: "multiuseUsesAV",
+    title: "'노래반주기 등 영상음향장치를 사용하는 영업장'인가요?",
+    help: "맞다면 자동화재탐지설비와 영상음향차단장치를 설치해야 합니다.",
+    type: "choice",
+    options: [
+      { value: "yes", label: "예", description: "영상음향장치를 사용함" },
+      { value: "no", label: "아니오", description: "영상음향장치를 사용하지 않음" },
+    ],
+  },
+  {
+    key: "multiuseHasGasFacility",
+    title: "가스시설을 사용하는 주방이나 난방시설이 있나요?",
+    help: "맞다면 가스누설경보기를 설치해야 합니다.",
+    type: "choice",
+    options: [
+      { value: "yes", label: "예", description: "가스시설을 사용함" },
+      { value: "no", label: "아니오", description: "가스시설을 사용하지 않음" },
+    ],
+  },
+  {
+    key: "multiuseHasRooms",
+    title: "영업장 내부에 구획된 실(室)이 있나요?",
+    help: "노래방 룸, 고시원 방 등 별도로 구획된 공간이 있는 경우입니다. 해당하면 영업장 내부 피난통로를 확보해야 합니다.",
+    type: "choice",
+    options: [
+      { value: "yes", label: "예", description: "구획된 룸·방 등이 있음" },
+      { value: "no", label: "아니오", description: "구획된 실이 없음" },
+    ],
+  },
+  {
+    key: "multiuseHasEvacuationRoute",
+    title: "영업장 내부 피난통로 또는 복도가 있는 영업장인가요?",
+    help: "맞다면 피난유도선을 설치해야 합니다.",
+    type: "choice",
+    options: [
+      { value: "yes", label: "예", description: "피난통로 또는 복도가 있음" },
+      { value: "no", label: "아니오", description: "해당 통로가 없음" },
+    ],
+  },
 ];
 
 const state = {
@@ -840,7 +825,6 @@ function applyExplorerModeUI() {
 const questionCard = document.getElementById("question-card");
 const resultCard = document.getElementById("result-card");
 const multiuseSafetyCard = document.getElementById("multiuse-safety-card");
-const vizCard = document.getElementById("viz-card");
 
 const explorerViewState = {
   lastInput: null,
@@ -992,16 +976,6 @@ const simpleAfter2004StepOrder = new Map([
   "firstSecondFloorArea",
   "detailSet",
 
-  // 다중이용업소 질문
-  "hasMultiuseBusiness",
-  "multiuseSimpleSprinklerCheck",
-  "multiuseOnSecondToTenthFloor",
-  "multiuseOnGroundOrRefugeFloor",
-  "multiuseUsesAV",
-  "multiuseHasGasFacility",
-  "multiuseHasRooms",
-  "multiuseHasEvacuationRoute",
-
   // 공통 건축물 정보 - 숙박시설
   "lodgingTotalArea",
   "lodgingAboveGroundFloors",
@@ -1019,16 +993,6 @@ const simpleAfter2004StepOrder = new Map([
 
   // 가스시설 질문 - 숙박시설
   "lodgingHasGasFacility",
-
-  // 다중이용업소 질문 - 숙박시설
-  "lodgingHasMultiuseBusiness",
-  "lodgingMultiuseSimpleSprinklerCheck",
-  "lodgingMultiuseOnSecondToTenthFloor",
-  "lodgingMultiuseOnGroundOrRefugeFloor",
-  "lodgingMultiuseUsesAV",
-  "lodgingMultiuseHasGasFacility",
-  "lodgingMultiuseHasRooms",
-  "lodgingMultiuseHasEvacuationRoute",
 
   // 공통 건축물 정보 - 노유자시설
   "elderlyTotalArea",
@@ -1068,8 +1032,51 @@ const simpleAfter2004StepOrder = new Map([
   // 가스시설 질문 - 의료시설
   "medicalHasGasFacility",
 ].map((key, index) => [key, index]));
+// ── 단계(phase) 정의: 용도(0) / 규모(1) / 특수조건(2). 결과(3)은 UI 도착표시 전용. ──
+// 정렬 1순위 = phase, 2순위 = 기존 순서맵.
+// → 세부유형(정체) 질문이 자동으로 ①용도로 당겨지고(B안 정밀), 단조증가가 구조적으로 보장됨.
+// USE/SIZE에 없는 모든 키는 기본 특수조건(2). 면적 자동산정 해제 묶음은 기존 +100000 오프셋으로 특수조건 내 맨 뒤 유지.
+const PHASE_USE_KEYS = new Set([
+  // 간단버전
+  "occupancyType", "facilitySubtype",
+  "lodgingIsTouristHotel", "elderlySubtype", "medicalSubtype",
+  // 자세한(연도별)버전
+  "yEraChoice", "yPermitDate", "yOccupancyType", "yApartmentSubtype",
+  "yFacilitySubtype", "yBefore2004FacilitySubtype",
+  "yLodgingIsTouristHotel", "yBefore2004LodgingIsTouristHotel", "yLodgingIsLiving",
+  "yElderlySubtype", "yMedicalSubtype", "yBefore2004MedicalSubtype",
+  "ySalesIsTraditionalMarket", "ySalesIsLargeStore",
+  "yReligiousIsSacrificialBuilding",
+]);
+const PHASE_SIZE_KEYS = new Set([
+  // 간단버전
+  "totalArea", "aboveGroundFloors", "basementFloors", "hasWindowlessFloor", "neighborhoodArea",
+  "lodgingTotalArea", "lodgingAboveGroundFloors", "lodgingBasementFloors", "lodgingHasWindowlessFloor", "lodgingArea",
+  "elderlyTotalArea", "elderlyAboveGroundFloors", "elderlyBasementFloors", "elderlyHasWindowlessFloor", "elderlyArea",
+  "medicalTotalArea", "medicalAboveGroundFloors", "medicalBasementFloors", "medicalHasWindowlessFloor", "medicalArea",
+  // 자세한버전
+  "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet",
+  "yNeighborhoodArea", "yLodgingArea", "yElderlyArea", "yMedicalArea", "ySalesArea", "yBefore2004SalesArea",
+  "yAptBuildingCount", "yAptHouseholdCount", "yBefore2004AptHouseholds",
+]);
+function phaseOf(key) {
+  if (PHASE_USE_KEYS.has(key)) return 0;
+  if (PHASE_SIZE_KEYS.has(key)) return 1;
+  return 2; // 특수조건 (기본값)
+}
+// 단계바 4칸(<li>)에 done/active 클래스 적용. phaseIdx: 0=용도 1=규모 2=특수조건 3=결과
+function renderPhaseBar(container, phaseIdx) {
+  if (!container) return;
+  [...container.children].forEach((li, i) => {
+    li.classList.toggle("is-done", i < phaseIdx);
+    li.classList.toggle("is-active", i === phaseIdx);
+  });
+}
+
 function sortBySimpleAfter2004Order(activeSteps) {
   return [...activeSteps].sort((a, b) => {
+    const pa = phaseOf(a.key), pb = phaseOf(b.key);
+    if (pa !== pb) return pa - pb;
     const ai = simpleAfter2004StepOrder.get(a.key) ?? Number.MAX_SAFE_INTEGER;
     const bi = simpleAfter2004StepOrder.get(b.key) ?? Number.MAX_SAFE_INTEGER;
     if (ai !== bi) return ai - bi;
@@ -1079,9 +1086,7 @@ function sortBySimpleAfter2004Order(activeSteps) {
 
 function getActiveSteps() {
   if (explorerRuntime.mode === "multiuse-only") {
-    const MULTIUSE_KEYS = ["multiuseSimpleSprinklerCheck", "multiuseOnSecondToTenthFloor", "multiuseOnGroundOrRefugeFloor", "multiuseUsesAV", "multiuseHasGasFacility", "multiuseHasRooms", "multiuseHasEvacuationRoute"];
-    return steps.filter((step) => {
-      if (!MULTIUSE_KEYS.includes(step.key)) return false;
+    return multiuseSteps.filter((step) => {
       if (step.key === "multiuseOnGroundOrRefugeFloor") {
         return state.answers.multiuseIsPostpartum === "yes" || state.answers.multiuseIsGosiwon === "yes";
       }
@@ -1091,15 +1096,8 @@ function getActiveSteps() {
       return true;
     });
   }
+  // 숙박시설 다중이용업소 질문은 steps[]에 정의는 있으나 간단 탐색기에서는 표시하지 않음(연도별 탐색기에서만 사용).
   const EXPLORER_MULTIUSE_KEYS = [
-    "hasMultiuseBusiness",
-    "multiuseSimpleSprinklerCheck",
-    "multiuseOnSecondToTenthFloor",
-    "multiuseOnGroundOrRefugeFloor",
-    "multiuseUsesAV",
-    "multiuseHasGasFacility",
-    "multiuseHasRooms",
-    "multiuseHasEvacuationRoute",
     "lodgingHasMultiuseBusiness",
     "lodgingMultiuseSimpleSprinklerCheck",
     "lodgingMultiuseOnSecondToTenthFloor",
@@ -1118,16 +1116,6 @@ function getActiveSteps() {
     if (step.key === "firstSecondFloorArea") return toNumber(state.answers.totalArea) >= 9000;
     if (step.key === "postpartumAreaRange") return state.answers.facilitySubtype === "postpartum";
     if (step.key === "has24HourStaff") return ["clinicInpatient", "postpartum"].includes(state.answers.facilitySubtype);
-    if (step.key === "multiuseOnGroundOrRefugeFloor") {
-      return state.answers.hasMultiuseBusiness === "yes"
-        && (state.answers.multiuseIsPostpartum === "yes" || state.answers.multiuseIsGosiwon === "yes");
-    }
-    if (step.key === "multiuseOnSecondToTenthFloor") {
-      return state.answers.hasMultiuseBusiness === "yes" && state.answers.multiuseInBasement !== "yes";
-    }
-    if (["multiuseSimpleSprinklerCheck", "multiuseUsesAV", "multiuseHasGasFacility", "multiuseHasRooms", "multiuseHasEvacuationRoute"].includes(step.key)) {
-      return state.answers.hasMultiuseBusiness === "yes";
-    }
     // 숙박시설 전용 조건
     if (step.key === "lodgingHasLargeFloorFor1000") {
       // 이미 전층 스프링클러 대상이면 skip
@@ -1137,17 +1125,6 @@ function getActiveSteps() {
       return la < 600 && ag < 6 && totalF < 6;
     }
     if (step.key === "lodgingFirstSecondFloorArea") return toNumber(state.answers.lodgingTotalArea) >= 9000;
-
-    if (step.key === "lodgingMultiuseOnGroundOrRefugeFloor") {
-      return state.answers.lodgingHasMultiuseBusiness === "yes"
-        && (state.answers.lodgingMultiuseIsPostpartum === "yes" || state.answers.lodgingMultiuseIsGosiwon === "yes");
-    }
-    if (step.key === "lodgingMultiuseOnSecondToTenthFloor") {
-      return state.answers.lodgingHasMultiuseBusiness === "yes" && state.answers.lodgingMultiuseInBasement !== "yes";
-    }
-    if (["lodgingMultiuseSimpleSprinklerCheck", "lodgingMultiuseUsesAV", "lodgingMultiuseHasGasFacility", "lodgingMultiuseHasRooms", "lodgingMultiuseHasEvacuationRoute"].includes(step.key)) {
-      return state.answers.lodgingHasMultiuseBusiness === "yes";
-    }
     // 노유자시설 전용 조건
     if (step.key === "elderlyHasGrillWindow") {
       return state.answers.elderlySubtype === "general"
@@ -1357,13 +1334,16 @@ function getTotalFloors() {
 }
 
 function updateProgress() {
+  const wrap = document.getElementById("explorer-prog-wrap");
+  // 다중이용업소 전용 탐색기는 단계 개념이 달라 단계바 숨김
+  if (explorerRuntime.mode === "multiuse-only") {
+    if (wrap) wrap.classList.add("hidden");
+    return;
+  }
+  if (wrap) wrap.classList.remove("hidden");
   const activeSteps = getActiveSteps();
-  const current = state.currentStep + 1;
-  const total = activeSteps.length;
-  const percent = Math.round((current / total) * 100);
-  document.getElementById("progress-text").textContent = `${current} / ${total}`;
-  document.getElementById("progress-percent").textContent = `${percent}%`;
-  document.getElementById("progress-bar").style.width = `${percent}%`;
+  const step = activeSteps[state.currentStep];
+  renderPhaseBar(document.getElementById("phase-steps"), step ? phaseOf(step.key) : 0);
 }
 
 function renderChoiceStep(step) {
@@ -2999,7 +2979,10 @@ function showExplorerCard(view) {
   questionCard.classList.toggle("hidden", view !== "question");
   resultCard.classList.toggle("hidden", view !== "main-result");
   multiuseSafetyCard.classList.toggle("hidden", view !== "multiuse-result");
-  if (vizCard) vizCard.classList.toggle("hidden", view !== "viz");
+  // 메인 결과 화면이면 단계바 ④결과 점등(다중이용업소 전용 모드는 바 숨김 상태라 제외)
+  if (view === "main-result" && explorerRuntime.mode !== "multiuse-only") {
+    renderPhaseBar(document.getElementById("phase-steps"), 3);
+  }
 }
 
 function showExplorerResultWithLoading(view = "main-result") {
@@ -3332,148 +3315,6 @@ function renderYearExtraItems(input) {
     requirePermitDateForRefugeElevator: true,
     usePermitBasedLodgingFlameproof: true,
   });
-}
-
-function renderVizBuilding(svgEl, above, below) {
-  var ns = "http://www.w3.org/2000/svg";
-  var FH = 52, ML = 18, MT = 14, MB = 14, SW = 38, LW = 14, BW = 224, GH = 10, STW = 2.5;
-  var special = (above >= 11 || below >= 3);
-  var bodyW = BW - SW - (special ? LW : 0);
-  var bodyX = ML;
-  var lobbyX = ML + bodyW;
-  var stairX = ML + bodyW + (special ? LW : 0);
-  var aboveH = above * FH, belowH = below * FH;
-  var totalH = MT + aboveH + (above > 0 ? GH : 0) + belowH + MB;
-  var groundY = MT + aboveH + GH / 2;
-
-  svgEl.setAttribute("viewBox", "0 0 " + (ML * 2 + BW) + " " + totalH);
-  svgEl.innerHTML = "";
-
-  function el(tag, attrs) {
-    var e = document.createElementNS(ns, tag);
-    for (var k in attrs) e.setAttribute(k, attrs[k]);
-    return e;
-  }
-  function line(x1, y1, x2, y2, sw, opacity) {
-    var a = { x1: x1, y1: y1, x2: x2, y2: y2, stroke: "currentColor", "stroke-width": sw || STW };
-    if (opacity != null) a.opacity = opacity;
-    return el("line", a);
-  }
-  function rect(x, y, w, h) {
-    return el("rect", { x: x, y: y, width: w, height: h, fill: "none", stroke: "currentColor", "stroke-width": STW });
-  }
-  function rectFill(x, y, w, h, fill) {
-    return el("rect", { x: x, y: y, width: w, height: h, fill: fill, stroke: "none" });
-  }
-  function txt(x, y, content, size, weight, opacity) {
-    var t = el("text", { x: x, y: y, "text-anchor": "middle", "dominant-baseline": "middle", "font-size": size || 12, "font-weight": weight || "600", "font-family": "inherit", fill: "currentColor" });
-    if (opacity != null) t.setAttribute("opacity", opacity);
-    t.textContent = content;
-    return t;
-  }
-
-  function renderLobby(lx, topY, count) {
-    for (var f = 0; f < count; f++) {
-      svgEl.appendChild(rectFill(lx, topY + f * FH, LW, FH, "rgba(239,68,68,0.07)"));
-    }
-    svgEl.appendChild(rect(lx, topY, LW, FH * count));
-    for (var f = 1; f < count; f++) {
-      svgEl.appendChild(line(lx, topY + f * FH, lx + LW, topY + f * FH, STW));
-    }
-    for (var f = 0; f < count; f++) {
-      var t = el("text", { x: lx + LW / 2, y: topY + f * FH + FH / 2, "text-anchor": "middle", "dominant-baseline": "middle", "font-size": 7, "font-weight": "600", "font-family": "inherit", fill: "currentColor", opacity: 0.65, "writing-mode": "tb", "letter-spacing": 1 });
-      t.textContent = "부속실";
-      svgEl.appendChild(t);
-    }
-  }
-
-  if (above > 0) {
-    var topY = MT;
-    // 계단
-    svgEl.appendChild(rect(stairX, topY, SW, aboveH));
-    var stepLines = Math.min(above * 4, 20);
-    for (var i = 1; i < stepLines; i++) {
-      var sy = topY + (aboveH * i) / stepLines;
-      svgEl.appendChild(line(stairX + 4, sy, stairX + SW - 4, sy, 0.6, 0.2));
-    }
-    svgEl.appendChild(txt(stairX + SW / 2, topY + aboveH / 2, "계단", 9, "normal", 0.55));
-    // 부속실
-    if (special) renderLobby(lobbyX, topY, above);
-    // 본체
-    svgEl.appendChild(rect(bodyX, topY, bodyW, aboveH));
-    for (var f = 1; f < above; f++) {
-      svgEl.appendChild(line(bodyX, topY + f * FH, bodyX + bodyW, topY + f * FH, STW));
-    }
-    for (var f = 0; f < above; f++) {
-      svgEl.appendChild(txt(bodyX + bodyW / 2, topY + f * FH + FH / 2, (above - f) + "층", 12));
-    }
-  }
-
-  if (above > 0) {
-    svgEl.appendChild(el("line", { x1: ML - 6, y1: groundY, x2: ML + BW + 6, y2: groundY, stroke: "currentColor", "stroke-width": 3 }));
-  }
-
-  if (below > 0) {
-    var basTopY = MT + aboveH + (above > 0 ? GH : 0);
-    // 계단 (지하)
-    svgEl.appendChild(rect(stairX, basTopY, SW, belowH));
-    var bStepLines = Math.min(below * 4, 16);
-    for (var i = 1; i < bStepLines; i++) {
-      var sy = basTopY + (belowH * i) / bStepLines;
-      svgEl.appendChild(line(stairX + 4, sy, stairX + SW - 4, sy, 0.6, 0.2));
-    }
-    svgEl.appendChild(txt(stairX + SW / 2, basTopY + belowH / 2, "계단", 9, "normal", 0.55));
-    // 부속실 (지하)
-    if (special) renderLobby(lobbyX, basTopY, below);
-    // 본체 (지하)
-    svgEl.appendChild(rect(bodyX, basTopY, bodyW, belowH));
-    for (var b = 1; b < below; b++) {
-      svgEl.appendChild(line(bodyX, basTopY + b * FH, bodyX + bodyW, basTopY + b * FH, STW));
-    }
-    for (var b = 0; b < below; b++) {
-      svgEl.appendChild(txt(bodyX + bodyW / 2, basTopY + b * FH + FH / 2, "지하" + (b + 1) + "층", 12));
-    }
-  }
-}
-
-function getVizAboveBelow(input) {
-  switch (input.occupancyType) {
-    case "lodging": return { above: input.lodgingAboveGroundFloors || 0, below: input.lodgingBasementFloors || 0 };
-    case "elderly": return { above: input.elderlyAboveGroundFloors || 0, below: input.elderlyBasementFloors || 0 };
-    case "medical": return { above: input.medicalAboveGroundFloors || 0, below: input.medicalBasementFloors || 0 };
-    default: return { above: input.aboveGroundFloors || 0, below: input.basementFloors || 0 };
-  }
-}
-
-function showVizCard() {
-  const input = explorerViewState.lastInput;
-  if (!input) return;
-
-  const requiredList = document.getElementById("required-list");
-  const vizList = document.getElementById("viz-facility-list");
-  vizList.innerHTML = "";
-  if (requiredList) {
-    requiredList.querySelectorAll(".facility-row").forEach((row) => {
-      const clone = row.cloneNode(true);
-      vizList.appendChild(clone);
-    });
-  }
-  const extraList = document.getElementById("extra-items-list");
-  if (extraList && !extraList.closest("#extra-items-section").classList.contains("hidden")) {
-    extraList.querySelectorAll(".facility-row").forEach((row) => {
-      const clone = row.cloneNode(true);
-      vizList.appendChild(clone);
-    });
-  }
-
-  const summaryEl = document.getElementById("result-summary");
-  document.getElementById("viz-summary").innerHTML = summaryEl ? summaryEl.innerHTML : "";
-
-  const { above, below } = getVizAboveBelow(input);
-  renderVizBuilding(document.getElementById("viz-building-svg"), above, below);
-
-  showExplorerCard("viz");
-  scrollToTop();
 }
 
 function restartExplorer() {
@@ -7577,6 +7418,8 @@ function sortByYearStepOrder(activeSteps) {
     return idx;
   };
   return [...activeSteps].sort((a, b) => {
+    const pa = phaseOf(a.key), pb = phaseOf(b.key);
+    if (pa !== pb) return pa - pb;
     const ai = orderKey(a);
     const bi = orderKey(b);
     if (ai !== bi) return ai - bi;
@@ -8459,12 +8302,8 @@ function yearRenderCurrentStep() {
 
 function yearUpdateProgress() {
   const activeSteps = yearGetActiveSteps();
-  const total = activeSteps.length;
-  const current = yearState.currentStep + 1;
-  const pct = Math.round((current / total) * 100);
-  document.getElementById("year-progress-text").textContent = `${current} / ${total}`;
-  document.getElementById("year-progress-percent").textContent = `${pct}%`;
-  document.getElementById("year-progress-bar").style.width = `${pct}%`;
+  const step = activeSteps[yearState.currentStep];
+  renderPhaseBar(document.getElementById("year-phase-steps"), step ? phaseOf(step.key) : 0);
 }
 
 function yearCurrentStepIsValid() {
@@ -8494,7 +8333,8 @@ function showYearResultWithLoading() {
     document.getElementById("year-question-card").classList.add("hidden");
     document.getElementById("year-result-card").classList.remove("hidden");
     document.getElementById("year-multiuse-safety-card").classList.add("hidden");
-    document.getElementById("year-prog-wrap").classList.add("hidden");
+    // 결과 화면에서도 단계바 유지하고 ④결과 점등
+    renderPhaseBar(document.getElementById("year-phase-steps"), 3);
     yearScrollToTop();
   });
 }
@@ -13909,36 +13749,12 @@ document.getElementById("prev-step").addEventListener("click", () => {
 });
 document.getElementById("next-step").addEventListener("click", () => {
   const activeSteps = getActiveSteps();
-  const currentStep = activeSteps[state.currentStep];
   if (explorerRuntime.mode === "year" && state.currentStep === activeSteps.length - 1) {
     showToast("연도별_테스트중은 아직 결과 계산을 준비 중입니다. 질문 흐름만 테스트할 수 있습니다.");
     return;
   }
-  if (currentStep?.key === "hasMultiuseBusiness" && state.answers.hasMultiuseBusiness === "no") {
-    if (explorerRuntime.mode === "year") {
-      showToast("연도별_테스트중은 아직 결과 계산을 준비 중입니다. 질문 흐름만 테스트할 수 있습니다.");
-      return;
-    }
-    showResults();
-    return;
-  }
-  if (currentStep?.key === "lodgingHasMultiuseBusiness" && state.answers.lodgingHasMultiuseBusiness === "no") {
-    if (explorerRuntime.mode === "year") {
-      showToast("연도별_테스트중은 아직 결과 계산을 준비 중입니다. 질문 흐름만 테스트할 수 있습니다.");
-      return;
-    }
-    showResults();
-    return;
-  }
   if (state.currentStep === activeSteps.length - 1) showResults();
   else moveStep(1);
-});
-document.getElementById("open-viz-card").addEventListener("click", () => {
-  showVizCard();
-});
-document.getElementById("viz-back-to-result").addEventListener("click", () => {
-  showExplorerCard("main-result");
-  scrollToTop();
 });
 document.getElementById("open-multiuse-safety").addEventListener("click", () => {
   if (!explorerViewState.lastInput) return;
@@ -14313,11 +14129,6 @@ history.replaceState({ screen: 'home' }, '');
 
     // 소방시설탐색기
     if (current === "explorer") {
-      if (vizCard && !vizCard.classList.contains("hidden")) {
-        showExplorerCard("main-result");
-        scrollToTop();
-        return true;
-      }
       const multiuseCard = document.getElementById("multiuse-safety-card");
       if (multiuseCard && !multiuseCard.classList.contains("hidden")) {
         showExplorerCard("main-result");
@@ -17025,7 +16836,7 @@ applyDevMode();
 })();
 
 /* ============================================================
-   개발자 인사말 — txt fetch + 챕터 파싱 + 보상카드
+   개발자 이야기 — txt fetch + 챕터 파싱 + 보상카드
    ============================================================ */
 (function initDevLetter() {
   const openBtn = document.getElementById("open-dev-letter");
