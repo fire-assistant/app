@@ -607,11 +607,11 @@ input:focus-visible {
 /* 현재 칸으로 들어오는 선까지 채워야 결과칸까지 끊김 없이 이어짐 */
 .phase-steps li.is-done::before,
 .phase-steps li.is-active::before { background: var(--red); }
-/* 현재 단계 */
+/* 현재 단계 (선·완료 점과 같은 강조색 + 글로우로 구분 — 테마별로 색만 덮어씀) */
 .phase-steps li.is-active .ph-dot {
-  background: var(--amber);
-  border-color: var(--amber);
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.28);
 }
 .phase-steps li.is-active .ph-label { color: var(--text); font-weight: 600; }
 

@@ -14203,6 +14203,16 @@ history.replaceState({ screen: 'home' }, '');
   }
 
   function handleBack() {
+    // 패치노트 모달이 history.back()으로 자체 종료 중 — 이 popstate는 무시
+    if (window._pnConsumeSelfClosing && window._pnConsumeSelfClosing()) {
+      return;
+    }
+    // 패치노트 모달이 열려 있으면 화면 이동/종료 대신 모달만 닫기
+    if (window._pnIsOpen && window._pnIsOpen()) {
+      window._pnClose();
+      return;
+    }
+
     var now = Date.now();
     const current = getCurrentScreen();
 
@@ -15728,18 +15738,49 @@ applyDevMode();
   document.getElementById('pn-date').textContent = PATCH_NOTES.date;
   document.getElementById('pn-list').innerHTML = itemsHtml;
 
-  document.getElementById('pn-close-btn').addEventListener('click', function () {
+  var pnSelfClosing = false;
+
+  function pnIsOpen() { return !modal.classList.contains('hidden'); }
+
+  function openPn() {
+    modal.classList.remove('hidden');
+    history.pushState({ patchModal: true }, '');
+  }
+
+  // 모달 닫기. UI 클릭/네이티브 뒤로가기로 닫을 땐 직접 push한 history 항목을
+  // history.back()으로 되감음(웹 popstate로 이미 pop된 경우는 건드리지 않음).
+  function closePn() {
+    if (!pnIsOpen()) return;
     modal.classList.add('hidden');
-  });
+    if (history.state && history.state.patchModal) {
+      pnSelfClosing = true;
+      history.back();
+    }
+  }
+
+  // 뒤로가기 핸들러(initBackButton)에서 참조
+  window._pnIsOpen = pnIsOpen;
+  window._pnClose = closePn;
+  window._pnConsumeSelfClosing = function () {
+    if (pnSelfClosing) { pnSelfClosing = false; return true; }
+    return false;
+  };
+
+  document.getElementById('pn-close-btn').addEventListener('click', closePn);
 
   document.getElementById('pn-hide-today-btn').addEventListener('click', function () {
-    modal.classList.add('hidden');
     localStorage.setItem('lastPatchSeen', today);
+    closePn();
+  });
+
+  // 모달 바깥(오버레이) 클릭 시 닫기 — 확인과 동일
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) closePn();
   });
 
   var lastSeen = localStorage.getItem('lastPatchSeen');
   if (lastSeen !== today) {
-    modal.classList.remove('hidden');
+    openPn();
   }
 })();
 
