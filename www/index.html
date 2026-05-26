@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>예방업무 어시스턴트</title>
-  <link rel="stylesheet" href="./styles.css?v=296">
+  <link rel="stylesheet" href="./styles.css?v=300">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap">
@@ -52,7 +52,7 @@
         window.location.reload();
       }
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js?v=296', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('./sw.js?v=300', { updateViaCache: 'none' })
           .then(function(reg) {
             reg.update();
             document.addEventListener('visibilitychange', function() {
@@ -684,6 +684,28 @@
         <div class="devletter-head">
           <span class="devletter-kicker">운영자 노트</span>
           <h1 class="devletter-title">같은 업무를 조금 덜 번거롭게</h1>
+          <div id="devletter-music" class="devletter-music" aria-label="개발자 이야기 배경음악">
+            <audio id="devletter-audio" src="./assets/music/sunrise%20dolphin.mp3" preload="auto" loop></audio>
+            <div class="devletter-music-meta">
+              <span class="devletter-music-label">BGM</span>
+              <span class="devletter-music-title">이인성 - 노을빛 돌고래 (sunrise dolphin)</span>
+              <span id="devletter-music-time" class="devletter-music-time">0:00 / 0:00</span>
+            </div>
+            <div class="devletter-music-actions">
+              <button id="devletter-music-play" class="devletter-music-btn" type="button" aria-label="음악 재생">▶</button>
+              <button id="devletter-music-stop" class="devletter-music-btn" type="button" aria-label="음악 정지">■</button>
+            </div>
+            <div id="devletter-music-panel" class="devletter-music-panel" hidden>
+              <label class="devletter-music-control is-progress">
+                <span>진행</span>
+                <input id="devletter-music-progress" class="devletter-music-progress" type="range" min="0" max="1000" value="0" aria-label="음악 진행 정도">
+              </label>
+              <label class="devletter-music-control is-volume">
+                <span>음량</span>
+                <input id="devletter-music-volume" class="devletter-music-volume" type="range" min="0" max="100" value="45" aria-label="음악 음량">
+              </label>
+            </div>
+          </div>
           <p class="devletter-lead">대단한 전문가의 소개가 아니라, 같은 현장에서 일하는 한 대원이 남기는 짧은 이야기입니다.</p>
           <p id="devletter-intro-text" class="devletter-intro"></p>
         </div>
@@ -1019,9 +1041,9 @@
   </div>
 
   <script src="./pdf.min.js"></script>
-  <script src="./app.js?v=296"></script>
-  <script src="./facilities-data.js?v=296"></script>
-  <script src="./facilities.js?v=296"></script>
+  <script src="./app.js?v=300"></script>
+  <script src="./facilities-data.js?v=300"></script>
+  <script src="./facilities.js?v=300"></script>
   <script src="./layout-learn.js"></script>
   <script>
   (() => {

@@ -16615,6 +16615,13 @@ applyDevMode();
     }
   });
 
+  document.addEventListener("click", function (e) {
+    if (root.classList.contains("is-open") && !root.contains(e.target)) {
+      closePanel();
+      setState("idle");
+    }
+  });
+
   button.addEventListener("dblclick", function () {
     showHomeConfirm(function () {
       showScreen("home");
@@ -16885,6 +16892,14 @@ applyDevMode();
   const introEl = document.getElementById("devletter-intro-text");
   const chaptersEl = document.getElementById("devletter-chapters");
   const feedbackBtn = document.getElementById("devletter-feedback-btn");
+  const musicBox = document.getElementById("devletter-music");
+  const musicPanel = document.getElementById("devletter-music-panel");
+  const musicAudio = document.getElementById("devletter-audio");
+  const musicPlayBtn = document.getElementById("devletter-music-play");
+  const musicStopBtn = document.getElementById("devletter-music-stop");
+  const musicProgress = document.getElementById("devletter-music-progress");
+  const musicVolume = document.getElementById("devletter-music-volume");
+  const musicTimeEl = document.getElementById("devletter-music-time");
   const reward = document.getElementById("devletter-reward");
   const rewardFortuneEl = document.getElementById("devletter-reward-fortune");
   const rewardCloseBtn = document.getElementById("devletter-reward-close");
@@ -16932,6 +16947,78 @@ applyDevMode();
   let loaded = false;
   let totalChapters = 0;
   const openedOnce = new Set();
+
+  function formatMusicTime(seconds) {
+    if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+    const min = Math.floor(seconds / 60);
+    const sec = Math.floor(seconds % 60);
+    return min + ":" + String(sec).padStart(2, "0");
+  }
+
+  function syncMusicProgress() {
+    if (!musicAudio) return;
+    const duration = musicAudio.duration || 0;
+    if (musicProgress && duration > 0) {
+      const progressValue = Math.round((musicAudio.currentTime / duration) * 1000);
+      musicProgress.value = String(progressValue);
+      musicProgress.style.setProperty("--range-fill", (progressValue / 10) + "%");
+    } else if (musicProgress) {
+      musicProgress.value = "0";
+      musicProgress.style.setProperty("--range-fill", "0%");
+    }
+    if (musicTimeEl) {
+      musicTimeEl.textContent = formatMusicTime(musicAudio.currentTime) + " / " + formatMusicTime(duration);
+    }
+  }
+
+  function syncMusicVolume() {
+    if (!musicVolume) return;
+    musicVolume.style.setProperty("--range-fill", musicVolume.value + "%");
+  }
+
+  function syncMusicButtons() {
+    const playing = musicAudio && !musicAudio.paused;
+    if (musicPlayBtn) {
+      musicPlayBtn.classList.toggle("is-active", !!playing);
+      musicPlayBtn.textContent = playing ? "❚❚" : "▶";
+      musicPlayBtn.setAttribute("aria-label", playing ? "음악 일시정지" : "음악 재생");
+    }
+    if (musicStopBtn) musicStopBtn.classList.toggle("is-active", !!musicAudio && musicAudio.paused && musicAudio.currentTime === 0);
+    syncMusicProgress();
+  }
+
+  function playDevLetterMusic() {
+    if (!musicAudio) return;
+    musicAudio.volume = musicVolume ? Number(musicVolume.value) / 100 : 0.45;
+    syncMusicVolume();
+    const playPromise = musicAudio.play();
+    if (playPromise && typeof playPromise.then === "function") {
+      playPromise.then(syncMusicButtons).catch(syncMusicButtons);
+    } else {
+      syncMusicButtons();
+    }
+  }
+
+  function stopDevLetterMusic() {
+    if (!musicAudio) return;
+    musicAudio.pause();
+    try { musicAudio.currentTime = 0; } catch {}
+    syncMusicButtons();
+  }
+
+  function toggleDevLetterMusic() {
+    if (!musicAudio) return;
+    if (musicAudio.paused) playDevLetterMusic();
+    else {
+      musicAudio.pause();
+      syncMusicButtons();
+    }
+  }
+
+  function toggleMusicPanel() {
+    if (!musicPanel) return;
+    musicPanel.hidden = !musicPanel.hidden;
+  }
 
   function pickFortune() {
     return FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
@@ -17033,6 +17120,7 @@ applyDevMode();
   }
 
   loadLetter();
+  syncMusicVolume();
 
   openBtn.addEventListener("click", () => {
     loadLetter();
@@ -17042,12 +17130,61 @@ applyDevMode();
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
       document.getElementById("screen-developer-letter").classList.add("active");
     }
+    playDevLetterMusic();
   });
 
   if (backBtn) {
     backBtn.addEventListener("click", () => {
+      stopDevLetterMusic();
       if (typeof showScreen === "function") showScreen("home");
     });
+  }
+
+  if (musicPlayBtn) {
+    musicPlayBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleDevLetterMusic();
+    });
+  }
+
+  if (musicStopBtn) {
+    musicStopBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      stopDevLetterMusic();
+    });
+  }
+
+  if (musicAudio) {
+    musicAudio.addEventListener("play", syncMusicButtons);
+    musicAudio.addEventListener("pause", syncMusicButtons);
+    musicAudio.addEventListener("ended", syncMusicButtons);
+    musicAudio.addEventListener("loadedmetadata", syncMusicProgress);
+    musicAudio.addEventListener("timeupdate", syncMusicProgress);
+  }
+
+  if (musicProgress && musicAudio) {
+    musicProgress.addEventListener("pointerdown", (event) => event.stopPropagation());
+    musicProgress.addEventListener("click", (event) => event.stopPropagation());
+    musicProgress.addEventListener("input", () => {
+      const duration = musicAudio.duration || 0;
+      if (duration > 0) {
+        musicAudio.currentTime = (Number(musicProgress.value) / 1000) * duration;
+      }
+      syncMusicProgress();
+    });
+  }
+
+  if (musicVolume && musicAudio) {
+    musicVolume.addEventListener("pointerdown", (event) => event.stopPropagation());
+    musicVolume.addEventListener("click", (event) => event.stopPropagation());
+    musicVolume.addEventListener("input", () => {
+      musicAudio.volume = Number(musicVolume.value) / 100;
+      syncMusicVolume();
+    });
+  }
+
+  if (musicBox) {
+    musicBox.addEventListener("click", toggleMusicPanel);
   }
 
   if (feedbackBtn) {
