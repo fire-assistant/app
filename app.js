@@ -15045,6 +15045,7 @@ const RG_PAGE1_SECTIONS = [
 function createRgAccordion(section, num) {
   var wrap = document.createElement('div');
   wrap.className = 'rg-accordion';
+  if (section.id) wrap.id = 'rgacc-' + section.id;
 
   var header = document.createElement('button');
   header.type = 'button';
@@ -15784,6 +15785,38 @@ applyDevMode();
   }
 })();
 
+// 대상 아코디언으로 스크롤. render 직후엔 레이아웃이 아직 안정되지 않아
+// scrollIntoView가 무효일 수 있으므로 약간 지연 후 정렬하고,
+// 펼쳐진 아코디언 이미지가 늦게 로드되며 위쪽 높이가 커져 대상이 밀리는 경우를 대비해
+// 이미지가 로드될 때마다 위치를 다시 맞춘다.
+function scrollToWhenReady(container, el) {
+  if (!el) return;
+  function align() { el.scrollIntoView({ behavior: 'auto', block: 'start' }); }
+  setTimeout(function () {
+    align();
+    el.classList.add('search-flash');
+    setTimeout(function () { el.classList.remove('search-flash'); }, 1600);
+    if (!container) return;
+    [].slice.call(container.querySelectorAll('img')).forEach(function (img) {
+      if (img.complete) return;
+      img.addEventListener('load', align, { once: true });
+      img.addEventListener('error', align, { once: true });
+    });
+  }, 60);
+}
+
+// 자체점검 가이드의 특정 페이지·아코디언으로 바로 이동
+function goToRgGuideSection(tab, sectionId) {
+  rgState.mode = 'guide';
+  rgState.tab = tab;
+  showScreen('reportGuide');
+  renderReportGuide();
+  scrollToWhenReady(
+    document.getElementById('report-guide-content'),
+    document.getElementById('rgacc-' + sectionId)
+  );
+}
+
 // ── 홈 검색 기능 ─────────────────────────────────────────────────
 (function initHomeSearch() {
   const SEARCH_ITEMS = [
@@ -15911,6 +15944,113 @@ applyDevMode();
     },
   ];
 
+  // ── 참고 박스·도감 항목을 검색 색인에 자동 편입 ──
+  const stripTags = (html) => String(html || "").replace(/<[^>]*>/g, " ");
+
+  function buildRgEntries(tab, pageLabel, sections) {
+    const entries = [];
+    sections.forEach((sec) => {
+      const ctx = "자체점검 가이드 " + pageLabel + " · " + sec.label;
+      const base = [sec.label, ...(sec.desc || []).map(stripTags)];
+      // 항목(필드) 자체
+      entries.push({
+        icon: "📋", title: sec.label, desc: ctx,
+        keywords: base,
+        action: () => goToRgGuideSection(tab, sec.id),
+      });
+      // 참고 박스(noteItems / noteTable / extraNotes)를 개별 검색 항목으로
+      const groups = [];
+      if (sec.noteItems && sec.noteItems.length) {
+        groups.push({ title: sec.noteTitle || "구분", items: sec.noteItems });
+      }
+      if (sec.noteTable) {
+        groups.push({ title: sec.noteTable.title, rows: sec.noteTable.rows });
+      }
+      (sec.extraNotes || []).forEach((n) => groups.push({ title: n.title || "구분", items: n.items }));
+
+      groups.forEach((g) => {
+        const kw = [g.title, sec.label];
+        (g.items || []).forEach((it) => { kw.push(it.tag); kw.push(stripTags(it.text)); });
+        (g.rows || []).forEach((row) => row.forEach((cell) => kw.push(stripTags(cell))));
+        entries.push({
+          icon: "📋", title: g.title, desc: ctx,
+          keywords: kw,
+          action: () => goToRgGuideSection(tab, sec.id),
+        });
+      });
+    });
+    return entries;
+  }
+
+  function buildFacilityEntries() {
+    if (typeof FACILITIES_DATA === "undefined") return [];
+    const entries = [];
+    FACILITIES_DATA.forEach((tab, idx) => {
+      (tab.items || []).forEach((item) => {
+        const kw = [item.name, item.category, stripTags(item.definition), stripTags(item.description), tab.tabLabel];
+        (item.types || []).forEach((t) => { kw.push(t.name); kw.push(stripTags(t.desc)); });
+        (item.components || []).forEach((c) => { kw.push(c.name); kw.push(stripTags(c.desc)); });
+        (item.criteria || []).forEach((s) => kw.push(stripTags(s)));
+        (item.usage || []).forEach((s) => kw.push(stripTags(s)));
+        (item.storage || []).forEach((s) => kw.push(stripTags(s)));
+        (item.inspection || []).forEach((s) => kw.push(stripTags(s)));
+        (item.tips || []).forEach((s) => kw.push(stripTags(s)));
+        entries.push({
+          icon: "📖", title: item.name, desc: (item.category ? item.category + " · " : "") + "소방시설 도감",
+          keywords: kw.filter(Boolean),
+          action: () => { if (typeof window.openFacilityItem === "function") window.openFacilityItem(idx, item.id); },
+        });
+      });
+
+      // 탭 상단 intro(수계 공통 구성요소 / 비교표 등)도 색인
+      const intro = tab.intro;
+      if (intro) {
+        if (intro.type === "components" && (intro.components || []).length) {
+          // 수계 공통 구성요소: 항목 내 접힘 패널로 이동(없으면 intro 카드로)
+          const waterItem = (tab.items || []).find((it) => it.showWaterSystemComponents);
+          const nav = waterItem
+            ? () => { if (typeof window.openFacilityWaterComp === "function") window.openFacilityWaterComp(idx, waterItem.id); }
+            : () => { if (typeof window.openFacilityIntro === "function") window.openFacilityIntro(idx); };
+          intro.components.forEach((c) => {
+            entries.push({
+              icon: "📖", title: c.name, desc: intro.title + " · 소방시설 도감",
+              keywords: [c.name, stripTags(c.desc), c.analogy, intro.title, tab.tabLabel].filter(Boolean),
+              action: nav,
+            });
+          });
+          entries.push({
+            icon: "📖", title: intro.title, desc: "소방시설 도감",
+            keywords: [intro.title, stripTags(intro.description), tab.tabLabel].filter(Boolean),
+            action: nav,
+          });
+        } else {
+          // 비교표 등: 탭 상단 intro 카드로 이동
+          const kw = [intro.title, stripTags(intro.description), tab.tabLabel];
+          (intro.headers || []).forEach((h) => kw.push(h));
+          (intro.rows || []).forEach((r) => r.forEach((cell) => kw.push(stripTags(cell))));
+          entries.push({
+            icon: "📖", title: intro.title, desc: "소방시설 도감",
+            keywords: kw.filter(Boolean),
+            action: () => { if (typeof window.openFacilityIntro === "function") window.openFacilityIntro(idx); },
+          });
+        }
+      }
+    });
+    return entries;
+  }
+
+  let dynamicItems = null;
+  function getAllSearchItems() {
+    if (!dynamicItems) {
+      dynamicItems = [].concat(
+        buildRgEntries("page1", "1페이지", RG_PAGE1_SECTIONS),
+        buildRgEntries("page2", "2페이지", RG_PAGE2_SECTIONS),
+        buildFacilityEntries()
+      );
+    }
+    return SEARCH_ITEMS.concat(dynamicItems);
+  }
+
   const input = document.getElementById("home-search-input");
   const clearBtn = document.getElementById("home-search-clear");
   const resultsList = document.getElementById("home-search-results");
@@ -15922,6 +16062,27 @@ applyDevMode();
     return text.replace(new RegExp(`(${escaped})`, "gi"), "<mark>$1</mark>");
   }
 
+  // 제목에 검색어가 없을 때 "왜 걸렸는지" 보여줄 매칭 조각
+  function matchSnippet(item, q) {
+    if (String(item.title).toLowerCase().includes(q)) return null;
+    let best = null;
+    item.keywords.forEach((kw) => {
+      const k = String(kw);
+      const idx = k.toLowerCase().indexOf(q);
+      if (idx === -1) return;
+      if (best === null || k.length < best.text.length) best = { text: k, idx };
+    });
+    if (!best) return null;
+    const text = best.text;
+    if (text.length <= 40) return text;
+    let start = Math.max(0, best.idx - 12);
+    let end = Math.min(text.length, best.idx + q.length + 24);
+    let snip = text.slice(start, end);
+    if (start > 0) snip = "…" + snip;
+    if (end < text.length) snip = snip + "…";
+    return snip;
+  }
+
   function renderResults(query) {
     const q = query.trim().toLowerCase();
     if (!q) {
@@ -15929,7 +16090,7 @@ applyDevMode();
       return;
     }
 
-    const matched = SEARCH_ITEMS.filter(item => {
+    const matched = getAllSearchItems().filter(item => {
       const haystack = [item.title, item.desc, ...item.keywords].join(" ").toLowerCase();
       return haystack.includes(q);
     });
@@ -15937,16 +16098,23 @@ applyDevMode();
     if (matched.length === 0) {
       resultsList.innerHTML = `<li class="hsr-empty">검색 결과가 없습니다</li>`;
     } else {
-      resultsList.innerHTML = matched.map((item, i) => `
+      resultsList.innerHTML = matched.map((item, i) => {
+        const snippet = matchSnippet(item, q);
+        const matchLine = snippet
+          ? `<span class="hsr-match">↳ ${highlight(snippet, query.trim())}</span>`
+          : "";
+        return `
         <li class="hsr-item" data-index="${i}" tabindex="-1">
           <span class="hsr-icon mc-${iconColor(item.icon)}">${item.icon}</span>
           <span class="hsr-text">
             <span class="hsr-title">${highlight(item.title, query.trim())}</span>
             <span class="hsr-desc">${item.desc}</span>
+            ${matchLine}
           </span>
           <span class="hsr-arrow">›</span>
         </li>
-      `).join("");
+      `;
+      }).join("");
 
       resultsList.querySelectorAll(".hsr-item").forEach((el, i) => {
         el.addEventListener("mousedown", (e) => {

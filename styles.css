@@ -7307,7 +7307,7 @@ html[data-theme="blossom"] .cal-day.holiday::after {
   padding: 6px 0;
   border: 1px solid var(--border2);
   border-radius: 14px;
-  background: #1e1e1e;
+  background: var(--surface2);
   box-shadow: var(--shadow-lg);
   max-height: 360px;
   overflow-y: auto;
@@ -7328,7 +7328,7 @@ html[data-theme="blossom"] .cal-day.holiday::after {
 
 .hsr-item:hover,
 .hsr-item.focused {
-  background: #2a2a2a;
+  background: var(--surface3);
 }
 
 .hsr-icon {
@@ -7350,7 +7350,7 @@ html[data-theme="blossom"] .cal-day.holiday::after {
 .hsr-title {
   font-size: 13px;
   font-weight: 600;
-  color: #ececec;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -7358,21 +7358,37 @@ html[data-theme="blossom"] .cal-day.holiday::after {
 
 .hsr-title mark {
   background: transparent;
-  color: #ff6a5f;
+  color: var(--red);
   font-weight: 700;
 }
 
 .hsr-desc {
   font-size: 11px;
-  color: #a0a0a0;
+  color: var(--text-muted);
   margin-top: 1px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.hsr-match {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hsr-match mark {
+  background: transparent;
+  color: var(--red);
+  font-weight: 700;
+}
+
 .hsr-arrow {
-  color: #595959;
+  color: var(--text-dim);
   font-size: 16px;
   flex-shrink: 0;
 }
@@ -7380,7 +7396,7 @@ html[data-theme="blossom"] .cal-day.holiday::after {
 .hsr-empty {
   padding: 16px;
   text-align: center;
-  color: #595959;
+  color: var(--text-dim);
   font-size: 13px;
 }
 
@@ -8536,4 +8552,15 @@ html[data-theme="dark"] .devletter-reward-stamp { background: #1e1810; }
   .devletter-chapter-summary { font-size: 14px; padding: 12px; }
   .devletter-chapter-body { font-size: 13px; padding: 0 12px 14px 34px; }
   .devletter-sign { margin: 24px 2px 6px; font-size: 20px; }
+}
+
+/* 검색 결과로 점프 시 대상 아코디언 강조 */
+.search-flash {
+  animation: search-flash-kf 1.6s ease-out;
+  border-radius: 12px;
+}
+@keyframes search-flash-kf {
+  0%   { box-shadow: 0 0 0 0 var(--red, #d93025); }
+  15%  { box-shadow: 0 0 0 4px var(--red, #d93025); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 107, 157, 0); }
 }

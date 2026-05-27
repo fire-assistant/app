@@ -81,6 +81,81 @@
 
   window.initFacilities = init;
 
+  // 검색 딥링크 공용 헬퍼들
+  function activateFacTab(tabIdx) {
+    activeTabIndex = Number(tabIdx);
+    contentEl.querySelectorAll('.rg-tab-bar .rg-tab-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.idx === String(tabIdx)));
+    contentEl.querySelectorAll('.fac-panel').forEach(p =>
+      p.classList.toggle('hidden', p.dataset.idx !== String(tabIdx)));
+  }
+  function facFlash(el) {
+    if (!el) return;
+    el.classList.add('search-flash');
+    setTimeout(() => el.classList.remove('search-flash'), 1600);
+  }
+  function openAccordion(acc) {
+    const header = acc.querySelector('.rg-accordion-header');
+    const body = acc.querySelector('.rg-accordion-body');
+    if (header) header.classList.add('open');
+    if (body) body.classList.remove('hidden');
+  }
+
+  // 특정 도감 항목으로 바로 이동
+  function openFacilityItem(tabIdx, itemId) {
+    trackMenuClick('소방시설도감');
+    showScreen('screen-facilities');
+    init();
+    activateFacTab(tabIdx);
+    const acc = document.getElementById('facacc-' + itemId);
+    if (!acc) return;
+    openAccordion(acc);
+    // render/탭전환 직후엔 레이아웃이 안정되지 않아 scrollIntoView가 무효일 수 있어 약간 지연
+    setTimeout(() => { acc.scrollIntoView({ behavior: 'auto', block: 'start' }); facFlash(acc); }, 60);
+  }
+
+  // 탭 상단 intro 카드로 이동(독립 카드형: 비교표 등)
+  function openFacilityIntro(tabIdx) {
+    trackMenuClick('소방시설도감');
+    showScreen('screen-facilities');
+    init();
+    activateFacTab(tabIdx);
+    setTimeout(() => {
+      const panel = contentEl.querySelector('.fac-panel[data-idx="' + tabIdx + '"]');
+      const card = panel ? panel.querySelector('.fac-intro-card') : null;
+      if (card) { card.scrollIntoView({ behavior: 'auto', block: 'start' }); facFlash(card); }
+      else { const sc = contentEl.querySelector('.rg-content'); if (sc) sc.scrollTop = 0; }
+    }, 60);
+  }
+
+  // 항목 내 "수계 공통 구성요소" 접힘 패널을 펼쳐서 이동
+  function openFacilityWaterComp(tabIdx, itemId) {
+    trackMenuClick('소방시설도감');
+    showScreen('screen-facilities');
+    init();
+    activateFacTab(tabIdx);
+    const acc = document.getElementById('facacc-' + itemId);
+    if (!acc) return;
+    openAccordion(acc);
+    const btn = acc.querySelector('.fac-water-comp-btn');
+    const panel = acc.querySelector('.fac-water-comp-panel');
+    if (btn && panel && panel.classList.contains('hidden')) {
+      panel.classList.remove('hidden');
+      btn.classList.add('open');
+      const chev = btn.querySelector('.fac-water-comp-chevron');
+      if (chev) chev.textContent = '▲';
+    }
+    setTimeout(() => {
+      const target = panel || acc;
+      target.scrollIntoView({ behavior: 'auto', block: 'start' });
+      facFlash(target);
+    }, 60);
+  }
+
+  window.openFacilityItem = openFacilityItem;
+  window.openFacilityIntro = openFacilityIntro;
+  window.openFacilityWaterComp = openFacilityWaterComp;
+
   function encodePath(path) {
     return path.split('/').map((seg, i) => (i === 0 && (seg === '.' || seg === '..')) ? seg : encodeURIComponent(seg)).join('/');
   }
@@ -128,6 +203,7 @@
   function buildAccordion(item) {
     const wrap = document.createElement('div');
     wrap.className = 'rg-accordion';
+    if (item.id) wrap.id = 'facacc-' + item.id;
 
     const header = document.createElement('button');
     header.type = 'button';
