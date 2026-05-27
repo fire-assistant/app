@@ -37,18 +37,13 @@
   <script>
     if ('serviceWorker' in navigator) {
       var _reloading = false;
+      // 로드 시점에 이미 SW가 제어 중이었나? 첫 방문이면 null이라 false.
+      // 첫 설치(activate)에서도 controllerchange/CACHE_UPDATED가 터지므로,
+      // 재방문자(이미 제어 중)일 때만 새로고침해야 인트로 영상이 안 끊김.
+      var _wasControlled = !!navigator.serviceWorker.controller;
       function _forceReload() {
         if (_reloading) return;
         _reloading = true;
-        try {
-          var o = document.getElementById('intro-video-overlay');
-          if (o && !o.classList.contains('hidden')) {
-            for (var i = localStorage.length - 1; i >= 0; i--) {
-              var k = localStorage.key(i);
-              if (k && k.indexOf('introVideoSeen') === 0) localStorage.removeItem(k);
-            }
-          }
-        } catch {}
         window.location.reload();
       }
       window.addEventListener('load', function() {
@@ -61,10 +56,12 @@
           });
         // SW activate 후 postMessage 수신 (iOS 홈화면 앱 대응)
         navigator.serviceWorker.addEventListener('message', function(e) {
-          if (e.data && e.data.type === 'CACHE_UPDATED') _forceReload();
+          if (e.data && e.data.type === 'CACHE_UPDATED' && _wasControlled) _forceReload();
         });
-        // controllerchange fallback (PC/Android)
-        navigator.serviceWorker.addEventListener('controllerchange', _forceReload);
+        // controllerchange fallback (PC/Android) — 재방문자만
+        if (_wasControlled) {
+          navigator.serviceWorker.addEventListener('controllerchange', _forceReload);
+        }
       });
     }
   </script>
