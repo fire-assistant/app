@@ -67,7 +67,7 @@
   </script>
 </head>
 <body>
-  <canvas id="sakuraCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; display: none;"></canvas>
+  <canvas id="sakuraCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; display: none;"></canvas>
   <!-- Google Tag Manager (noscript) — devMode면 출력 안 함 -->
   <script>if (!window.__analyticsDisabled) document.write('<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MPVSSTJH" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>');</script>
   <!-- End Google Tag Manager (noscript) -->
@@ -184,7 +184,7 @@
         📖 이용 안내
       </button>
       <button id="open-contact" class="shortcut-add-btn" type="button">
-        ✉️ 개발자에게 연락하기
+        ✉️ 문의하기
       </button>
     </div>
   </section>
@@ -606,12 +606,12 @@
               <span class="guide-info-row-text">귀엽습니다</span>
             </div>
             <div class="guide-info-row">
-              <span class="guide-info-row-label">불러오기</span>
+              <span class="guide-info-row-label">소환</span>
               <span class="guide-info-row-text">메인화면 우측 상단 강아지 얼굴 버튼 — 누르면 나타나고, 다시 누르면 사라집니다</span>
             </div>
             <div class="guide-info-row">
               <span class="guide-info-row-label">조작</span>
-              <span class="guide-info-row-text">클릭하면 메뉴 패널, 더블클릭하면 메인화면으로 이동, 끌면 위치 이동</span>
+              <span class="guide-info-row-text">클릭하면 메뉴 패널을 열고, 더블클릭하면 메인화면으로 이동. 끌면 위치 이동</span>
             </div>
             <div class="guide-info-row">
               <span class="guide-info-row-label">환경</span>
@@ -632,27 +632,55 @@
           </div>
         </div>
         <div class="guide-info-body">
-          <p>화면 우측 상단 아이콘을 누를 때마다 테마가 순환됩니다. 선택한 테마는 기기에 저장됩니다.</p>
+          <p>버튼을 누를 때마다 <strong>계절 → 낮 → 밤</strong> 순으로 순환됩니다. 계절 테마는 현재 날짜에 맞게 자동으로 적용됩니다.</p>
           <div class="guide-theme-chips">
             <div class="guide-theme-chip">
               <div class="guide-theme-chip-swatch theme-swatch-blossom">🌸</div>
               <div class="guide-theme-chip-meta">
-                <span class="guide-theme-chip-name">벚꽃</span>
-                <span class="guide-theme-chip-desc">분홍 계열 + 꽃잎 애니메이션</span>
+                <span class="guide-theme-chip-name">봄 (3~5월)</span>
+                <span class="guide-theme-chip-desc">연분홍 + 꽃잎 애니메이션</span>
               </div>
             </div>
             <div class="guide-theme-chip">
-              <div class="guide-theme-chip-swatch theme-swatch-dark">🌙</div>
+              <div class="guide-theme-chip-swatch theme-swatch-summer">🌊</div>
               <div class="guide-theme-chip-meta">
-                <span class="guide-theme-chip-name">다크</span>
-                <span class="guide-theme-chip-desc">어두운 배경 + 빨간 포인트</span>
+                <span class="guide-theme-chip-name">여름 해변 (6~8월)</span>
+                <span class="guide-theme-chip-desc">크림/모래빛 + 기러기 떼 애니메이션</span>
+              </div>
+            </div>
+            <div class="guide-theme-chip">
+              <div class="guide-theme-chip-swatch theme-swatch-autumn">🍂</div>
+              <div class="guide-theme-chip-meta">
+                <span class="guide-theme-chip-name">가을 (9~11월)</span>
+                <span class="guide-theme-chip-desc">따뜻한 베이지 + 낙엽 애니메이션</span>
+              </div>
+            </div>
+            <div class="guide-theme-chip">
+              <div class="guide-theme-chip-swatch theme-swatch-winter">❄️</div>
+              <div class="guide-theme-chip-meta">
+                <span class="guide-theme-chip-name">겨울 (12~2월)</span>
+                <span class="guide-theme-chip-desc">차가운 회청색 + 눈송이 애니메이션</span>
               </div>
             </div>
             <div class="guide-theme-chip">
               <div class="guide-theme-chip-swatch theme-swatch-official">☀️</div>
               <div class="guide-theme-chip-meta">
-                <span class="guide-theme-chip-name">낮</span>
+                <span class="guide-theme-chip-name">낮 모드</span>
                 <span class="guide-theme-chip-desc">흰 배경 + 네이비 포인트의 밝은 모드</span>
+              </div>
+            </div>
+            <div class="guide-theme-chip">
+              <div class="guide-theme-chip-swatch theme-swatch-dark">🌙</div>
+              <div class="guide-theme-chip-meta">
+                <span class="guide-theme-chip-name">밤 모드</span>
+                <span class="guide-theme-chip-desc">어두운 배경 + 빨간 포인트 (봄·가을·겨울 밤)</span>
+              </div>
+            </div>
+            <div class="guide-theme-chip">
+              <div class="guide-theme-chip-swatch theme-swatch-summer-night">🌌</div>
+              <div class="guide-theme-chip-meta">
+                <span class="guide-theme-chip-name">여름밤</span>
+                <span class="guide-theme-chip-desc">짙은 인디고 + 시안 + 반딧불 애니메이션</span>
               </div>
             </div>
           </div>
@@ -944,8 +972,8 @@
   <!-- 개발자 연락 확인 모달 -->
   <div id="contact-confirm-modal" class="reminder-modal-overlay hidden">
     <div class="reminder-modal-box">
-      <h3 class="reminder-modal-title">✉️ 개발자에게 연락하기</h3>
-      <p class="reminder-modal-desc">Gmail을 통해 개발자에게 메일을 보냅니다.<br>제대로 열리지 않을 시 아래 주소로 직접 메일해주세요.</p>
+      <h3 class="reminder-modal-title">✉️ 문의하기</h3>
+      <p class="reminder-modal-desc">'메일 보내러 가기' 버튼을 누르면 개발자에게 <br>Gmail을 통해 메일을 보냅니다.<br>버튼이 열리지 않으면 주소를 복사해 직접 보내셔도 됩니다.</p>
       <div class="contact-confirm-email">
         <span id="contact-email-text">carrotcakehope@gmail.com</span>
         <button id="contact-copy-btn" class="contact-copy-btn" type="button" title="복사">📋</button>
@@ -1078,83 +1106,218 @@
   (() => {
     const canvas = document.getElementById('sakuraCanvas');
     const ctx = canvas.getContext('2d');
+    let particles = [];
+    let animMode = null;
+    let waveOffset = 0;
 
     function resize() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', () => { resize(); resetParticles(animMode); });
     resize();
+
+    const ANIMATED = new Set(['blossom', 'summer', 'summer-night', 'autumn', 'winter']);
 
     function checkTheme() {
       const theme = document.documentElement.getAttribute('data-theme');
-      canvas.style.display = theme === 'blossom' ? 'block' : 'none';
+      const show = ANIMATED.has(theme);
+      canvas.style.display = show ? 'block' : 'none';
+      const newMode = show ? theme : null;
+      if (newMode !== animMode) { animMode = newMode; resetParticles(animMode); }
     }
 
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    checkTheme();
-
-    const colors = ['#ffffff', '#f8c8d4', '#f0a0b8'];
-    const numPetals = Math.floor(Math.random() * 21) + 30;
-    const petals = [];
-
+    /* ── 봄: 꽃잎 ── */
     class Petal {
-      constructor() {
-        this.reset();
-        this.y = Math.random() * canvas.height;
-      }
-
-      reset() {
+      constructor(init) { this.reset(init); }
+      reset(init) {
         this.x = Math.random() * canvas.width;
-        this.y = -20;
-        this.width = Math.random() * 8 + 6;
-        this.height = Math.random() * 12 + 10;
-        this.speedY = Math.random() * 1.2 + 0.5;
-        this.speedX = Math.random() * 0.5 - 0.25;
-        this.opacity = Math.random() * 0.5 + 0.4;
-        this.color = colors[Math.floor(Math.random() * colors.length)];
-        this.angle = Math.random() * Math.PI * 2;
-        this.spin = (Math.random() - 0.5) * 0.04;
-        this.sway = Math.random() * Math.PI * 2;
-        this.swaySpeed = Math.random() * 0.02 + 0.01;
+        this.y = init ? Math.random() * canvas.height : -20;
+        this.w = Math.random() * 8 + 6; this.h = Math.random() * 12 + 10;
+        this.vy = Math.random() * 1.2 + 0.5; this.vx = Math.random() * 0.5 - 0.25;
+        this.alpha = Math.random() * 0.5 + 0.4;
+        this.color = ['#ffffff','#f8c8d4','#f0a0b8'][Math.floor(Math.random()*3)];
+        this.angle = Math.random() * Math.PI * 2; this.spin = (Math.random()-0.5)*0.04;
+        this.sway = Math.random() * Math.PI * 2; this.swaySpeed = Math.random()*0.02+0.01;
       }
-
       update() {
-        this.y += this.speedY;
-        this.x += this.speedX + Math.sin(this.sway) * 0.8;
-        this.sway += this.swaySpeed;
-        this.angle += this.spin;
-        if (this.y > canvas.height + 20 || this.x < -20 || this.x > canvas.width + 20) {
-          this.reset();
-        }
+        this.y += this.vy; this.x += this.vx + Math.sin(this.sway)*0.8;
+        this.sway += this.swaySpeed; this.angle += this.spin;
+        if (this.y > canvas.height+20 || this.x < -20 || this.x > canvas.width+20) this.reset(false);
       }
-
       draw() {
-        ctx.save();
-        ctx.globalAlpha = this.opacity;
-        ctx.fillStyle = this.color;
+        ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
+        ctx.translate(this.x, this.y); ctx.rotate(this.angle);
+        ctx.beginPath(); ctx.ellipse(0,0,this.w/2,this.h/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      }
+    }
+
+    /* ── 여름 해변: 기러기 ── */
+    class Goose {
+      constructor(init) { this.reset(init); }
+      reset(init) {
+        this.dir = Math.random() > 0.5 ? 1 : -1;
+        this.x = init ? Math.random()*canvas.width : (this.dir===1 ? -80 : canvas.width+80);
+        this.y = Math.random() * canvas.height * 0.62 + 30;
+        this.vx = this.dir * (Math.random()*0.3+0.18);
+        this.vy = (Math.random()-0.5)*0.15;
+        this.size = Math.random()*10+9;
+        this.alpha = Math.random()*0.3+0.28;
+        this.wing = Math.random()*Math.PI*2;
+        this.wingSpd = Math.random()*0.045+0.03;
+      }
+      update() {
+        this.x += this.vx; this.y += this.vy + Math.sin(this.wing*0.28)*0.12;
+        this.wing += this.wingSpd;
+        if (this.x < -120 || this.x > canvas.width+120) this.reset(false);
+        if (this.y > canvas.height * 0.72) this.y = canvas.height * 0.72;
+      }
+      draw() {
+        ctx.save(); ctx.globalAlpha = this.alpha;
+        ctx.strokeStyle = '#4a8898'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
         ctx.translate(this.x, this.y);
-        ctx.rotate(this.angle);
-        ctx.beginPath();
-        ctx.ellipse(0, 0, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
-        ctx.fill();
+        if (this.dir === -1) ctx.scale(-1,1);
+        const dip = Math.sin(this.wing) * this.size * 0.42;
+        const s = this.size;
+        ctx.beginPath(); ctx.moveTo(-s*0.28,0); ctx.lineTo(s*0.28,0); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-s*0.1,0); ctx.quadraticCurveTo(-s*0.52,dip,-s*1.05,dip*0.55); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(s*0.1,0); ctx.quadraticCurveTo(s*0.52,dip,s*1.05,dip*0.55); ctx.stroke();
+        ctx.beginPath(); ctx.arc(s*0.42,-s*0.12,s*0.14,0,Math.PI*2);
+        ctx.fillStyle='#4a8898'; ctx.fill(); ctx.restore();
+      }
+    }
+
+    /* ── 여름밤: 반딧불이 ── */
+    class Firefly {
+      constructor(init) { this.reset(init); }
+      reset(init) {
+        this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height;
+        this.glow = Math.random()*Math.PI*2; this.glowSpd = Math.random()*0.03+0.015;
+        this.maxA = Math.random()*0.7+0.3; this.size = Math.random()*2.5+1.5;
+        this.wander = Math.random()*Math.PI*2; this.wanderSpd = (Math.random()-0.5)*0.04;
+        this.color = Math.random()>0.35 ? '#90ffb0' : '#70e8ff';
+      }
+      update() {
+        this.glow += this.glowSpd; this.wander += this.wanderSpd;
+        this.x += Math.cos(this.wander)*0.38; this.y += Math.sin(this.wander)*0.28;
+        if (this.x<-10) this.x=canvas.width+10; if (this.x>canvas.width+10) this.x=-10;
+        if (this.y<-10) this.y=canvas.height+10; if (this.y>canvas.height+10) this.y=-10;
+      }
+      draw() {
+        const a = (Math.sin(this.glow)+1)/2*this.maxA;
+        if (a<0.02) return;
+        ctx.save(); ctx.shadowBlur=14; ctx.shadowColor=this.color;
+        ctx.globalAlpha=a; ctx.fillStyle=this.color;
+        ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill();
+        ctx.shadowBlur=4; ctx.globalAlpha=a*0.75; ctx.fillStyle='#ffffff';
+        ctx.beginPath(); ctx.arc(this.x,this.y,this.size*0.38,0,Math.PI*2); ctx.fill();
         ctx.restore();
       }
     }
 
-    for (let i = 0; i < numPetals; i++) {
-      petals.push(new Petal());
+    /* ── 가을: 낙엽 ── */
+    class Leaf {
+      constructor(init) { this.reset(init); }
+      reset(init) {
+        this.x = Math.random()*canvas.width; this.y = init ? Math.random()*canvas.height : -20;
+        this.size = Math.random()*11+8; this.vy = Math.random()*0.9+0.35;
+        this.vx = (Math.random()-0.5)*0.7; this.spin = (Math.random()-0.5)*0.05;
+        this.angle = Math.random()*Math.PI*2; this.alpha = Math.random()*0.5+0.4;
+        this.sway = Math.random()*Math.PI*2; this.swaySpd = Math.random()*0.022+0.01;
+        this.color = ['#c84020','#d06020','#e08820','#b83820','#c85010'][Math.floor(Math.random()*5)];
+      }
+      update() {
+        this.y += this.vy; this.x += this.vx+Math.sin(this.sway)*0.55;
+        this.sway += this.swaySpd; this.angle += this.spin;
+        if (this.y>canvas.height+20||this.x<-30||this.x>canvas.width+30) this.reset(false);
+      }
+      draw() {
+        ctx.save(); ctx.globalAlpha=this.alpha; ctx.fillStyle=this.color;
+        ctx.translate(this.x,this.y); ctx.rotate(this.angle);
+        ctx.beginPath();
+        ctx.moveTo(0,-this.size*0.5);
+        ctx.quadraticCurveTo(this.size*0.5,0,0,this.size*0.5);
+        ctx.quadraticCurveTo(-this.size*0.5,0,0,-this.size*0.5);
+        ctx.fill(); ctx.restore();
+      }
+    }
+
+    /* ── 겨울: 눈송이 ── */
+    class Snowflake {
+      constructor(init) { this.reset(init); }
+      reset(init) {
+        this.x = Math.random()*canvas.width; this.y = init ? Math.random()*canvas.height : -10;
+        this.size = Math.random()*3+1.5; this.vy = Math.random()*0.7+0.25;
+        this.vx = (Math.random()-0.5)*0.35; this.alpha = Math.random()*0.5+0.3;
+        this.sway = Math.random()*Math.PI*2; this.swaySpd = Math.random()*0.014+0.007;
+      }
+      update() {
+        this.y += this.vy; this.x += this.vx+Math.sin(this.sway)*0.35;
+        this.sway += this.swaySpd;
+        if (this.y>canvas.height+10||this.x<-10||this.x>canvas.width+10) this.reset(false);
+      }
+      draw() {
+        ctx.save(); ctx.globalAlpha=this.alpha; ctx.fillStyle='#cce4ff';
+        ctx.shadowBlur=5; ctx.shadowColor='#90c0ff';
+        ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); ctx.restore();
+      }
+    }
+
+    const COUNTS = { blossom:42, summer:14, 'summer-night':38, autumn:36, winter:65 };
+    const CLASSES = { blossom:Petal, summer:Goose, 'summer-night':Firefly, autumn:Leaf, winter:Snowflake };
+
+    function resetParticles(mode) {
+      particles = [];
+      if (!mode) return;
+      const Cls = CLASSES[mode];
+      for (let i=0; i<(COUNTS[mode]||30); i++) particles.push(new Cls(true));
+    }
+
+    function drawWaves() {
+      const h = canvas.height;
+      const w = canvas.width;
+      const waves = [
+        { yRatio: 0.91, amp: 10, freq: 0.50, phaseOff: 0.0,  fillA: 0.22, strokeA: 0.30 },
+        { yRatio: 0.95, amp:  7, freq: 0.68, phaseOff: 1.9,  fillA: 0.28, strokeA: 0.38 },
+        { yRatio: 0.98, amp:  4, freq: 0.90, phaseOff: 3.6,  fillA: 0.34, strokeA: 0.46 },
+      ];
+      waves.forEach(wave => {
+        const baseY = h * wave.yRatio;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(0, h);
+        for (let x = 0; x <= w; x += 4) {
+          const y = baseY + Math.sin(x * wave.freq * Math.PI * 2 / w + waveOffset + wave.phaseOff) * wave.amp;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(w, h);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(30,130,195,${wave.fillA})`;
+        ctx.fill();
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 4) {
+          const y = baseY + Math.sin(x * wave.freq * Math.PI * 2 / w + waveOffset + wave.phaseOff) * wave.amp;
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = `rgba(20,110,175,${wave.strokeA})`;
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+        ctx.restore();
+      });
+      waveOffset += 0.002;
     }
 
     function animate() {
-      if (canvas.style.display === 'block') {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        petals.forEach(p => { p.update(); p.draw(); });
+      if (canvas.style.display==='block' && animMode) {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        if (animMode === 'summer') drawWaves();
+        particles.forEach(p => { p.update(); p.draw(); });
       }
       requestAnimationFrame(animate);
     }
 
+    new MutationObserver(checkTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    checkTheme();
     animate();
   })();
   </script>

@@ -14052,20 +14052,47 @@ renderHomeReminders();
 
 // ── Theme Toggle ──────────────────────────────────────────────
 (function initTheme() {
-  const THEMES = ['blossom', 'dark', 'official'];
-  const THEME_META = {
-    blossom:  { icon: '🌙',  title: '어두운 테마로 전환' },
-    dark:     { icon: '☀️',  title: '낮 테마로 전환' },
-    official: { icon: '🌸',  title: '벚꽃 테마로 전환' },
+  const SEASON_DAY   = { spring: 'blossom', summer: 'summer', autumn: 'autumn', winter: 'winter' };
+  const SEASON_NIGHT = { spring: 'dark', summer: 'summer-night', autumn: 'dark', winter: 'dark' };
+  const THEME_ICONS  = {
+    blossom: '🌸', summer: '🌊', autumn: '🍂', winter: '❄️',
+    'summer-night': '🌌', official: '☀️', dark: '🌙',
   };
+  const THEME_LABELS = {
+    blossom: '벚꽃 테마로', summer: '여름 해변으로', autumn: '가을 테마로', winter: '겨울 테마로',
+    'summer-night': '여름밤으로', official: '낮 모드로', dark: '밤 모드로',
+  };
+  const DEV_ALL = ['blossom', 'summer', 'autumn', 'winter', 'official', 'dark', 'summer-night'];
+  const SEASONAL = new Set(['blossom', 'summer', 'autumn', 'winter']);
+  const NIGHTS   = new Set(['dark', 'summer-night']);
+
+  function getSeason() {
+    const m = new Date().getMonth() + 1;
+    if (m >= 3 && m <= 5) return 'spring';
+    if (m >= 6 && m <= 8) return 'summer';
+    if (m >= 9 && m <= 11) return 'autumn';
+    return 'winter';
+  }
+
+  function getNextTheme(cur) {
+    if (localStorage.getItem('devMode') === 'true') {
+      return DEV_ALL[(DEV_ALL.indexOf(cur) + 1) % DEV_ALL.length];
+    }
+    const s = getSeason();
+    const slots = [SEASON_DAY[s], 'official', SEASON_NIGHT[s]];
+    const idx = slots.indexOf(cur);
+    return slots[(idx < 0 ? 1 : idx + 1) % slots.length];
+  }
 
   function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     localStorage.setItem('theme', t);
-    const meta = THEME_META[t];
+    const next = getNextTheme(t);
+    const icon  = THEME_ICONS[next]  || '☀️';
+    const title = (THEME_LABELS[next] || '테마 전환') + ' 전환';
     document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
-      btn.textContent = meta.icon;
-      btn.title = meta.title;
+      btn.textContent = icon;
+      btn.title = title;
     });
   }
 
@@ -14076,16 +14103,20 @@ renderHomeReminders();
     tb.appendChild(btn);
   });
 
-  let saved = localStorage.getItem('theme') || 'blossom';
+  const s = getSeason();
+  const isDev = localStorage.getItem('devMode') === 'true';
+  let saved = localStorage.getItem('theme') || SEASON_DAY[s];
   if (saved === 'light') saved = 'official';
-  if (saved === 'summer') saved = 'blossom';
+  if (!isDev) {
+    if (SEASONAL.has(saved)) saved = SEASON_DAY[s];
+    else if (NIGHTS.has(saved)) saved = SEASON_NIGHT[s];
+  }
   applyTheme(saved);
 
   document.addEventListener('click', e => {
     if (e.target.closest('.theme-toggle-btn')) {
       const cur = document.documentElement.getAttribute('data-theme');
-      const next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
-      applyTheme(next);
+      applyTheme(getNextTheme(cur));
     }
   });
 })();
@@ -15636,6 +15667,10 @@ document.getElementById('contact-confirm-cancel').addEventListener('click', func
   document.getElementById('contact-confirm-modal').classList.add('hidden');
 });
 
+document.getElementById('contact-confirm-modal').addEventListener('click', function (e) {
+  if (e.target === this) this.classList.add('hidden');
+});
+
 document.getElementById('contact-confirm-ok').addEventListener('click', function () {
   document.getElementById('contact-confirm-modal').classList.add('hidden');
   var isAndroid = /android/i.test(navigator.userAgent);
@@ -16239,7 +16274,7 @@ function goToRgGuideSection(tab, sectionId) {
     title: "\uc77c\uad6c \ub3c4\uc6b0\ubbf8",
     intro: "\ud544\uc694\ud558\uba74 \uc5b8\uc81c\ub4e0 \ubd88\ub7ec\uc8fc\uc138\uc694. \uc228\uae30\uae30\ub97c \ub204\ub974\uba74 \uc77c\uad6c\uac00 \uc9d1\uc5d0 \uc26c\ub7ec \ub3cc\uc544\uac00\uc694. \uc77c\uad6c\ub97c \ub354\ube14\ud074\ub9ad\ud558\uba74 \uba54\uc778\ud654\uba74\uc73c\ub85c \ub3cc\uc544\uac08 \uc218 \uc788\uc5b4\uc694.",
     search: "\uae30\ub2a5 \ucc3e\uae30",
-    guide: "\uc0ac\uc6a9 \uc548\ub0b4",
+    guide: "\uc774\uc6a9 \uc548\ub0b4",
     contact: "\ubb38\uc758\ud558\uae30",
     hide: "\uc228\uae30\uae30",
     open: "\ubc14\ub85c \uc5f4\uae30",
