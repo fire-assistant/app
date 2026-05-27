@@ -401,16 +401,6 @@ const multiuseSteps = [
     type: "compound",
   },
   {
-    key: "multiuseOnSecondToTenthFloor",
-    title: "다중이용업소가 2층~10층 사이에 설치돼있나요?",
-    help: "맞다면 피난기구를 설치해야 합니다.",
-    type: "choice",
-    options: [
-      { value: "yes", label: "예", description: "2층부터 10층 사이에 설치돼 있음" },
-      { value: "no", label: "아니오", description: "해당 층 범위가 아님" },
-    ],
-  },
-  {
     key: "multiuseOnGroundOrRefugeFloor",
     title: "지상 1층이나 피난층에 설치돼있나요?",
     help: "산후조리업이나 고시원에 해당할 때만 확인하며, 맞다면 간이스프링클러설비 대상에서 제외합니다.",
@@ -418,6 +408,16 @@ const multiuseSteps = [
     options: [
       { value: "yes", label: "예", description: "지상 1층 또는 피난층에 설치돼 있음" },
       { value: "no", label: "아니오", description: "지상 1층 또는 피난층이 아님" },
+    ],
+  },
+  {
+    key: "multiuseOnSecondToTenthFloor",
+    title: "다중이용업소가 2층~4층 사이에 설치돼있나요?",
+    help: "맞다면 피난기구를 설치해야 합니다.",
+    type: "choice",
+    options: [
+      { value: "yes", label: "예", description: "2층부터 4층 사이에 설치돼 있음" },
+      { value: "no", label: "아니오", description: "해당 층 범위가 아님" },
     ],
   },
   {
@@ -1091,7 +1091,7 @@ function getActiveSteps() {
         return state.answers.multiuseIsPostpartum === "yes" || state.answers.multiuseIsGosiwon === "yes";
       }
       if (step.key === "multiuseOnSecondToTenthFloor") {
-        return state.answers.multiuseInBasement !== "yes";
+        return state.answers.multiuseInBasement !== "yes" && state.answers.multiuseOnGroundOrRefugeFloor !== "yes";
       }
       return true;
     });
@@ -1782,7 +1782,7 @@ function normalizeAnswers() {
     multiuseIsPostpartum: toBool(state.answers.multiuseIsPostpartum),
     multiuseIsGosiwon: toBool(state.answers.multiuseIsGosiwon),
     multiuseIsGunRange: toBool(state.answers.multiuseIsGunRange),
-    multiuseOnSecondToTenthFloor: toBool(state.answers.multiuseOnSecondToTenthFloor) && state.answers.multiuseInBasement !== "yes",
+    multiuseOnSecondToTenthFloor: toBool(state.answers.multiuseOnSecondToTenthFloor) && state.answers.multiuseInBasement !== "yes" && state.answers.multiuseOnGroundOrRefugeFloor !== "yes",
     multiuseOnGroundOrRefugeFloor: toBool(state.answers.multiuseOnGroundOrRefugeFloor),
     multiuseUsesAV: toBool(state.answers.multiuseUsesAV),
     multiuseHasGasFacility: toBool(state.answers.multiuseHasGasFacility),
@@ -2931,9 +2931,9 @@ function evaluateMultiuseFacilities(input) {
     requiredItems.push({ category: categories.alarm, name: "가스누설경보기", status: "required", reason: "가스시설을 사용하는 주방 또는 난방시설이 있습니다." });
   }
 
-  // 피난기구 (2~10층)
+  // 피난기구 (2~4층)
   if (input.multiuseOnSecondToTenthFloor) {
-    requiredItems.push({ category: categories.evacuation, name: "피난기구", status: "required", reason: "다중이용업소가 2층부터 10층 사이에 설치돼 있어 피난기구 설치대상입니다. 주로 구조대나 피난사다리를 설치하며, 법에는 완강기 설치가 가능하지만 대구에서는 완강기 설치가 불가합니다." });
+    requiredItems.push({ category: categories.evacuation, name: "피난기구", status: "required", reason: "다중이용업소가 2층부터 4층 사이에 설치돼 있어 피난기구 설치대상입니다. 주로 구조대나 피난사다리를 설치하며, 법에는 완강기 설치가 가능하지만 대구에서는 완강기 설치가 불가합니다." });
   }
 
   // 피난유도선 (피난통로/복도 있을 때)
@@ -16245,12 +16245,24 @@ applyDevMode();
     frame = 0;
     clearInterval(timer);
     paintFrame();
+    const stateMs = states[currentState].ms;
+    let loopsDone = 0;
     timer = setInterval(function () {
       const state = states[currentState];
       if (state.holdLast && frame >= state.frames - 1) return;
-      frame = (frame + 1) % state.frames;
+      const next = (frame + 1) % state.frames;
+      if (next < frame) {
+        loopsDone++;
+        if (state.loops && loopsDone >= state.loops) {
+          clearInterval(timer);
+          timer = null;
+          setState("idle");
+          return;
+        }
+      }
+      frame = next;
       paintFrame();
-    }, states[currentState].ms);
+    }, stateMs);
   }
 
   function paintFrame() {
