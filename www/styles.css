@@ -8560,13 +8560,19 @@ html[data-theme="blossom"] .ilgu-resize-handle {
 
 html[data-theme="light"] .ilgu-assistant-panel,
 html[data-theme="official"] .ilgu-assistant-panel,
-html[data-theme="blossom"] .ilgu-assistant-panel {
+html[data-theme="blossom"] .ilgu-assistant-panel,
+html[data-theme="summer"] .ilgu-assistant-panel,
+html[data-theme="autumn"] .ilgu-assistant-panel,
+html[data-theme="winter"] .ilgu-assistant-panel {
   background: rgba(255, 255, 255, 0.94);
 }
 
 html[data-theme="light"] .ilgu-panel-action,
 html[data-theme="official"] .ilgu-panel-action,
-html[data-theme="blossom"] .ilgu-panel-action {
+html[data-theme="blossom"] .ilgu-panel-action,
+html[data-theme="summer"] .ilgu-panel-action,
+html[data-theme="autumn"] .ilgu-panel-action,
+html[data-theme="winter"] .ilgu-panel-action {
   background: #f6f6f6;
 }
 

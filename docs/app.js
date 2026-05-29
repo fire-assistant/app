@@ -14117,6 +14117,11 @@ renderHomeReminders();
     return 'winter';
   }
 
+  function getSummerTheme() {
+    const h = new Date().getHours();
+    return (h >= 9 && h < 18) ? 'summer' : 'summer-night';
+  }
+
   function getNextTheme(cur) {
     if (localStorage.getItem('devMode') === 'true') {
       return DEV_ALL[(DEV_ALL.indexOf(cur) + 1) % DEV_ALL.length];
@@ -14151,8 +14156,12 @@ renderHomeReminders();
   let saved = localStorage.getItem('theme') || SEASON_DAY[s];
   if (saved === 'light') saved = 'official';
   if (!isDev) {
-    if (SEASONAL.has(saved)) saved = SEASON_DAY[s];
-    else if (NIGHTS.has(saved)) saved = SEASON_NIGHT[s];
+    if (s === 'summer') {
+      if (SEASONAL.has(saved) || saved === 'summer-night') saved = getSummerTheme();
+    } else {
+      if (SEASONAL.has(saved)) saved = SEASON_DAY[s];
+      else if (NIGHTS.has(saved)) saved = SEASON_NIGHT[s];
+    }
   }
   applyTheme(saved);
 
@@ -16570,7 +16579,8 @@ function goToRgGuideSection(tab, sectionId) {
       btn.type = "button";
       btn.className = "ilgu-panel-action" + (action.primary ? " primary" : "");
       btn.textContent = action.label;
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
         clearPanelAutoClose();
         action.onClick();
       });
@@ -16581,10 +16591,35 @@ function goToRgGuideSection(tab, sectionId) {
     schedulePanelAutoClose();
   }
 
+  const MAIN_MENU_JUMPS = [
+    { id: "open-explorer", short: "소방시설 탐색기" },
+    { id: "open-multiuse-decoder", short: "다중이용업소 탐색기" },
+    { id: "open-date-calculator", short: "법정기한 계산기" },
+    { id: "open-report-guide", short: "자체점검 가이드" },
+    { id: "open-facilities", short: "소방시설 도감" },
+    { id: "open-occupancy-calculator", short: "유틸리티 도구함" },
+  ];
+
+  function openMenuJumpPanel() {
+    setState("waving");
+    const actions = MAIN_MENU_JUMPS.map(function (m) {
+      return {
+        label: m.short,
+        onClick: function () {
+          closePanel();
+          document.getElementById(m.id)?.click();
+        }
+      };
+    });
+    actions.push({ label: "← 뒤로", onClick: openHomePanel });
+    openPanel("어디로 갈까요?", "메뉴를 선택하면 바로 이동해요.", actions);
+  }
+
   function openHomePanel() {
     setState("waving");
     openPanel(text.title, text.intro, [
       { label: text.search, onClick: focusSearch },
+      { label: "메뉴 이동", onClick: openMenuJumpPanel },
       { label: text.guide, onClick: function () { closePanel(); showScreen("guide"); } },
       { label: text.contact, onClick: function () { closePanel(); document.getElementById("open-contact")?.click(); } },
       { label: text.hide, onClick: hideAssistant },
@@ -17161,6 +17196,9 @@ function goToRgGuideSection(tab, sectionId) {
   const reward = document.getElementById("devletter-reward");
   const rewardFortuneEl = document.getElementById("devletter-reward-fortune");
   const rewardCloseBtn = document.getElementById("devletter-reward-close");
+  const musicModal = document.getElementById("devletter-music-modal");
+  const musicModalYes = document.getElementById("devletter-music-yes");
+  const musicModalNo = document.getElementById("devletter-music-no");
 
   if (!openBtn) return;
 
@@ -17278,6 +17316,14 @@ function goToRgGuideSection(tab, sectionId) {
     musicPanel.hidden = !musicPanel.hidden;
   }
 
+  function showMusicPrompt() {
+    if (!musicModal) { playDevLetterMusic(); return; }
+    musicModal.classList.remove("hidden");
+  }
+  function hideMusicPrompt() {
+    if (musicModal) musicModal.classList.add("hidden");
+  }
+
   function pickFortune() {
     return FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
   }
@@ -17388,11 +17434,12 @@ function goToRgGuideSection(tab, sectionId) {
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
       document.getElementById("screen-developer-letter").classList.add("active");
     }
-    playDevLetterMusic();
+    showMusicPrompt();
   });
 
   if (backBtn) {
     backBtn.addEventListener("click", () => {
+      hideMusicPrompt();
       stopDevLetterMusic();
       if (typeof showScreen === "function") showScreen("home");
     });
@@ -17452,19 +17499,23 @@ function goToRgGuideSection(tab, sectionId) {
     });
   }
 
+  if (musicModalYes) musicModalYes.addEventListener("click", () => { hideMusicPrompt(); playDevLetterMusic(); });
+  if (musicModalNo) musicModalNo.addEventListener("click", hideMusicPrompt);
+  if (musicModal) musicModal.addEventListener("click", (e) => { if (e.target === musicModal) hideMusicPrompt(); });
+
   if (rewardCloseBtn) rewardCloseBtn.addEventListener("click", hideReward);
   if (reward) reward.addEventListener("click", (e) => {
     if (e.target === reward) hideReward();
   });
 
-  // 점검용: 프로필 사진 5번 연속 클릭 시 보상카드 강제 출력
-  (function attachAvatarSecret() {
-    const avatar = document.querySelector("#screen-developer-letter .devletter-avatar");
-    if (!avatar) return;
-    avatar.style.cursor = "pointer";
+  // 점검용: '— 한 센터 대원 드림' 서명 5번 연속 클릭 시 보상카드 강제 출력
+  (function attachSignSecret() {
+    const sign = document.querySelector("#screen-developer-letter .devletter-sign");
+    if (!sign) return;
+    sign.style.cursor = "pointer";
     let count = 0;
     let timer = null;
-    avatar.addEventListener("click", () => {
+    sign.addEventListener("click", () => {
       count++;
       clearTimeout(timer);
       timer = setTimeout(() => { count = 0; }, 1500);

@@ -588,7 +588,7 @@
               <span class="guide-info-row-text">Safari 공유 버튼 → <strong>홈 화면에 추가</strong></span>
             </div>
           </div>
-          <p class="guide-info-note">✅ 설치 후엔 주소창 없이 전체화면으로 실행되며, 한 번 로딩 뒤에는 인터넷 없이도 기본 기능을 사용할 수 있습니다.</p>
+          <p class="guide-info-note">✅ 어플 설치시 보안관련 경고창이 뜰 수도 있습니다. 어플을 한번 설치하면, 인터넷 없이도 기본 기능을 사용할 수 있습니다.</p>
         </div>
       </div>
 
@@ -635,7 +635,7 @@
           </div>
         </div>
         <div class="guide-info-body">
-          <p>버튼을 누를 때마다 <strong>계절 → 낮 → 밤</strong> 순으로 순환됩니다. 계절 테마는 현재 날짜에 맞게 자동으로 적용됩니다.</p>
+          <p>버튼을 누를 때마다 <strong>계절 → 낮 → 밤</strong> 순으로 순환됩니다. 계절 테마는 현재 날짜에 맞게 자동으로 적용됩니다. 여름(6~8월)에는 09~18시에 여름 해변, 나머지 시간에는 여름밤으로 자동 전환됩니다.</p>
           <div class="guide-theme-chips">
             <div class="guide-theme-chip">
               <div class="guide-theme-chip-swatch theme-swatch-blossom">🌸</div>
@@ -647,8 +647,8 @@
             <div class="guide-theme-chip">
               <div class="guide-theme-chip-swatch theme-swatch-summer">🌊</div>
               <div class="guide-theme-chip-meta">
-                <span class="guide-theme-chip-name">여름 해변 (6~8월)</span>
-                <span class="guide-theme-chip-desc">크림/모래빛 + 기러기 떼 애니메이션</span>
+                <span class="guide-theme-chip-name">여름 해변 (6~8월 · 09~18시)</span>
+                <span class="guide-theme-chip-desc">밝은 하늘·바다빛 + 기러기 떼 애니메이션</span>
               </div>
             </div>
             <div class="guide-theme-chip">
@@ -682,7 +682,7 @@
             <div class="guide-theme-chip">
               <div class="guide-theme-chip-swatch theme-swatch-summer-night">🌌</div>
               <div class="guide-theme-chip-meta">
-                <span class="guide-theme-chip-name">여름밤</span>
+                <span class="guide-theme-chip-name">여름밤 (6~8월 · 18시~09시)</span>
                 <span class="guide-theme-chip-desc">짙은 인디고 + 시안 + 반딧불 애니메이션</span>
               </div>
             </div>
@@ -992,6 +992,18 @@
     </div>
   </div>
 
+  <!-- 개발자 이야기 배경음악 안내 모달 -->
+  <div id="devletter-music-modal" class="reminder-modal-overlay hidden">
+    <div class="reminder-modal-box">
+      <h3 class="reminder-modal-title">🎵 배경음악 안내</h3>
+      <p class="reminder-modal-desc">잔잔한 음악을 한 곡 준비했습니다.<br>음악과 함께 글을 읽어보시겠어요?</p>
+      <div class="w-nav" style="margin-top:16px;">
+        <button id="devletter-music-no" class="btn btn-ghost" type="button">괜찮아요</button>
+        <button id="devletter-music-yes" class="btn btn-primary" type="button">네, 들을래요</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 근거 법령 안내 모달 -->
   <div id="law-link-modal" class="reminder-modal-overlay hidden">
     <div class="reminder-modal-box">
@@ -1267,8 +1279,8 @@
       constructor(init) { this.reset(init); }
       reset(init) {
         this.x = Math.random()*canvas.width; this.y = init ? Math.random()*canvas.height : -10;
-        this.size = Math.random()*3+1.5; this.vy = Math.random()*0.7+0.25;
-        this.vx = (Math.random()-0.5)*0.35; this.alpha = Math.random()*0.5+0.3;
+        this.size = Math.random()*3+2; this.vy = Math.random()*0.7+0.25;
+        this.vx = (Math.random()-0.5)*0.35; this.alpha = Math.random()*0.35+0.55;
         this.sway = Math.random()*Math.PI*2; this.swaySpd = Math.random()*0.014+0.007;
       }
       update() {
@@ -1277,8 +1289,8 @@
         if (this.y>canvas.height+10||this.x<-10||this.x>canvas.width+10) this.reset(false);
       }
       draw() {
-        ctx.save(); ctx.globalAlpha=this.alpha; ctx.fillStyle='#cce4ff';
-        ctx.shadowBlur=5; ctx.shadowColor='#90c0ff';
+        ctx.save(); ctx.globalAlpha=this.alpha; ctx.fillStyle='#9ec4de';
+        ctx.shadowBlur=10; ctx.shadowColor='#7aaac8';
         ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); ctx.restore();
       }
     }
@@ -1297,9 +1309,9 @@
       const h = canvas.height;
       const w = canvas.width;
       const waves = [
-        { yRatio: 0.91, amp: 10, freq: 0.50, phaseOff: 0.0,  fillA: 0.22, strokeA: 0.30 },
-        { yRatio: 0.95, amp:  7, freq: 0.68, phaseOff: 1.9,  fillA: 0.28, strokeA: 0.38 },
-        { yRatio: 0.98, amp:  4, freq: 0.90, phaseOff: 3.6,  fillA: 0.34, strokeA: 0.46 },
+        { yRatio: 0.74, amp: 12, freq: 0.50, phaseOff: 0.0,  fillA: 0.22, strokeA: 0.30 },
+        { yRatio: 0.82, amp:  9, freq: 0.68, phaseOff: 1.9,  fillA: 0.28, strokeA: 0.38 },
+        { yRatio: 0.89, amp:  5, freq: 0.90, phaseOff: 3.6,  fillA: 0.34, strokeA: 0.46 },
       ];
       waves.forEach(wave => {
         const baseY = h * wave.yRatio;
