@@ -38,13 +38,13 @@ function trackMenuClick(menuName) {
 
 // ── 패치노트 설정 (여기만 수정하면 됩니다) ──────────────────────────────
 const PATCH_NOTES = {
-  version: "v1.0.1",
-  date: "2026-05-24",
+  version: "v1.0.0",
+  date: "2026-05-29",
   items: [
     { type: "notice",  text: "이 사이트는 법적기준이 아닙니다. 참고만해주세요!" },
-    { type: "new",     text: "① 소방시설 탐색기 '판매시설, 공동주택'<br>&nbsp;&nbsp;&nbsp;&nbsp;용도 추가<br>② 법정기한계산기 공휴일 자동반영<br>③ 벚꽃테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면🌙버튼 누르세요)" },
+    { type: "new",     text: "① 소방시설 탐색기 '판매시설, 공동주택'<br>&nbsp;&nbsp;&nbsp;&nbsp;용도 추가<br>② 법정기한계산기 공휴일 자동반영<br>③ 참고법령 안내 기능 추가<br>④ 안내 펫 일구 기능 추가 <br>⑤ 계절테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면 우측 위 테마변경버튼 누르세요)" },
     { type: "improve", text: "메인화면 메뉴 배치 및 이름, UI 변경 등" },
-    { type: "fix",     text: "유틸리티 도구함 숫자입력 버그 개선" },
+    { type: "fix",     text: "유틸리티 도구함 숫자입력 버그 수정" },
   ],
 };
 // ────────────────────────────────────────────────────────────────────────
@@ -8312,8 +8312,15 @@ function yearRenderCompoundStep(step) {
   return wrapper;
 }
 
+function updateYearLawChip() {
+  const chip = document.getElementById("explorer-year-law-chip");
+  if (!chip) return;
+  const era = (yearState && yearState.answers && yearState.answers.yEraChoice) || "after2004";
+  chip.dataset.lawKey = era === "before2004" ? "explorer-year-pre" : "explorer-year-post";
+}
+
 function yearRenderCurrentStep() {
-  if (typeof applyExplorerModeUI === "function") applyExplorerModeUI();
+  updateYearLawChip();
   const activeSteps = yearGetActiveSteps();
   const step = activeSteps[yearState.currentStep];
   document.getElementById("year-question-kicker").textContent = `QUESTION ${yearState.currentStep + 1}`;
@@ -17547,9 +17554,8 @@ function goToRgGuideSection(tab, sectionId) {
   const modal = document.getElementById("law-link-modal");
   const list = document.getElementById("law-link-list");
   const noteEl = document.getElementById("law-link-note");
-  const confirmBtn = document.getElementById("law-link-confirm");
   const cancelBtn = document.getElementById("law-link-cancel");
-  if (!modal || !list || !confirmBtn || !cancelBtn) return;
+  if (!modal || !list || !cancelBtn) return;
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -17570,26 +17576,13 @@ function goToRgGuideSection(tab, sectionId) {
         noteEl.classList.add("hidden");
       }
     }
-    if (items.length === 1) {
-      const it = items[0];
-      list.innerHTML =
-        '<li><div class="law-link-single">' +
+    list.innerHTML = items.map(function (it) {
+      return '<li><button type="button" class="law-link-item" data-url="' +
+        escapeHtml(it.url) + '">' +
         '<span class="lli-kind">' + escapeHtml(it.kind) + '</span>' +
         '<span class="lli-name">' + escapeHtml(it.name) + '</span>' +
-        '</div></li>';
-      confirmBtn.classList.remove("hidden");
-      confirmBtn.dataset.url = it.url;
-    } else {
-      list.innerHTML = items.map(function (it) {
-        return '<li><button type="button" class="law-link-item" data-url="' +
-          escapeHtml(it.url) + '">' +
-          '<span class="lli-kind">' + escapeHtml(it.kind) + '</span>' +
-          '<span class="lli-name">' + escapeHtml(it.name) + '</span>' +
-          '<span class="lli-arr">↗</span></button></li>';
-      }).join("");
-      confirmBtn.classList.add("hidden");
-      delete confirmBtn.dataset.url;
-    }
+        '<span class="lli-arr">↗</span></button></li>';
+    }).join("");
     modal.classList.remove("hidden");
   }
 
@@ -17607,11 +17600,6 @@ function goToRgGuideSection(tab, sectionId) {
   cancelBtn.addEventListener("click", closeModal);
   modal.addEventListener("click", function (e) {
     if (e.target === modal) closeModal();
-  });
-  confirmBtn.addEventListener("click", function () {
-    const url = confirmBtn.dataset.url;
-    if (url) window.open(url, "_blank", "noopener");
-    closeModal();
   });
   list.addEventListener("click", function (e) {
     const btn = e.target.closest(".law-link-item");

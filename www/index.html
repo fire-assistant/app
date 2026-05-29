@@ -227,6 +227,7 @@
     <div class="topbar">
       <button id="back-from-explorer-year" class="back-btn" type="button">←</button>
       <span class="tb-title">소방시설 탐색기 (연도별)</span>
+      <button id="explorer-year-law-chip" type="button" class="law-link-chip" data-law-key="explorer-year-post" title="근거 법령 안내">⚖️ 근거 법령<span class="lk-arr">↗</span></button>
     </div>
 
     <div id="year-prog-wrap" class="wiz-prog-wrap">
@@ -995,12 +996,11 @@
   <div id="law-link-modal" class="reminder-modal-overlay hidden">
     <div class="reminder-modal-box">
       <h3 class="reminder-modal-title">⚖️ 근거 법령</h3>
-      <p class="reminder-modal-desc">확인을 누르면 법제처의 해당 법령 검색 페이지가 새 탭에서 열립니다.</p>
+      <p class="reminder-modal-desc">해당 메뉴에서 사용하는 근거 법령입니다. 아래 항목을 선택하면 법제처에서 해당 법령 또는 법령 목록 페이지가 새 탭으로 열립니다.</p>
       <p id="law-link-note" class="law-link-note hidden"></p>
       <ul id="law-link-list" class="law-link-list"></ul>
       <div class="w-nav" style="margin-top:16px;">
         <button id="law-link-cancel" class="btn btn-ghost" type="button">취소</button>
-        <button id="law-link-confirm" class="btn btn-primary hidden" type="button">확인</button>
       </div>
     </div>
   </div>
