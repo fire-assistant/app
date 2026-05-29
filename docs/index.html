@@ -406,6 +406,7 @@
     <div class="topbar">
       <button id="back-from-report-guide" class="back-btn" type="button">←</button>
       <span class="tb-title">자체점검 보고서 읽는법</span>
+      <button type="button" class="law-link-chip" data-law-key="report-guide" title="근거 법령 안내">⚖️ 근거 법령<span class="lk-arr">↗</span></button>
     </div>
     <div id="report-guide-content" class="rg-outer"></div>
   </section>
@@ -795,6 +796,7 @@
     <div class="topbar">
       <button id="back-from-date" class="back-btn" type="button">←</button>
       <span class="tb-title">법정기한 계산기</span>
+      <button id="date-law-chip" type="button" class="law-link-chip" data-law-key="date-inspect_report" title="근거 법령 안내">⚖️ 근거 법령<span class="lk-arr">↗</span></button>
     </div>
     <div class="scroll-content" id="date-content"></div>
   </section>
@@ -854,6 +856,7 @@
     <div class="topbar">
       <button id="back-from-occupancy" class="back-btn" type="button">←</button>
       <span class="tb-title">유틸리티 도구함</span>
+      <button id="occupancy-law-chip" type="button" class="law-link-chip" data-law-key="occupancy-occupancy" title="근거 법령 안내">⚖️ 근거 법령<span class="lk-arr">↗</span></button>
     </div>
     <div class="scroll-content" id="occupancy-content"></div>
   </section>
@@ -993,6 +996,7 @@
     <div class="reminder-modal-box">
       <h3 class="reminder-modal-title">⚖️ 근거 법령</h3>
       <p class="reminder-modal-desc">확인을 누르면 법제처의 해당 법령 검색 페이지가 새 탭에서 열립니다.</p>
+      <p id="law-link-note" class="law-link-note hidden"></p>
       <ul id="law-link-list" class="law-link-list"></ul>
       <div class="w-nav" style="margin-top:16px;">
         <button id="law-link-cancel" class="btn btn-ghost" type="button">취소</button>

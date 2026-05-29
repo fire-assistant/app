@@ -1018,6 +1018,19 @@ html[data-theme="official"] .law-link-chip {
   }
 }
 
+/* ── 근거 법령 모달 안내문 ── */
+.law-link-note {
+  margin: -6px 0 10px;
+  padding: 9px 12px;
+  border-left: 3px solid var(--amber);
+  background: var(--amber-dim);
+  color: #dfad39;
+  font-size: 12px;
+  line-height: 1.6;
+  border-radius: 6px;
+  word-break: keep-all;
+}
+
 /* ── 근거 법령 모달 리스트 ── */
 .law-link-list {
   list-style: none;

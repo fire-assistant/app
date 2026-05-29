@@ -840,9 +840,13 @@ function applyExplorerModeUI() {
     if (isMultiuseOnly) {
       lawChip.dataset.lawKey = "multiuse-safety";
       lawChip.classList.remove("hidden");
+    } else if (isYearMode) {
+      const era = (typeof yearState !== "undefined" && yearState.answers && yearState.answers.yEraChoice) || "after2004";
+      lawChip.dataset.lawKey = era === "before2004" ? "explorer-year-pre" : "explorer-year-post";
+      lawChip.classList.remove("hidden");
     } else {
-      delete lawChip.dataset.lawKey;
-      lawChip.classList.add("hidden");
+      lawChip.dataset.lawKey = "explorer-simple";
+      lawChip.classList.remove("hidden");
     }
   }
 }
@@ -3603,6 +3607,10 @@ function animateSwipeNavigation(root) {
 
 function renderDateCalculator() {
   const root = document.getElementById("date-content");
+  const lawChip = document.getElementById("date-law-chip");
+  if (lawChip && state.dateCalc.mode) {
+    lawChip.dataset.lawKey = "date-" + state.dateCalc.mode;
+  }
   const prevLeftScroll = root.querySelector(".date-left")?.scrollTop ?? 0;
   const prevRightScroll = root.querySelector(".date-right")?.scrollTop ?? 0;
   const prevTabsScroll = root.querySelector(".dc-mode-tabs")?.scrollLeft ?? 0;
@@ -5152,6 +5160,8 @@ function getOccupancyFields(type) {
 function renderOccupancyCalculator() {
   const root = document.getElementById("occupancy-content");
   const tool = occupancyState.tool || "occupancy";
+  const lawChip = document.getElementById("occupancy-law-chip");
+  if (lawChip) lawChip.dataset.lawKey = "occupancy-" + tool;
   const prevActiveField = document.activeElement?.dataset?.occField;
   const prevActiveStaffing = document.activeElement?.id === "utility-staffing-value";
 
@@ -8303,6 +8313,7 @@ function yearRenderCompoundStep(step) {
 }
 
 function yearRenderCurrentStep() {
+  if (typeof applyExplorerModeUI === "function") applyExplorerModeUI();
   const activeSteps = yearGetActiveSteps();
   const step = activeSteps[yearState.currentStep];
   document.getElementById("year-question-kicker").textContent = `QUESTION ${yearState.currentStep + 1}`;
@@ -17475,11 +17486,67 @@ function goToRgGuideSection(tab, sectionId) {
         url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&tabMenuId=81&query=%EB%8B%A4%EC%A4%91%EC%9D%B4%EC%9A%A9%EC%97%85%EC%86%8C%EC%9D%98%20%EC%95%88%EC%A0%84%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%ED%8A%B9%EB%B3%84%EB%B2%95%20%EC%8B%9C%ED%96%89%EB%A0%B9" },
       { kind: "시행규칙", name: "다중이용업소의 안전관리에 관한 특별법 시행규칙",
         url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%EB%8B%A4%EC%A4%91%EC%9D%B4%EC%9A%A9%EC%97%85%EC%86%8C%EC%9D%98%20%EC%95%88%EC%A0%84%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%ED%8A%B9%EB%B3%84%EB%B2%95%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&dt=20201211" }
+    ],
+    "date-inspect_report": [
+      { kind: "시행규칙", name: "소방시설 설치 및 관리에 관한 법률 시행규칙",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%09%EC%86%8C%EB%B0%A9%EC%8B%9C%EC%84%A4%20%EC%84%A4%EC%B9%98%20%EB%B0%8F%20%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&dt=20201211" }
+    ],
+    "date-fire_safety_manager": [
+      { kind: "시행규칙", name: "화재의 예방 및 안전관리에 관한 법률 시행규칙",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%ED%99%94%EC%9E%AC%EC%9D%98%20%EC%98%88%EB%B0%A9%20%EB%B0%8F%20%EC%95%88%EC%A0%84%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&dt=20201211" }
+    ],
+    "date-fire_safety_assistant_manager": [
+      { kind: "시행규칙", name: "화재의 예방 및 안전관리에 관한 법률 시행규칙",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%ED%99%94%EC%9E%AC%EC%9D%98%20%EC%98%88%EB%B0%A9%20%EB%B0%8F%20%EC%95%88%EC%A0%84%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&dt=20201211" }
+    ],
+    "date-hazardous_material_manager": [
+      { kind: "법률", name: "위험물안전관리법",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%EC%9C%84%ED%97%98%EB%AC%BC%EC%95%88%EC%A0%84%EA%B4%80%EB%A6%AC%EB%B2%95&dt=20201211" }
+    ],
+    "date-noncompliance_action": [
+      { kind: "시행규칙", name: "소방시설 설치 및 관리에 관한 법률 시행규칙",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%09%EC%86%8C%EB%B0%A9%EC%8B%9C%EC%84%A4%20%EC%84%A4%EC%B9%98%20%EB%B0%8F%20%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&dt=20201211" }
+    ],
+    "occupancy-occupancy": [
+      { kind: "시행령", name: "소방시설 설치 및 관리에 관한 법률 시행령",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%EC%86%8C%EB%B0%A9%EC%8B%9C%EC%84%A4%20%EC%84%A4%EC%B9%98%20%EB%B0%8F%20%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EB%A0%B9&dt=20201211" }
+    ],
+    "occupancy-staffing": [
+      { kind: "시행령", name: "화재의 예방 및 안전관리에 관한 법률 시행령",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%ED%99%94%EC%9E%AC%EC%9D%98%20%EC%98%88%EB%B0%A9%20%EB%B0%8F%20%EC%95%88%EC%A0%84%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EB%A0%B9&dt=20201211" }
+    ],
+    "report-guide": [
+      { kind: "시행규칙", name: "소방시설 설치 및 관리에 관한 법률 시행규칙",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%EC%86%8C%EB%B0%A9%EC%8B%9C%EC%84%A4%20%EC%84%A4%EC%B9%98%20%EB%B0%8F%20%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&dt=20201211" }
+    ],
+    "explorer-simple": [
+      { kind: "시행령", name: "소방시설 설치 및 관리에 관한 법률 시행령",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%EC%86%8C%EB%B0%A9%EC%8B%9C%EC%84%A4%20%EC%84%A4%EC%B9%98%20%EB%B0%8F%20%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EB%A0%B9&dt=20201211" },
+      { kind: "행정규칙", name: "화재안전기준",
+        url: "https://www.law.go.kr/admRulSc.do?menuId=5&subMenuId=41&tabMenuId=183&query=%ED%99%94%EC%9E%AC%EC%95%88%EC%A0%84%EA%B8%B0%EC%A4%80" }
+    ],
+    "explorer-year-pre": [
+      { kind: "시행령", name: "소방법 시행령 (연혁)",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=17&tabMenuId=93&query=%EC%86%8C%EB%B0%A9%EB%B2%95%20%EC%8B%9C%ED%96%89%EB%A0%B9" },
+      { kind: "부령", name: "소방기술기준에관한 규칙 (연혁)",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=17&tabMenuId=93&query=%EC%9C%84%ED%97%98%EB%AC%BC" }
+    ],
+    "explorer-year-post": [
+      { kind: "시행령", name: "소방시설 설치 및 관리에 관한 법률 시행령 (연혁)",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=17&tabMenuId=93&query=%EC%86%8C%EB%B0%A9%EC%8B%9C%EC%84%A4%20%EC%84%A4%EC%B9%98%20%EB%B0%8F%20%EC%9C%A0%EC%A7%80%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EB%A0%B9" },
+      { kind: "행정규칙", name: "화재안전기준 (연혁)",
+        url: "https://www.law.go.kr/admRulSc.do?menuId=5&subMenuId=43&tabMenuId=193&query=%ED%99%94%EC%9E%AC%EC%95%88%EC%A0%84%EA%B8%B0%EC%A4%80" }
     ]
+  };
+
+  const LAW_NOTES = {
+    "explorer-year-pre": "법령명은 시기에 따라 달라질 수 있어요. 연혁법령 페이지에서 해당 시점 버전을 확인하세요.",
+    "explorer-year-post": "법령명은 시기에 따라 달라질 수 있어요. 연혁법령 페이지에서 해당 시점 버전을 확인하세요."
   };
 
   const modal = document.getElementById("law-link-modal");
   const list = document.getElementById("law-link-list");
+  const noteEl = document.getElementById("law-link-note");
   const confirmBtn = document.getElementById("law-link-confirm");
   const cancelBtn = document.getElementById("law-link-cancel");
   if (!modal || !list || !confirmBtn || !cancelBtn) return;
@@ -17493,6 +17560,16 @@ function goToRgGuideSection(tab, sectionId) {
   function openModal(key) {
     const items = LAW_SOURCES[key];
     if (!items || !items.length) return;
+    if (noteEl) {
+      const note = LAW_NOTES[key];
+      if (note) {
+        noteEl.textContent = note;
+        noteEl.classList.remove("hidden");
+      } else {
+        noteEl.textContent = "";
+        noteEl.classList.add("hidden");
+      }
+    }
     if (items.length === 1) {
       const it = items[0];
       list.innerHTML =
