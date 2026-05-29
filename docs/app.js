@@ -7,9 +7,24 @@ if (new URLSearchParams(location.search).has('reset-intro')) {
 
 // ── 개발자 모드 (GA 추적 비활성화) ───────────────────────────────────────
 // 본인 기기에서 콘솔에 한 번만 실행: localStorage.setItem('devMode', 'true')
+// 로컬/프리뷰 환경(localhost·사설 IP·file://)은 hostname 기반으로 자동 차단됨.
+function isLocalEnv() {
+  var h = location.hostname;
+  if (!h) return true;
+  if (location.protocol === 'file:') return true;
+  if (h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0' || h === '::1') return true;
+  if (h.endsWith('.local')) return true;
+  if (/^192\.168\./.test(h)) return true;
+  if (/^10\./.test(h)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(h)) return true;
+  return false;
+}
 function isGaSuppressed() {
   var until = Number(localStorage.getItem('gaSuppressedUntil') || '0');
-  return localStorage.getItem('devMode') === 'true' || Date.now() < until;
+  if (localStorage.getItem('devMode') === 'true') return true;
+  if (Date.now() < until) return true;
+  if (isLocalEnv()) return true;
+  return false;
 }
 if (isGaSuppressed()) {
   window['ga-disable-G-LKQZX5YS2H'] = true;
@@ -819,6 +834,16 @@ function applyExplorerModeUI() {
   } else {
     explorerTitleEl.textContent = isYearMode ? "소방시설 탐색기 (연도별)" : "소방시설 탐색기";
     explorerModeBadgeEl.classList.toggle("hidden", !isYearMode);
+  }
+  const lawChip = document.getElementById("explorer-law-chip");
+  if (lawChip) {
+    if (isMultiuseOnly) {
+      lawChip.dataset.lawKey = "multiuse-safety";
+      lawChip.classList.remove("hidden");
+    } else {
+      delete lawChip.dataset.lawKey;
+      lawChip.classList.add("hidden");
+    }
   }
 }
 
@@ -17431,4 +17456,91 @@ function goToRgGuideSection(tab, sectionId) {
       }
     });
   })();
+})();
+
+/* ── 근거 법령 안내 모달 ── */
+(function () {
+  const LAW_SEARCH = "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&tabMenuId=81&query=";
+  const ADMRUL_SEARCH = "https://www.law.go.kr/admRulSc.do?menuId=5&subMenuId=41&tabMenuId=183&query=";
+  const LAW_SOURCES = {
+    facilities: [
+      { kind: "행정규칙", name: "화재안전기준", url: ADMRUL_SEARCH + encodeURIComponent("화재안전기준") }
+    ],
+    "multiuse-reader": [
+      { kind: "시행령", name: "다중이용업소의 안전관리에 관한 특별법 시행령",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&tabMenuId=81&query=%EB%8B%A4%EC%A4%91%EC%9D%B4%EC%9A%A9%EC%97%85%EC%86%8C%EC%9D%98%20%EC%95%88%EC%A0%84%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%ED%8A%B9%EB%B3%84%EB%B2%95%20%EC%8B%9C%ED%96%89%EB%A0%B9" }
+    ],
+    "multiuse-safety": [
+      { kind: "시행령", name: "다중이용업소의 안전관리에 관한 특별법 시행령",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&tabMenuId=81&query=%EB%8B%A4%EC%A4%91%EC%9D%B4%EC%9A%A9%EC%97%85%EC%86%8C%EC%9D%98%20%EC%95%88%EC%A0%84%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%ED%8A%B9%EB%B3%84%EB%B2%95%20%EC%8B%9C%ED%96%89%EB%A0%B9" },
+      { kind: "시행규칙", name: "다중이용업소의 안전관리에 관한 특별법 시행규칙",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%EB%8B%A4%EC%A4%91%EC%9D%B4%EC%9A%A9%EC%97%85%EC%86%8C%EC%9D%98%20%EC%95%88%EC%A0%84%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%ED%8A%B9%EB%B3%84%EB%B2%95%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&dt=20201211" }
+    ]
+  };
+
+  const modal = document.getElementById("law-link-modal");
+  const list = document.getElementById("law-link-list");
+  const confirmBtn = document.getElementById("law-link-confirm");
+  const cancelBtn = document.getElementById("law-link-cancel");
+  if (!modal || !list || !confirmBtn || !cancelBtn) return;
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+
+  function openModal(key) {
+    const items = LAW_SOURCES[key];
+    if (!items || !items.length) return;
+    if (items.length === 1) {
+      const it = items[0];
+      list.innerHTML =
+        '<li><div class="law-link-single">' +
+        '<span class="lli-kind">' + escapeHtml(it.kind) + '</span>' +
+        '<span class="lli-name">' + escapeHtml(it.name) + '</span>' +
+        '</div></li>';
+      confirmBtn.classList.remove("hidden");
+      confirmBtn.dataset.url = it.url;
+    } else {
+      list.innerHTML = items.map(function (it) {
+        return '<li><button type="button" class="law-link-item" data-url="' +
+          escapeHtml(it.url) + '">' +
+          '<span class="lli-kind">' + escapeHtml(it.kind) + '</span>' +
+          '<span class="lli-name">' + escapeHtml(it.name) + '</span>' +
+          '<span class="lli-arr">↗</span></button></li>';
+      }).join("");
+      confirmBtn.classList.add("hidden");
+      delete confirmBtn.dataset.url;
+    }
+    modal.classList.remove("hidden");
+  }
+
+  function closeModal() {
+    modal.classList.add("hidden");
+  }
+
+  document.addEventListener("click", function (e) {
+    const chip = e.target.closest(".law-link-chip");
+    if (!chip || !chip.dataset.lawKey) return;
+    e.preventDefault();
+    openModal(chip.dataset.lawKey);
+  });
+
+  cancelBtn.addEventListener("click", closeModal);
+  modal.addEventListener("click", function (e) {
+    if (e.target === modal) closeModal();
+  });
+  confirmBtn.addEventListener("click", function () {
+    const url = confirmBtn.dataset.url;
+    if (url) window.open(url, "_blank", "noopener");
+    closeModal();
+  });
+  list.addEventListener("click", function (e) {
+    const btn = e.target.closest(".law-link-item");
+    if (!btn) return;
+    const url = btn.dataset.url;
+    if (url) window.open(url, "_blank", "noopener");
+    closeModal();
+  });
 })();

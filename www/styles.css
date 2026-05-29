@@ -993,6 +993,7 @@ input:focus-visible {
   letter-spacing: 0.4px;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
   transition: background var(--transition), border-color var(--transition), transform var(--transition);
 }
 .law-link-chip:hover {
@@ -1015,6 +1016,75 @@ html[data-theme="official"] .law-link-chip {
     padding: 4px 8px;
     font-size: 9px;
   }
+}
+
+/* ── 근거 법령 모달 리스트 ── */
+.law-link-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.law-link-list li {
+  margin: 0;
+}
+.law-link-item,
+.law-link-single {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface2);
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+}
+.law-link-item {
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+.law-link-item:hover {
+  background: var(--surface3);
+  border-color: var(--red);
+}
+html[data-theme="official"] .law-link-item:hover {
+  border-color: var(--blue);
+}
+.law-link-item:active {
+  transform: scale(0.99);
+}
+.lli-kind {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--red-dim2);
+  color: var(--red-soft);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+html[data-theme="official"] .lli-kind {
+  background: var(--blue-dim);
+  color: var(--blue);
+}
+.lli-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+.lli-arr {
+  flex-shrink: 0;
+  color: var(--text-dim);
+  font-size: 14px;
 }
 
 /* ?�?� Result Card ?�?� */
