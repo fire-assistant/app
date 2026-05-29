@@ -976,6 +976,47 @@ input:focus-visible {
   display: none !important;
 }
 
+/* ── 법령 출처 칩 (외부 링크, 테마 자동 분기) ── */
+.law-link-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--red);
+  background: var(--red-dim);
+  color: var(--red-soft);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+}
+.law-link-chip:hover {
+  background: var(--red-dim2);
+}
+.law-link-chip:active {
+  transform: scale(0.96);
+}
+.law-link-chip .lk-arr {
+  font-size: 11px;
+  opacity: 0.75;
+}
+html[data-theme="official"] .law-link-chip {
+  border-color: var(--blue);
+  background: var(--blue-dim);
+  color: var(--blue);
+}
+@media (max-width: 420px) {
+  .law-link-chip {
+    padding: 4px 8px;
+    font-size: 9px;
+  }
+}
+
 /* ?�?� Result Card ?�?� */
 .rc-grade {
   display: inline-block;
