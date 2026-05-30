@@ -14201,12 +14201,21 @@ history.replaceState({ screen: 'home' }, '');
     return Object.keys(screens).find(k => screens[k].classList.contains("active")) || "home";
   }
 
+  function exitApp() {
+    var app = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+    if (app && typeof app.exitApp === "function") {
+      app.exitApp();
+      return;
+    }
+    if (window.AndroidBack && typeof window.AndroidBack.exitApp === "function") {
+      window.AndroidBack.exitApp();
+    }
+  }
+
   // true 반환 = 화면 내부 이동(re-push 필요), false = 다른 screen으로 전환(re-push 불필요)
   function doHandleBack(current) {
     if (current === "home") {
-      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-        window.Capacitor.Plugins.App.exitApp();
-      }
+      exitApp();
       return false;
     }
 
@@ -14315,9 +14324,7 @@ history.replaceState({ screen: 'home' }, '');
       // 두 번째 뒤로(2초 내) = 실제 종료. APK는 exitApp, 웹은 그냥 종료 시도(브라우저가 떠남).
       if (_homeExitArmedAt && now - _homeExitArmedAt <= HOME_EXIT_MS) {
         if (window.__bl) window.__bl('  HOME→EXIT');
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-          window.Capacitor.Plugins.App.exitApp();
-        }
+        exitApp();
         return;
       }
       // 첫 번째 뒤로 = 종료 예고 토스트만(종료 안 함).
@@ -14385,36 +14392,6 @@ history.replaceState({ screen: 'home' }, '');
     if (window.__bl) window.__bl('POPSTATE len=' + history.length + ' st=' + (history.state && history.state.screen));
     handleBack();
   });
-})();
-
-// ── [임시 진단] 뒤로가기 디버그 오버레이 ─────────────────────
-// 원인 확정용. 확인 끝나면 이 블록 통째로 삭제 예정.
-(function backDebugOverlay() {
-  var KEY = '__backlog';
-  var box = null;
-  function read() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { return []; } }
-  function render() {
-    if (!document.body) return;
-    if (!box) {
-      box = document.createElement('div');
-      box.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2147483647;background:rgba(0,0,0,.85);color:#0f0;font:11px/1.35 monospace;padding:5px 6px;max-height:45vh;overflow:auto;white-space:pre-wrap;word-break:break-all';
-      box.addEventListener('click', function () { localStorage.removeItem(KEY); render(); }); // 탭하면 초기화
-      document.body.appendChild(box);
-    }
-    box.textContent = '◀ BACKLOG (탭하면 지움) now-len=' + history.length + '\n' + read().join('\n');
-  }
-  window.__bl = function (msg) {
-    var arr = read();
-    var d = new Date();
-    arr.push(('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2) + '.' + ('00' + d.getMilliseconds()).slice(-3) + ' ' + msg);
-    if (arr.length > 20) arr = arr.slice(-20);
-    try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch (e) {}
-    render();
-  };
-  // 사이트 밖으로 빠져나가는 순간 기록 (돌아오면 마지막 줄로 확인 가능)
-  window.addEventListener('pagehide', function () { window.__bl('PAGEHIDE!! (사이트 떠남) len=' + history.length); });
-  window.addEventListener('beforeunload', function () { window.__bl('UNLOAD!! len=' + history.length); });
-  if (document.body) render(); else document.addEventListener('DOMContentLoaded', render);
 })();
 
 // ── 바로가기 추가 ─────────────────────────────────────

@@ -71,7 +71,7 @@
         window.location.reload();
       }
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js?v=300', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('./sw.js?v=301', { updateViaCache: 'none' })
           .then(function(reg) {
             reg.update();
             document.addEventListener('visibilitychange', function() {
@@ -1155,7 +1155,7 @@
   </div>
 
   <script src="./pdf.min.js"></script>
-  <script src="./app.js?v=300"></script>
+  <script src="./app.js?v=301"></script>
   <script src="./facilities-data.js?v=300"></script>
   <script src="./facilities.js?v=300"></script>
   <script src="./layout-learn.js"></script>
