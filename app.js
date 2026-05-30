@@ -14234,8 +14234,9 @@ history.replaceState({ screen: 'home' }, '');
     if (current === "explorer") {
       const multiuseCard = document.getElementById("multiuse-safety-card");
       if (multiuseCard && !multiuseCard.classList.contains("hidden")) {
-        showExplorerCard("main-result");
-        scrollToTop();
+        // back-to-main-result 버튼의 로직에 위임(다중이용업소 전용 모드면 마지막 질문으로,
+        // 아니면 기본 결과로). 직접 main-result를 띄우면 전용 모드에서 빈 결과창이 뜬다.
+        document.getElementById("back-to-main-result").click();
         return true;
       }
       const resultCard = document.getElementById("result-card");
@@ -14292,6 +14293,9 @@ history.replaceState({ screen: 'home' }, '');
   //      복원한다. 절대 re-push 하지 않는다.
   // 단계마다 최소 1클릭을 하므로 (연료 ≥ 뒤로횟수)가 보장돼 조기 탈출이 없다.
 
+  var _homeExitArmedAt = 0;
+  var HOME_EXIT_MS = 2000;
+
   function handleBack() {
     // 패치노트 모달이 history.back()으로 자체 종료 중 — 이 popstate는 무시
     if (window._pnConsumeSelfClosing && window._pnConsumeSelfClosing()) {
@@ -14307,11 +14311,21 @@ history.replaceState({ screen: 'home' }, '');
     if (window.__bl) window.__bl('HB scr=' + current + ' len=' + history.length);
 
     if (current === "home") {
-      // 홈에서 뒤로 = 앱 종료. APK는 exitApp, 웹/PWA는 브라우저가 자연히 사이트를 떠남.
-      if (window.__bl) window.__bl('  HOME→exit');
-      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-        window.Capacitor.Plugins.App.exitApp();
+      var now = Date.now();
+      // 두 번째 뒤로(2초 내) = 실제 종료. APK는 exitApp, 웹은 그냥 종료 시도(브라우저가 떠남).
+      if (_homeExitArmedAt && now - _homeExitArmedAt <= HOME_EXIT_MS) {
+        if (window.__bl) window.__bl('  HOME→EXIT');
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+          window.Capacitor.Plugins.App.exitApp();
+        }
+        return;
       }
+      // 첫 번째 뒤로 = 종료 예고 토스트만(종료 안 함).
+      // 네이티브 APK는 히스토리를 건드리지 않으므로 여기서 그냥 머문다.
+      // (웹/PWA는 소비할 히스토리 엔트리가 없으면 브라우저가 떠날 수 있음 — intervention 한계)
+      _homeExitArmedAt = now;
+      if (window.__bl) window.__bl('  HOME→arm(토스트)');
+      showToast("한 번 더 누르면 종료됩니다.");
       return;
     }
 
