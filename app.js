@@ -14281,29 +14281,16 @@ history.replaceState({ screen: 'home' }, '');
     return false;
   }
 
-  var _lastBackEventTime = 0;
-  var _exitArmedAt = 0;
-  var _exitArmTimer = null;
-  var DUPLICATE_BACK_EVENT_MS = 80;
-  var EXIT_CONFIRM_MS = 900;
-
-  function clearExitArm() {
-    _exitArmedAt = 0;
-    if (_exitArmTimer) {
-      clearTimeout(_exitArmTimer);
-      _exitArmTimer = null;
-    }
-    if (getCurrentScreen() === "home" && history.state && history.state.exitArmed) {
-      history.replaceState({ screen: "home", exitArmed: false }, '');
-    }
-  }
-
-  function armExit() {
-    _exitArmedAt = Date.now();
-    history.pushState({ screen: "home", exitArmed: true }, '');
-    if (_exitArmTimer) clearTimeout(_exitArmTimer);
-    _exitArmTimer = setTimeout(clearExitArm, EXIT_CONFIRM_MS);
-  }
+  // ── 뒤로가기 모델 ──────────────────────────────────────────
+  // 크롬/안드로이드 WebView의 history-manipulation intervention 때문에,
+  // popstate 안에서 (사용자 제스처 없이) pushState로 되감는 "트랩" 방식은
+  // 그 엔트리가 "건너뛸 엔트리"로 찍혀 다음 뒤로가기 때 통째로 스킵 → 사이트 밖으로
+  // 튕긴다(= 두 번 누르면 종료 버그). 그래서 트랩을 버리고 다음 모델을 쓴다:
+  //   1) 앞으로 갈 때(사용자 클릭=제스처)마다 진짜 히스토리 엔트리 1개를 쌓는다.
+  //      제스처로 만든 엔트리는 intervention이 건너뛰지 않는다 = "연료".
+  //   2) 뒤로가기(popstate)는 그 연료를 자연 소비하며 doHandleBack으로 한 단계만
+  //      복원한다. 절대 re-push 하지 않는다.
+  // 단계마다 최소 1클릭을 하므로 (연료 ≥ 뒤로횟수)가 보장돼 조기 탈출이 없다.
 
   function handleBack() {
     // 패치노트 모달이 history.back()으로 자체 종료 중 — 이 popstate는 무시
@@ -14316,48 +14303,37 @@ history.replaceState({ screen: 'home' }, '');
       return;
     }
 
-    var now = Date.now();
     const current = getCurrentScreen();
-    if (window.__bl) window.__bl('HB scr=' + current + ' len=' + history.length + ' dt=' + (now - _lastBackEventTime));
-
-    if (now - _lastBackEventTime < DUPLICATE_BACK_EVENT_MS) {
-      // 같은 물리 입력이 native + popstate로 중복 전달되는 경우만 무시
-      if (window.__bl) window.__bl('  DUP무시');
-      history.pushState({ screen: getCurrentScreen() }, '');
-      return;
-    }
-    _lastBackEventTime = now;
+    if (window.__bl) window.__bl('HB scr=' + current + ' len=' + history.length);
 
     if (current === "home") {
-      const exitStateArmed = !!(history.state && history.state.exitArmed);
-      if (exitStateArmed && _exitArmedAt > 0 && now - _exitArmedAt <= EXIT_CONFIRM_MS) {
-        if (window.__bl) window.__bl('  HOME→EXIT');
-        clearExitArm();
-        doHandleBack(current);
-      } else {
-        if (window.__bl) window.__bl('  HOME→arm(토스트)');
-        clearExitArm();
-        armExit();
-        showToast("한 번 더 누르면 앱이 종료됩니다.");
+      // 홈에서 뒤로 = 앱 종료. APK는 exitApp, 웹/PWA는 브라우저가 자연히 사이트를 떠남.
+      if (window.__bl) window.__bl('  HOME→exit');
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+        window.Capacitor.Plugins.App.exitApp();
       }
       return;
     }
 
-    clearExitArm();
-
+    // 한 단계만 뒤로. re-push 없음 — forward 때 클릭으로 쌓아둔 실제 엔트리를 소비한다.
     _suppressHistoryPush = true;
     try {
       doHandleBack(current);
     } finally {
       _suppressHistoryPush = false;
     }
-    // 화면 내 이동이든 다른 화면으로의 전환이든, popstate가 소비한 히스토리
-    // 1칸을 항상 복구한다. 전환 시 복구를 생략하면 뒤로가기를 거듭할수록
-    // 히스토리 버퍼가 고갈돼, explorer→explorerSelect 같은 전환 직후 한 번
-    // 더 누르면 사이트 밖(이전 페이지)으로 튕긴다 — 조기 종료 버그의 원인.
-    history.pushState({ screen: getCurrentScreen() }, '');
-    if (window.__bl) window.__bl('  rePush→' + getCurrentScreen() + ' len=' + history.length);
+    if (window.__bl) window.__bl('  back→' + getCurrentScreen() + ' len=' + history.length);
   }
+
+  // forward(사용자 클릭)마다 실제 히스토리 엔트리 1개 적재 = 뒤로가기 "연료".
+  // 클릭 핸들러 안(사용자 제스처)에서 push하므로 intervention이 안 건너뛴다.
+  document.addEventListener("click", function () {
+    if (_suppressHistoryPush) return;                       // 뒤로 처리 중 프로그램적 .click()은 제외
+    if (window._pnIsOpen && window._pnIsOpen()) return;       // 패치노트 모달은 자체 히스토리 관리
+    if (getCurrentScreen() === "home") return;               // 홈에선 연료 안 쌓음(종료 지연 방지)
+    history.pushState({ screen: getCurrentScreen() }, '');
+    if (window.__bl) window.__bl('FUEL+ (' + getCurrentScreen() + ') len=' + history.length);
+  }, true);
 
   // 네이티브 MainActivity.onBackPressed()에서 직접 호출하는 글로벌 함수
   window._appHandleBack = handleBack;
