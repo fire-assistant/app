@@ -14349,11 +14349,21 @@ history.replaceState({ screen: 'home' }, '');
     if (window.__bl) window.__bl('FUEL+ (' + getCurrentScreen() + ') len=' + history.length);
   }, true);
 
-  // 네이티브 MainActivity.onBackPressed()에서 직접 호출하는 글로벌 함수
+  // (호환용) 글로벌 핸들러
   window._appHandleBack = handleBack;
 
-  // Capacitor 네이티브 뒤로가기 리스너
-  // history/popstate 방식 (브라우저 PWA 및 폴백)
+  // 네이티브 APK: Capacitor App 플러그인의 backButton 리스너.
+  // 이걸 등록하면 Capacitor가 기본 동작(뒤로/홈에서 액티비티 종료) 대신 우리에게 위임한다.
+  // (Android 13+/Capacitor8은 legacy onBackPressed를 안 부르므로 이 방식이어야 한다.
+  //  네이티브 back은 브라우저 히스토리를 건드리지 않아 intervention 영향도 없다.)
+  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App && window.Capacitor.Plugins.App.addListener) {
+    window.Capacitor.Plugins.App.addListener('backButton', function () {
+      if (window.__bl) window.__bl('NATIVE backButton');
+      handleBack();
+    });
+  }
+
+  // 웹/PWA(및 폴백): history/popstate 방식. 네이티브에선 popstate가 안 일어나므로 무관.
   window.addEventListener("popstate", function () {
     if (window.__bl) window.__bl('POPSTATE len=' + history.length + ' st=' + (history.state && history.state.screen));
     handleBack();
