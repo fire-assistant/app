@@ -14355,13 +14355,28 @@ history.replaceState({ screen: 'home' }, '');
   // 네이티브 APK: Capacitor App 플러그인의 backButton 리스너.
   // 이걸 등록하면 Capacitor가 기본 동작(뒤로/홈에서 액티비티 종료) 대신 우리에게 위임한다.
   // (Android 13+/Capacitor8은 legacy onBackPressed를 안 부르므로 이 방식이어야 한다.
-  //  네이티브 back은 브라우저 히스토리를 건드리지 않아 intervention 영향도 없다.)
-  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App && window.Capacitor.Plugins.App.addListener) {
-    window.Capacitor.Plugins.App.addListener('backButton', function () {
-      if (window.__bl) window.__bl('NATIVE backButton');
-      handleBack();
-    });
-  }
+  //  네이티브 back은 브라우저 히스토리를 건드리지 않아 intervention/연료 무관 → 홈에서도 항상 동작.)
+  // ※ 원격 로드(server.url) 앱은 @capacitor/app 의 JS가 번들에 없어 Capacitor.Plugins.App 이
+  //   자동 생성되지 않는다. 그래서 Capacitor.registerPlugin('App') 로 브리지 프록시를 직접 만든다.
+  (function registerNativeBack() {
+    try {
+      var Cap = window.Capacitor;
+      if (!Cap || !(Cap.isNativePlatform && Cap.isNativePlatform())) return;
+      var AppPlugin = (Cap.Plugins && Cap.Plugins.App) ? Cap.Plugins.App
+                    : (typeof Cap.registerPlugin === 'function' ? Cap.registerPlugin('App') : null);
+      if (AppPlugin && typeof AppPlugin.addListener === 'function') {
+        AppPlugin.addListener('backButton', function () {
+          if (window.__bl) window.__bl('NATIVE backButton');
+          handleBack();
+        });
+        if (window.__bl) window.__bl('backButton 리스너 등록됨');
+      } else if (window.__bl) {
+        window.__bl('App 플러그인 못찾음(리스너 미등록)');
+      }
+    } catch (e) {
+      if (window.__bl) window.__bl('리스너 등록 에러: ' + e.message);
+    }
+  })();
 
   // 웹/PWA(및 폴백): history/popstate 방식. 네이티브에선 popstate가 안 일어나므로 무관.
   window.addEventListener("popstate", function () {
