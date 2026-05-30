@@ -14240,8 +14240,8 @@ history.replaceState({ screen: 'home' }, '');
       }
       const resultCard = document.getElementById("result-card");
       if (resultCard && !resultCard.classList.contains("hidden")) {
-        // 결과 → 첫 번째 질문
-        state.currentStep = 0;
+        // 결과 → 마지막 질문 (UI '이전 질문' 버튼 result-back-to-select와 동일 동작)
+        state.currentStep = getActiveSteps().length - 1;
         showExplorerCard("question");
         renderCurrentStep();
         scrollToTop();
@@ -14342,15 +14342,16 @@ history.replaceState({ screen: 'home' }, '');
     clearExitArm();
 
     _suppressHistoryPush = true;
-    let needRePush = false;
     try {
-      needRePush = doHandleBack(current);
+      doHandleBack(current);
     } finally {
       _suppressHistoryPush = false;
     }
-    if (needRePush) {
-      history.pushState({ screen: current }, '');
-    }
+    // 화면 내 이동이든 다른 화면으로의 전환이든, popstate가 소비한 히스토리
+    // 1칸을 항상 복구한다. 전환 시 복구를 생략하면 뒤로가기를 거듭할수록
+    // 히스토리 버퍼가 고갈돼, explorer→explorerSelect 같은 전환 직후 한 번
+    // 더 누르면 사이트 밖(이전 페이지)으로 튕긴다 — 조기 종료 버그의 원인.
+    history.pushState({ screen: getCurrentScreen() }, '');
   }
 
   // 네이티브 MainActivity.onBackPressed()에서 직접 호출하는 글로벌 함수
