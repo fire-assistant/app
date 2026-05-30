@@ -14344,7 +14344,9 @@ history.replaceState({ screen: 'home' }, '');
   document.addEventListener("click", function () {
     if (_suppressHistoryPush) return;                       // 뒤로 처리 중 프로그램적 .click()은 제외
     if (window._pnIsOpen && window._pnIsOpen()) return;       // 패치노트 모달은 자체 히스토리 관리
-    if (getCurrentScreen() === "home") return;               // 홈에선 연료 안 쌓음(종료 지연 방지)
+    // 홈 포함 모든 화면에서 클릭마다 연료 적재. (홈에서 연료를 안 쌓으면 어떤 화면에 잠깐
+    // 들어갔다 홈으로 돌아왔을 때 홈에 소비할 엔트리가 없어, 뒤로가기 한 번에 Capacitor가
+    // 바로 종료해버린다 — "한 번 더 누르면 종료" 토스트가 안 뜨는 원인.)
     history.pushState({ screen: getCurrentScreen() }, '');
     if (window.__bl) window.__bl('FUEL+ (' + getCurrentScreen() + ') len=' + history.length);
   }, true);
