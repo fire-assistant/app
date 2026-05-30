@@ -3,7 +3,9 @@
   "appName": "예방업무 어시스턴트",
   "webDir": "www",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "url": "https://carrotcakehope.github.io/fireapp",
+    "errorPath": "index.html"
   },
   "android": {
     "minWebViewVersion": 60
