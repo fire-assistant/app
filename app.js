@@ -14368,23 +14368,40 @@ history.replaceState({ screen: 'home' }, '');
   // ※ 원격 로드(server.url) 앱은 @capacitor/app 의 JS가 번들에 없어 Capacitor.Plugins.App 이
   //   자동 생성되지 않는다. 그래서 Capacitor.registerPlugin('App') 로 브리지 프록시를 직접 만든다.
   (function registerNativeBack() {
-    try {
-      var Cap = window.Capacitor;
-      if (!Cap || !(Cap.isNativePlatform && Cap.isNativePlatform())) return;
-      var AppPlugin = (Cap.Plugins && Cap.Plugins.App) ? Cap.Plugins.App
+    var registered = false;
+    var tries = 0;
+    var maxTries = 40;
+
+    function tryRegister() {
+      if (registered) return;
+      tries += 1;
+      try {
+        var Cap = window.Capacitor;
+        var AppPlugin = null;
+        if (Cap) {
+          AppPlugin = (Cap.Plugins && Cap.Plugins.App) ? Cap.Plugins.App
                     : (typeof Cap.registerPlugin === 'function' ? Cap.registerPlugin('App') : null);
-      if (AppPlugin && typeof AppPlugin.addListener === 'function') {
-        AppPlugin.addListener('backButton', function () {
-          if (window.__bl) window.__bl('NATIVE backButton');
-          handleBack();
-        });
-        if (window.__bl) window.__bl('backButton 리스너 등록됨');
-      } else if (window.__bl) {
-        window.__bl('App 플러그인 못찾음(리스너 미등록)');
+        }
+        if (AppPlugin && typeof AppPlugin.addListener === 'function') {
+          registered = true;
+          AppPlugin.addListener('backButton', function () {
+            if (window.__bl) window.__bl('NATIVE backButton');
+            handleBack();
+          });
+          if (window.__bl) window.__bl('backButton listener registered');
+          return;
+        }
+      } catch (e) {
+        if (window.__bl) window.__bl('backButton register error: ' + e.message);
       }
-    } catch (e) {
-      if (window.__bl) window.__bl('리스너 등록 에러: ' + e.message);
+      if (tries < maxTries) {
+        setTimeout(tryRegister, 250);
+      } else if (window.__bl) {
+        window.__bl('backButton listener not registered');
+      }
     }
+
+    tryRegister();
   })();
 
   // 웹/PWA(및 폴백): history/popstate 방식. 네이티브에선 popstate가 안 일어나므로 무관.
