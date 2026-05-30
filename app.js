@@ -13885,6 +13885,26 @@ function bindReminderPanelEvents(container) {
   if (addBtn) {
     addBtn.addEventListener("click", openManualReminderModal);
   }
+
+  // 디버그: 알림판 제목 5번 빠르게 클릭 → 업데이트 안내 오버레이 미리보기
+  const title = container.querySelector(".reminder-panel-title");
+  if (title) {
+    let taps = 0;
+    let timer = null;
+    title.addEventListener("click", () => {
+      taps += 1;
+      clearTimeout(timer);
+      timer = setTimeout(() => { taps = 0; }, 600);
+      if (taps >= 5) {
+        taps = 0;
+        clearTimeout(timer);
+        if (typeof window.showUpdateOverlay === "function") {
+          const o = window.showUpdateOverlay();
+          if (o) setTimeout(() => o.remove(), 1800);
+        }
+      }
+    });
+  }
 }
 
 function daysUntil(dateStr) {
@@ -14939,6 +14959,17 @@ const RG_WATER_COMMON = [
 
 function renderReportGuide(restoreScroll) {
   var root = document.getElementById('report-guide-content');
+
+  // 모드별 상단 제목·근거법령 칩 (select=가이드 메뉴, guide=보고서 읽는법)
+  var rgTitleEl = document.getElementById('report-guide-title');
+  var rgLawChip = document.getElementById('report-guide-law-chip');
+  if (rgState.mode === 'select') {
+    if (rgTitleEl) rgTitleEl.textContent = '자체점검 가이드';
+    if (rgLawChip) rgLawChip.classList.add('hidden');
+  } else {
+    if (rgTitleEl) rgTitleEl.textContent = '자체점검 보고서 읽는법';
+    if (rgLawChip) rgLawChip.classList.remove('hidden');
+  }
 
   if (rgState.mode === 'select') {
     root.innerHTML = '';
@@ -17576,6 +17607,10 @@ function goToRgGuideSection(tab, sectionId) {
     "report-guide": [
       { kind: "시행규칙", name: "소방시설 설치 및 관리에 관한 법률 시행규칙",
         url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%EC%86%8C%EB%B0%A9%EC%8B%9C%EC%84%A4%20%EC%84%A4%EC%B9%98%20%EB%B0%8F%20%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&dt=20201211" }
+    ],
+    "inspection-reader": [
+      { kind: "시행령", name: "소방시설 설치 및 관리에 관한 법률 시행령",
+        url: "https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&query=%EC%86%8C%EB%B0%A9%EC%8B%9C%EC%84%A4%20%EC%84%A4%EC%B9%98%20%EB%B0%8F%20%EA%B4%80%EB%A6%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EB%A0%B9&dt=20201211" }
     ],
     "explorer-simple": [
       { kind: "시행령", name: "소방시설 설치 및 관리에 관한 법률 시행령",

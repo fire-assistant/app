@@ -41,9 +41,33 @@
       // 첫 설치(activate)에서도 controllerchange/CACHE_UPDATED가 터지므로,
       // 재방문자(이미 제어 중)일 때만 새로고침해야 인트로 영상이 안 끊김.
       var _wasControlled = !!navigator.serviceWorker.controller;
+      // 업데이트 새로고침 직전에 띄우는 안내 오버레이 (스피너 + 텍스트).
+      // 디버그용으로 app.js의 알림판 5연타에서도 호출함.
+      window.showUpdateOverlay = function() {
+        if (document.getElementById('update-overlay')) return null;
+        var official = document.documentElement.getAttribute('data-theme') === 'official';
+        var bg = official ? '#ffffff' : '#0d0d0d';
+        var fg = official ? '#1a1a1a' : '#ececec';
+        var track = official ? '#e3e3e3' : '#2d2d2d';
+        var accent = official ? '#003087' : '#d93025';
+        var o = document.createElement('div');
+        o.id = 'update-overlay';
+        o.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;'
+          + 'flex-direction:column;align-items:center;justify-content:center;gap:16px;'
+          + 'background:' + bg + ';color:' + fg + ';'
+          + 'font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+        o.innerHTML = '<div style="width:36px;height:36px;border:3px solid ' + track + ';'
+          + 'border-top-color:' + accent + ';border-radius:50%;'
+          + 'animation:uspin .7s linear infinite"></div>'
+          + '<div style="font-size:13px;letter-spacing:.3px;opacity:.85">최신 내용으로 업데이트 중…</div>'
+          + '<style>@keyframes uspin{to{transform:rotate(360deg)}}</style>';
+        document.body.appendChild(o);
+        return o;
+      };
       function _forceReload() {
         if (_reloading) return;
         _reloading = true;
+        window.showUpdateOverlay();
         window.location.reload();
       }
       window.addEventListener('load', function() {
@@ -406,8 +430,8 @@
   <section id="screen-report-guide" class="screen">
     <div class="topbar">
       <button id="back-from-report-guide" class="back-btn" type="button">←</button>
-      <span class="tb-title">자체점검 보고서 읽는법</span>
-      <button type="button" class="law-link-chip" data-law-key="report-guide" title="근거 법령 안내">⚖️ 근거 법령<span class="lk-arr">↗</span></button>
+      <span id="report-guide-title" class="tb-title">자체점검 가이드</span>
+      <button id="report-guide-law-chip" type="button" class="law-link-chip hidden" data-law-key="report-guide" title="근거 법령 안내">⚖️ 근거 법령<span class="lk-arr">↗</span></button>
     </div>
     <div id="report-guide-content" class="rg-outer"></div>
   </section>
@@ -806,6 +830,7 @@
     <div class="topbar">
       <button id="back-from-inspection" class="back-btn" type="button">←</button>
       <span class="tb-title">작동·종합 대상 판독기</span>
+      <button type="button" class="law-link-chip" data-law-key="inspection-reader" title="근거 법령 안내">⚖️ 근거 법령<span class="lk-arr">↗</span></button>
     </div>
     <div class="scroll-content" id="inspection-content"></div>
   </section>
