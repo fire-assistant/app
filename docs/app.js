@@ -17278,6 +17278,7 @@ function goToRgGuideSection(tab, sectionId) {
   const musicModal = document.getElementById("devletter-music-modal");
   const musicModalYes = document.getElementById("devletter-music-yes");
   const musicModalNo = document.getElementById("devletter-music-no");
+  const musicPromptSessionKey = "devLetterMusicPromptShown";
 
   if (!openBtn) return;
 
@@ -17407,11 +17408,20 @@ function goToRgGuideSection(tab, sectionId) {
   }
 
   function showMusicPrompt() {
+    try {
+      if (sessionStorage.getItem(musicPromptSessionKey) === "1") return;
+      sessionStorage.setItem(musicPromptSessionKey, "1");
+    } catch {}
     if (!musicModal) { playDevLetterMusic(); return; }
     musicModal.classList.remove("hidden");
   }
   function hideMusicPrompt() {
     if (musicModal) musicModal.classList.add("hidden");
+  }
+
+  function closeDevLetterMusic() {
+    hideMusicPrompt();
+    stopDevLetterMusic();
   }
 
   function pickFortune() {
@@ -17529,8 +17539,7 @@ function goToRgGuideSection(tab, sectionId) {
 
   if (backBtn) {
     backBtn.addEventListener("click", () => {
-      hideMusicPrompt();
-      stopDevLetterMusic();
+      closeDevLetterMusic();
       if (typeof showScreen === "function") showScreen("home");
     });
   }
@@ -17560,6 +17569,13 @@ function goToRgGuideSection(tab, sectionId) {
   document.addEventListener("visibilitychange", pauseDevLetterMusicOnBackground);
   window.addEventListener("pagehide", pauseDevLetterMusic);
   window.addEventListener("blur", pauseDevLetterMusic);
+
+  const devLetterScreen = document.getElementById("screen-developer-letter");
+  if (devLetterScreen) {
+    new MutationObserver(() => {
+      if (!devLetterScreen.classList.contains("active")) closeDevLetterMusic();
+    }).observe(devLetterScreen, { attributes: true, attributeFilter: ["class"] });
+  }
 
   if (musicProgress && musicAudio) {
     musicProgress.addEventListener("pointerdown", (event) => event.stopPropagation());
