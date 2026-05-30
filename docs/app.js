@@ -14318,9 +14318,11 @@ history.replaceState({ screen: 'home' }, '');
 
     var now = Date.now();
     const current = getCurrentScreen();
+    if (window.__bl) window.__bl('HB scr=' + current + ' len=' + history.length + ' dt=' + (now - _lastBackEventTime));
 
     if (now - _lastBackEventTime < DUPLICATE_BACK_EVENT_MS) {
       // 같은 물리 입력이 native + popstate로 중복 전달되는 경우만 무시
+      if (window.__bl) window.__bl('  DUP무시');
       history.pushState({ screen: getCurrentScreen() }, '');
       return;
     }
@@ -14329,9 +14331,11 @@ history.replaceState({ screen: 'home' }, '');
     if (current === "home") {
       const exitStateArmed = !!(history.state && history.state.exitArmed);
       if (exitStateArmed && _exitArmedAt > 0 && now - _exitArmedAt <= EXIT_CONFIRM_MS) {
+        if (window.__bl) window.__bl('  HOME→EXIT');
         clearExitArm();
         doHandleBack(current);
       } else {
+        if (window.__bl) window.__bl('  HOME→arm(토스트)');
         clearExitArm();
         armExit();
         showToast("한 번 더 누르면 앱이 종료됩니다.");
@@ -14352,6 +14356,7 @@ history.replaceState({ screen: 'home' }, '');
     // 히스토리 버퍼가 고갈돼, explorer→explorerSelect 같은 전환 직후 한 번
     // 더 누르면 사이트 밖(이전 페이지)으로 튕긴다 — 조기 종료 버그의 원인.
     history.pushState({ screen: getCurrentScreen() }, '');
+    if (window.__bl) window.__bl('  rePush→' + getCurrentScreen() + ' len=' + history.length);
   }
 
   // 네이티브 MainActivity.onBackPressed()에서 직접 호출하는 글로벌 함수
@@ -14360,8 +14365,39 @@ history.replaceState({ screen: 'home' }, '');
   // Capacitor 네이티브 뒤로가기 리스너
   // history/popstate 방식 (브라우저 PWA 및 폴백)
   window.addEventListener("popstate", function () {
+    if (window.__bl) window.__bl('POPSTATE len=' + history.length + ' st=' + (history.state && history.state.screen));
     handleBack();
   });
+})();
+
+// ── [임시 진단] 뒤로가기 디버그 오버레이 ─────────────────────
+// 원인 확정용. 확인 끝나면 이 블록 통째로 삭제 예정.
+(function backDebugOverlay() {
+  var KEY = '__backlog';
+  var box = null;
+  function read() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { return []; } }
+  function render() {
+    if (!document.body) return;
+    if (!box) {
+      box = document.createElement('div');
+      box.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2147483647;background:rgba(0,0,0,.85);color:#0f0;font:11px/1.35 monospace;padding:5px 6px;max-height:45vh;overflow:auto;white-space:pre-wrap;word-break:break-all';
+      box.addEventListener('click', function () { localStorage.removeItem(KEY); render(); }); // 탭하면 초기화
+      document.body.appendChild(box);
+    }
+    box.textContent = '◀ BACKLOG (탭하면 지움) now-len=' + history.length + '\n' + read().join('\n');
+  }
+  window.__bl = function (msg) {
+    var arr = read();
+    var d = new Date();
+    arr.push(('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2) + '.' + ('00' + d.getMilliseconds()).slice(-3) + ' ' + msg);
+    if (arr.length > 20) arr = arr.slice(-20);
+    try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch (e) {}
+    render();
+  };
+  // 사이트 밖으로 빠져나가는 순간 기록 (돌아오면 마지막 줄로 확인 가능)
+  window.addEventListener('pagehide', function () { window.__bl('PAGEHIDE!! (사이트 떠남) len=' + history.length); });
+  window.addEventListener('beforeunload', function () { window.__bl('UNLOAD!! len=' + history.length); });
+  if (document.body) render(); else document.addEventListener('DOMContentLoaded', render);
 })();
 
 // ── 바로가기 추가 ─────────────────────────────────────
