@@ -14373,38 +14373,6 @@ history.replaceState({ screen: 'home' }, '');
   });
 })();
 
-// ── [임시 진단] 뒤로가기 디버그 오버레이 ─────────────────────
-// 확인 끝나면 이 블록 통째로 삭제 예정. (codex가 지웠던 것 복구)
-(function backDebugOverlay() {
-  var KEY = '__backlog';
-  var box = null;
-  function read() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { return []; } }
-  function render() {
-    if (!document.body) return;
-    if (!box) {
-      box = document.createElement('div');
-      box.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2147483647;background:rgba(0,0,0,.85);color:#0f0;font:11px/1.35 monospace;padding:5px 6px;max-height:45vh;overflow:auto;white-space:pre-wrap;word-break:break-all';
-      box.addEventListener('click', function () { localStorage.removeItem(KEY); render(); });
-      document.body.appendChild(box);
-    }
-    box.textContent = '◀ BACKLOG (탭하면 지움) len=' + history.length + '\n' + read().join('\n');
-  }
-  window.__bl = function (msg) {
-    var arr = read();
-    var d = new Date();
-    arr.push(('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2) + '.' + ('00' + d.getMilliseconds()).slice(-3) + ' ' + msg);
-    if (arr.length > 20) arr = arr.slice(-20);
-    try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch (e) {}
-    render();
-  };
-  window.addEventListener('pagehide', function () { try { window.__bl('PAGEHIDE!! (사이트 떠남)'); } catch (e) {} });
-  if (document.body) render(); else document.addEventListener('DOMContentLoaded', render);
-  // 환경 진단(로드 시 1회): Capacitor/AndroidBack/native 여부
-  window.__bl('LOAD cap=' + (!!window.Capacitor)
-    + ' androidBack=' + (!!(window.AndroidBack && window.AndroidBack.exitApp))
-    + ' native=' + (window.Capacitor && window.Capacitor.isNativePlatform ? window.Capacitor.isNativePlatform() : '?'));
-})();
-
 // ── 바로가기 추가 ─────────────────────────────────────
 (function initInstall() {
   if (window.Capacitor) return; // APK 환경에서는 불필요
