@@ -3477,14 +3477,27 @@ function restartMultiuseOnly() {
 
 let _holidaysJsonCache = null;
 
+// 옛 사이트(carrotcakehope.github.io/fireapp)엔 holidays.json이 없다(404).
+// 그 파일은 fetch-holidays Action이 새 repo(fire-assistant/app)에만 자동 커밋하기 때문.
+// 그래서 상대경로 실패 시 새 사이트 절대경로로 폴백한다. (GitHub Pages는 CORS * 허용)
+const HOLIDAYS_FALLBACK_URL = "https://fire-assistant.github.io/app/holidays.json";
+
+async function fetchHolidaysFrom(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
 async function loadHolidaysJson() {
   if (_holidaysJsonCache !== null) return _holidaysJsonCache;
   try {
-    const res = await fetch("./holidays.json");
-    if (!res.ok) throw new Error(res.status);
-    _holidaysJsonCache = await res.json();
+    _holidaysJsonCache = await fetchHolidaysFrom("./holidays.json");
   } catch {
-    return {};
+    try {
+      _holidaysJsonCache = await fetchHolidaysFrom(HOLIDAYS_FALLBACK_URL);
+    } catch {
+      return {};
+    }
   }
   return _holidaysJsonCache;
 }
