@@ -1,0 +1,33 @@
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 핵심: 이전 배포가 진행 중이면 취소하고 새 배포 진행 → "in progress deployment" 400 충돌 방지
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # supply-fireapp(소스 보관용, Pages 미사용)에서는 미러된 이 파일이 돌지 않도록 제외
+    if: github.repository != 'carrotcakehope/supply-fireapp'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deployment
+        uses: actions/deploy-pages@v4
