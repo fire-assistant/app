@@ -8859,49 +8859,46 @@ html[data-theme="dark"] .devletter-head {
   word-break: keep-all;
 }
 
-.devletter-music {
+/* 노래 행: 칩과 별도로 한 줄 위에 우측 단독 배치 */
+.devletter-musicrow {
   display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+/* BGM — 종이 톤에 녹는 한 줄 토글 (박스/플레이어 위젯 느낌 제거) */
+.devletter-music {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  max-width: 620px;
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface2);
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  text-align: left;
   cursor: pointer;
-  transition: border-color var(--transition), background var(--transition);
+  transition: color var(--transition);
 }
 
 .devletter-music:hover {
-  border-color: var(--border2);
-  background: var(--surface3);
-}
-
-.devletter-music-meta {
-  min-width: 0;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex: 0 1 auto;
-}
-
-.devletter-music-label {
-  flex-shrink: 0;
-  font-family: var(--mono, monospace);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
   color: var(--red-soft);
+}
+
+.devletter-music-icon {
+  flex-shrink: 0;
+  color: var(--red-soft);
+  font-size: 14px;
+  line-height: 1;
 }
 
 .devletter-music-title {
   min-width: 0;
-  color: var(--text-muted);
+  color: inherit;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -8909,9 +8906,22 @@ html[data-theme="dark"] .devletter-head {
 
 .devletter-music-time {
   flex-shrink: 0;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-family: var(--mono, monospace);
-  font-size: 10px;
+  font-size: 11px;
+}
+
+.devletter-music-state {
+  flex-shrink: 0;
+  color: var(--red-soft);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.devletter-music-state::before {
+  content: "· ";
+  color: var(--text-dim);
 }
 
 .devletter-music-panel {
@@ -9068,7 +9078,6 @@ html[data-theme="dark"] .devletter-head {
 }
 
 .devletter-intro {
-  max-width: 620px;
   margin: 0;
   padding: 14px 16px;
   border-left: 3px solid var(--red);

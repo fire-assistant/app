@@ -766,30 +766,17 @@
     <div class="scroll-content">
       <div class="devletter-paper">
         <div class="devletter-head">
+          <div class="devletter-musicrow">
+            <button id="devletter-music" class="devletter-music" type="button" aria-label="배경음악 재생">
+              <audio id="devletter-audio" src="./assets/music/sunrise%20dolphin.mp3" preload="auto" loop></audio>
+              <span class="devletter-music-icon" aria-hidden="true">♪</span>
+              <span class="devletter-music-title">이인성 - 노을빛 돌고래 (sunrise dolphin)</span>
+              <span id="devletter-music-time" class="devletter-music-time"></span>
+              <span id="devletter-music-play" class="devletter-music-state">듣기</span>
+            </button>
+          </div>
           <span class="devletter-kicker">개발자 노트</span>
           <h1 class="devletter-title">안녕하세요, 이 앱을 만든 개발자입니다</h1>
-          <div id="devletter-music" class="devletter-music" aria-label="개발자 이야기 배경음악">
-            <audio id="devletter-audio" src="./assets/music/sunrise%20dolphin.mp3" preload="auto" loop></audio>
-            <div class="devletter-music-meta">
-              <span class="devletter-music-label">BGM</span>
-              <span class="devletter-music-title">이인성 - 노을빛 돌고래 (sunrise dolphin)</span>
-              <span id="devletter-music-time" class="devletter-music-time">0:00 / 0:00</span>
-            </div>
-            <div class="devletter-music-actions">
-              <button id="devletter-music-play" class="devletter-music-btn" type="button" aria-label="음악 재생">▶</button>
-              <button id="devletter-music-stop" class="devletter-music-btn" type="button" aria-label="음악 정지">■</button>
-            </div>
-            <div id="devletter-music-panel" class="devletter-music-panel" hidden>
-              <label class="devletter-music-control is-progress">
-                <span>진행</span>
-                <input id="devletter-music-progress" class="devletter-music-progress" type="range" min="0" max="1000" value="0" aria-label="음악 진행 정도">
-              </label>
-              <label class="devletter-music-control is-volume">
-                <span>음량</span>
-                <input id="devletter-music-volume" class="devletter-music-volume" type="range" min="0" max="100" value="45" aria-label="음악 음량">
-              </label>
-            </div>
-          </div>
           <p class="devletter-lead">대단한 전문가가 아닌, 같은 현장을 뛰는 한 대원의 짧은 이야기입니다.</p>
           <p id="devletter-intro-text" class="devletter-intro"></p>
         </div>
@@ -799,10 +786,6 @@
         <div id="devletter-chapters" class="devletter-chapters"></div>
 
         <div class="devletter-sign">— 한 센터 대원 드림</div>
-
-        <button id="devletter-feedback-btn" class="devletter-feedback-btn" type="button">
-          📮 피드백 보내기
-        </button>
 
         <div id="devletter-reward" class="devletter-reward hidden" role="dialog" aria-hidden="true">
           <div class="devletter-reward-card">

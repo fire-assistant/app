@@ -17365,7 +17365,10 @@ function goToRgGuideSection(tab, sectionId) {
       musicProgress.style.setProperty("--range-fill", "0%");
     }
     if (musicTimeEl) {
-      musicTimeEl.textContent = formatMusicTime(musicAudio.currentTime) + " / " + formatMusicTime(duration);
+      // 재생 중일 때만 경과시간 노출, 정지/일시정지면 숨김 (미니멀)
+      musicTimeEl.textContent = (musicAudio.paused || !musicAudio.currentTime)
+        ? ""
+        : formatMusicTime(musicAudio.currentTime);
     }
   }
 
@@ -17378,9 +17381,9 @@ function goToRgGuideSection(tab, sectionId) {
     const playing = musicAudio && !musicAudio.paused;
     if (musicPlayBtn) {
       musicPlayBtn.classList.toggle("is-active", !!playing);
-      musicPlayBtn.textContent = playing ? "❚❚" : "▶";
-      musicPlayBtn.setAttribute("aria-label", playing ? "음악 일시정지" : "음악 재생");
+      musicPlayBtn.textContent = playing ? "일시정지" : "듣기";
     }
+    if (musicBox) musicBox.setAttribute("aria-label", playing ? "배경음악 일시정지" : "배경음악 재생");
     if (musicStopBtn) musicStopBtn.classList.toggle("is-active", !!musicAudio && musicAudio.paused && musicAudio.currentTime === 0);
     syncMusicProgress();
   }
@@ -17565,20 +17568,6 @@ function goToRgGuideSection(tab, sectionId) {
     });
   }
 
-  if (musicPlayBtn) {
-    musicPlayBtn.addEventListener("click", (event) => {
-      event.stopPropagation();
-      toggleDevLetterMusic();
-    });
-  }
-
-  if (musicStopBtn) {
-    musicStopBtn.addEventListener("click", (event) => {
-      event.stopPropagation();
-      stopDevLetterMusic();
-    });
-  }
-
   if (musicAudio) {
     musicAudio.addEventListener("play", syncMusicButtons);
     musicAudio.addEventListener("pause", syncMusicButtons);
@@ -17620,7 +17609,7 @@ function goToRgGuideSection(tab, sectionId) {
   }
 
   if (musicBox) {
-    musicBox.addEventListener("click", toggleMusicPanel);
+    musicBox.addEventListener("click", toggleDevLetterMusic);
   }
 
   if (feedbackBtn) {
