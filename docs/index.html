@@ -17,7 +17,18 @@
   <!-- Analytics (devMode/gaSuppressed면 GTM·gtag 스크립트 자체를 로드하지 않음) -->
   <script>(function(){
     var until = Number(localStorage.getItem('gaSuppressedUntil') || '0');
-    var isDev = localStorage.getItem('devMode') === 'true' || Date.now() < until;
+    var h = location.hostname;
+    var isLocal = !h
+      || location.protocol === 'file:'
+      || h === 'localhost'
+      || h === '127.0.0.1'
+      || h === '0.0.0.0'
+      || h === '::1'
+      || h.endsWith('.local')
+      || /^192\.168\./.test(h)
+      || /^10\./.test(h)
+      || /^172\.(1[6-9]|2\d|3[01])\./.test(h);
+    var isDev = localStorage.getItem('devMode') === 'true' || Date.now() < until || isLocal;
     window.__analyticsDisabled = isDev;
     window['ga-disable-G-LKQZX5YS2H'] = isDev;
     if (isDev) return;
@@ -766,16 +777,16 @@
     <div class="scroll-content">
       <div class="devletter-paper">
         <div class="devletter-head">
-          <div class="devletter-musicrow">
+          <div class="devletter-toprow">
+            <span class="devletter-kicker">개발자 노트</span>
             <button id="devletter-music" class="devletter-music" type="button" aria-label="배경음악 재생">
               <audio id="devletter-audio" src="./assets/music/sunrise%20dolphin.mp3" preload="auto" loop></audio>
               <span class="devletter-music-icon" aria-hidden="true">♪</span>
-              <span class="devletter-music-title">이인성 - 노을빛 돌고래 (sunrise dolphin)</span>
+              <span class="devletter-music-title">노을빛 돌고래</span>
               <span id="devletter-music-time" class="devletter-music-time"></span>
               <span id="devletter-music-play" class="devletter-music-state">듣기</span>
             </button>
           </div>
-          <span class="devletter-kicker">개발자 노트</span>
           <h1 class="devletter-title">안녕하세요, 이 앱을 만든 개발자입니다</h1>
           <p class="devletter-lead">대단한 전문가가 아닌, 같은 현장을 뛰는 한 대원의 짧은 이야기입니다.</p>
           <p id="devletter-intro-text" class="devletter-intro"></p>
