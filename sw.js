@@ -1,4 +1,4 @@
-const CACHE = 'fireapp-v324';
+const CACHE = 'fireapp-v325';
 
 const PRECACHE_FILES = [
   './index.html',
@@ -48,7 +48,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   const filename = decodeURIComponent(url.pathname.split('/').pop() || '');
 
-  // ?? ìŽŒ?????? ìŽŒ?? ??? ì™???? ì???? ì?ê²?? ìŽŒê½?ï§¤ì’–?Šå ?åª›Â€?? ìŽŒ?¤å ?(?? ì?ë´?? ìŽŒ????ï§?¨¯???? ìŽŒ??
+  // NETWORK_FIRST ëª©ë¡: í•­ìƒ ë„¤íŠ¸ì›Œí¬ì—ì„œ ìµœì‹ ë³¸ì„ ë°›ì•„ì˜¤ê³ , ì‹¤íŒ¨ ì‹œì—ë§Œ ìºì‹œë¡œ í´ë°±
   if (NETWORK_FIRST.includes(filename)) {
     e.respondWith(
       fetch(new Request(e.request.url, { cache: 'no-store' }))
@@ -63,7 +63,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // ?? ìŽˆ?§ï§ž? (?? ì™??ï§žÂ€, PDF, ?? ìŽŒ? é‡‰??œ­????: ï§?¨¯???? ìŽŒê½? ?? ìŽŒ?å ??? ì???? ì?ê²?? ìŽŒê½?è«›ì†ë¸?ï§?¨¯??
+  // ê·¸ ì™¸(ì´ë¯¸ì§€, PDF, ì •ì  ìžì‚° ë“±): ìºì‹œ ìš°ì„ , ì—†ìœ¼ë©´ ë„¤íŠ¸ì›Œí¬ì—ì„œ ë°›ì•„ ìºì‹œì— ì €ìž¥
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
