@@ -8859,17 +8859,11 @@ html[data-theme="dark"] .devletter-head {
   word-break: keep-all;
 }
 
-/* 칩 + BGM 한 줄 양끝 */
-.devletter-toprow {
+/* 노래 단독 행 — 우측 정렬, 칩과 별도 줄 */
+.devletter-musicrow {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.devletter-toprow .devletter-kicker {
-  margin-bottom: 0;
-  flex-shrink: 0;
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 
 /* BGM — 종이 톤에 녹는 한 줄 토글 (박스/플레이어 위젯 느낌 제거) */
