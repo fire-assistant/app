@@ -29,5 +29,22 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs
+      # 재시도 루프: Pages 배포가 일시적으로 "in progress"(400)로 끼면
+      # run을 죽이지 않고(continue-on-error) 대기 후 재배포 → 락 풀리면 성공.
+      # 최종 성공하면 run=success라 GitHub 실패 메일이 안 옴.
       - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: wait before retry 1
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 120
+      - id: deployment2
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: wait before retry 2
+        if: steps.deployment.outcome == 'failure' && steps.deployment2.outcome == 'failure'
+        run: sleep 180
+      - id: deployment3
+        if: steps.deployment.outcome == 'failure' && steps.deployment2.outcome == 'failure'
         uses: actions/deploy-pages@v4
