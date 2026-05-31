@@ -589,6 +589,7 @@ const state = {
     assistantArea: "",
     viewYear: new Date().getFullYear(),
     viewMonth: new Date().getMonth(),
+    editingMonth: false,
   },
 };
 
@@ -3970,9 +3971,19 @@ function renderDateCalculator() {
     <div class="dc-main-grid">
       <section class="dc-cal-section">
         <div class="dc-cal-header">
-          <button class="dc-cal-nav-btn" type="button" data-cal-nav="-1">‹</button>
-          <div class="dc-cal-month">${viewYear}년 ${viewMonth + 1}월</div>
-          <button class="dc-cal-nav-btn" type="button" data-cal-nav="1">›</button>
+          ${state.dateCalc.editingMonth ? `
+            <div class="dc-cal-edit">
+              <input class="dc-cal-year-input" id="dc-cal-year-input" type="number" inputmode="numeric" min="1900" max="2200" value="${viewYear}" aria-label="연도 입력">
+              <select class="dc-cal-month-select" id="dc-cal-month-select" aria-label="월 선택">
+                ${Array.from({ length: 12 }, (_, m) => `<option value="${m}"${m === viewMonth ? " selected" : ""}>${m + 1}월</option>`).join("")}
+              </select>
+              <button class="dc-cal-apply-btn" type="button" data-cal-apply>확인</button>
+            </div>
+          ` : `
+            <button class="dc-cal-nav-btn" type="button" data-cal-nav="-1">‹</button>
+            <button class="dc-cal-month" type="button" data-cal-month-edit title="연·월 직접 입력">${viewYear}년 ${viewMonth + 1}월</button>
+            <button class="dc-cal-nav-btn" type="button" data-cal-nav="1">›</button>
+          `}
         </div>
         ${mode.supportsHolidaySelection ? `
           <div class="dc-cal-mode-toggle">
@@ -4118,6 +4129,36 @@ function renderDateCalculator() {
       renderDateCalculator();
     });
   });
+  const monthEditBtn = root.querySelector("[data-cal-month-edit]");
+  if (monthEditBtn) {
+    monthEditBtn.addEventListener("click", () => {
+      state.dateCalc.editingMonth = true;
+      renderDateCalculator();
+    });
+  }
+  const applyMonthEdit = () => {
+    const yearInput = root.querySelector("#dc-cal-year-input");
+    const monthSelect = root.querySelector("#dc-cal-month-select");
+    if (!yearInput || !monthSelect) return;
+    let year = parseInt(yearInput.value, 10);
+    if (Number.isNaN(year)) year = state.dateCalc.viewYear;
+    year = Math.min(2200, Math.max(1900, year));
+    state.dateCalc.viewYear = year;
+    state.dateCalc.viewMonth = Number(monthSelect.value);
+    state.dateCalc.editingMonth = false;
+    renderDateCalculator();
+  };
+  const applyBtn = root.querySelector("[data-cal-apply]");
+  if (applyBtn) {
+    applyBtn.addEventListener("click", applyMonthEdit);
+  }
+  const yearInputEl = root.querySelector("#dc-cal-year-input");
+  if (yearInputEl) {
+    yearInputEl.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") { event.preventDefault(); applyMonthEdit(); }
+      else if (event.key === "Escape") { state.dateCalc.editingMonth = false; renderDateCalculator(); }
+    });
+  }
   root.querySelectorAll("[data-date]").forEach((button) => {
     button.addEventListener("click", () => {
       if (mode.supportsHolidaySelection && state.dateCalc.selectMode === "holiday") {
@@ -4160,6 +4201,11 @@ function renderDateCalculator() {
     assistantInput.focus();
     const inputLength = assistantInput.value.length;
     assistantInput.setSelectionRange(inputLength, inputLength);
+  }
+
+  if (state.dateCalc.editingMonth && prevActiveId !== "dc-cal-year-input") {
+    const yearInput = root.querySelector("#dc-cal-year-input");
+    if (yearInput) { yearInput.focus(); yearInput.select(); }
   }
 
   attachHorizontalSwipeNavigation(root, () => ({

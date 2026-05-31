@@ -3059,7 +3059,57 @@ html[data-theme="blossom"] #date-content .dc-hero-date.dc-accent-blue { color: v
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.2px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
 }
+#date-content .dc-cal-month:hover {
+  background: var(--surface2);
+  border-color: var(--border);
+}
+#date-content .dc-cal-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+#date-content .dc-cal-year-input,
+#date-content .dc-cal-month-select {
+  height: 32px;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 0 8px;
+}
+#date-content .dc-cal-year-input {
+  width: 72px;
+  text-align: center;
+}
+#date-content .dc-cal-year-input:focus,
+#date-content .dc-cal-month-select:focus {
+  outline: none;
+  border-color: var(--red);
+}
+#date-content .dc-cal-apply-btn {
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--red);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+#date-content .dc-cal-apply-btn:hover { background: #e8352a; }
 #date-content .dc-cal-nav-btn {
   width: 32px;
   height: 32px;
