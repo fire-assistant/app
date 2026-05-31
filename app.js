@@ -14264,17 +14264,31 @@ history.replaceState({ screen: 'home' }, '');
     var app = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
     if (app && typeof app.exitApp === "function") {
       app.exitApp();
-      return;
+      return true;
     }
     if (window.AndroidBack && typeof window.AndroidBack.exitApp === "function") {
       window.AndroidBack.exitApp();
+      return true;
     }
+    return false;
+  }
+
+  function leaveWebApp() {
+    if (exitApp()) return;
+    try { window.close(); } catch {}
+    setTimeout(function () {
+      try {
+        history.go(-Math.max(1, history.length - 1));
+      } catch {
+        history.back();
+      }
+    }, 0);
   }
 
   // true 반환 = 화면 내부 이동(re-push 필요), false = 다른 screen으로 전환(re-push 불필요)
   function doHandleBack(current) {
     if (current === "home") {
-      exitApp();
+      leaveWebApp();
       return false;
     }
 
@@ -14383,7 +14397,7 @@ history.replaceState({ screen: 'home' }, '');
       // 두 번째 뒤로(2초 내) = 실제 종료. APK는 exitApp, 웹은 그냥 종료 시도(브라우저가 떠남).
       if (_homeExitArmedAt && now - _homeExitArmedAt <= HOME_EXIT_MS) {
         if (window.__bl) window.__bl('  HOME→EXIT');
-        exitApp();
+        leaveWebApp();
         return;
       }
       // 첫 번째 뒤로 = 종료 예고 토스트만(종료 안 함).

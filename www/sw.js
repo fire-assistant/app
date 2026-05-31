@@ -1,4 +1,4 @@
-const CACHE = 'fireapp-v334';
+const CACHE = 'fireapp-v336';
 
 const PRECACHE_FILES = [
   './index.html',
@@ -78,6 +78,5 @@ self.addEventListener('fetch', e => {
     })
   );
 });
-
 
 
