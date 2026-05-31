@@ -17,8 +17,10 @@ concurrency:
 
 jobs:
   deploy:
-    # supply-fireapp(소스 보관용, Pages 미사용)에서는 미러된 이 파일이 돌지 않도록 제외
-    if: github.repository != 'carrotcakehope/supply-fireapp'
+    # appsite(fire-assistant/app)에서만 실행.
+    # fireapp(carrotcakehope)은 legacy(branch/docs) 방식이 더 안정적이라 워크플로 제외(legacy가 알아서 배포).
+    # supply-fireapp은 Pages 미사용이라 제외.
+    if: github.repository == 'fire-assistant/app'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
