@@ -1354,9 +1354,6 @@ function showScreen(name) {
     scrollable.scrollTop = 0;
   }
   window.scrollTo(0, 0);
-  if (!_suppressHistoryPush && name !== 'home') {
-    history.pushState({ screen: name }, '');
-  }
 }
 
 function getTotalFloors() {
@@ -14260,21 +14257,18 @@ history.replaceState({ screen: 'home' }, '');
     return Object.keys(screens).find(k => screens[k].classList.contains("active")) || "home";
   }
 
-  function exitApp() {
+  function requestNativeExit() {
     var app = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
     if (app && typeof app.exitApp === "function") {
-      app.exitApp();
-      return true;
+      try { app.exitApp(); } catch {}
     }
     if (window.AndroidBack && typeof window.AndroidBack.exitApp === "function") {
-      window.AndroidBack.exitApp();
-      return true;
+      try { window.AndroidBack.exitApp(); } catch {}
     }
-    return false;
   }
 
   function leaveWebApp() {
-    if (exitApp()) return;
+    requestNativeExit();
     try { window.close(); } catch {}
     setTimeout(function () {
       try {
@@ -14377,6 +14371,8 @@ history.replaceState({ screen: 'home' }, '');
 
   var _homeExitArmedAt = 0;
   var HOME_EXIT_MS = 2000;
+  var _appHistoryFuelDepth = 0;
+  var _homeExitCompacting = false;
 
   function handleBack() {
     // 패치노트 모달이 history.back()으로 자체 종료 중 — 이 popstate는 무시
@@ -14406,6 +14402,14 @@ history.replaceState({ screen: 'home' }, '');
       _homeExitArmedAt = now;
       if (window.__bl) window.__bl('  HOME→arm(토스트)');
       showToast("한 번 더 누르면 종료됩니다.");
+      if (_appHistoryFuelDepth > 0) {
+        _homeExitCompacting = true;
+        var compactSteps = _appHistoryFuelDepth;
+        _appHistoryFuelDepth = 0;
+        setTimeout(function () {
+          try { history.go(-compactSteps); } catch {}
+        }, 0);
+      }
       return;
     }
 
@@ -14421,13 +14425,16 @@ history.replaceState({ screen: 'home' }, '');
 
   // forward(사용자 클릭)마다 실제 히스토리 엔트리 1개 적재 = 뒤로가기 "연료".
   // 클릭 핸들러 안(사용자 제스처)에서 push하므로 intervention이 안 건너뛴다.
-  document.addEventListener("click", function () {
+  document.addEventListener("click", function (event) {
     if (_suppressHistoryPush) return;                       // 뒤로 처리 중 프로그램적 .click()은 제외
     if (window._pnIsOpen && window._pnIsOpen()) return;       // 패치노트 모달은 자체 히스토리 관리
+    var target = event && event.target;
+    if (target && target.closest && target.closest('.back-btn, [data-no-history]')) return;
     // 홈 포함 모든 화면에서 클릭마다 연료 적재. (홈에서 연료를 안 쌓으면 어떤 화면에 잠깐
     // 들어갔다 홈으로 돌아왔을 때 홈에 소비할 엔트리가 없어, 뒤로가기 한 번에 Capacitor가
     // 바로 종료해버린다 — "한 번 더 누르면 종료" 토스트가 안 뜨는 원인.)
-    history.pushState({ screen: getCurrentScreen() }, '');
+    history.pushState({ screen: getCurrentScreen(), appFuel: true }, '');
+    _appHistoryFuelDepth++;
     if (window.__bl) window.__bl('FUEL+ (' + getCurrentScreen() + ') len=' + history.length);
   }, true);
 
@@ -14442,6 +14449,11 @@ history.replaceState({ screen: 'home' }, '');
   // 웹/PWA: history/popstate 방식. (APK는 위 네이티브 경로만 사용)
   window.addEventListener("popstate", function () {
     if (window.__bl) window.__bl('POPSTATE len=' + history.length + ' st=' + (history.state && history.state.screen));
+    if (_appHistoryFuelDepth > 0) _appHistoryFuelDepth--;
+    if (_homeExitCompacting) {
+      _homeExitCompacting = false;
+      return;
+    }
     handleBack();
   });
 })();
