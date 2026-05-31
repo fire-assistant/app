@@ -14361,50 +14361,12 @@ history.replaceState({ screen: 'home' }, '');
   // (호환용) 글로벌 핸들러
   window._appHandleBack = handleBack;
 
-  // 네이티브 APK: Capacitor App 플러그인의 backButton 리스너.
-  // 이걸 등록하면 Capacitor가 기본 동작(뒤로/홈에서 액티비티 종료) 대신 우리에게 위임한다.
-  // (Android 13+/Capacitor8은 legacy onBackPressed를 안 부르므로 이 방식이어야 한다.
-  //  네이티브 back은 브라우저 히스토리를 건드리지 않아 intervention/연료 무관 → 홈에서도 항상 동작.)
-  // ※ 원격 로드(server.url) 앱은 @capacitor/app 의 JS가 번들에 없어 Capacitor.Plugins.App 이
-  //   자동 생성되지 않는다. 그래서 Capacitor.registerPlugin('App') 로 브리지 프록시를 직접 만든다.
-  (function registerNativeBack() {
-    var registered = false;
-    var tries = 0;
-    var maxTries = 40;
+  // 네이티브 APK 뒤로가기는 MainActivity.java 의 OnBackPressedDispatcher 콜백이
+  // window._appHandleBack() 을 직접 호출해 처리한다(히스토리/연료/intervention 무관 → 켜자마자 첫 뒤로도 동작).
+  // 여기서 @capacitor/app backButton 리스너를 또 등록하면 같은 입력에 handleBack 이 두 번 불릴 위험
+  // (홈에서 첫 뒤로에 arm→exit 동시 발생 = 즉시 종료)이 있어 등록하지 않는다.
 
-    function tryRegister() {
-      if (registered) return;
-      tries += 1;
-      try {
-        var Cap = window.Capacitor;
-        var AppPlugin = null;
-        if (Cap) {
-          AppPlugin = (Cap.Plugins && Cap.Plugins.App) ? Cap.Plugins.App
-                    : (typeof Cap.registerPlugin === 'function' ? Cap.registerPlugin('App') : null);
-        }
-        if (AppPlugin && typeof AppPlugin.addListener === 'function') {
-          registered = true;
-          AppPlugin.addListener('backButton', function () {
-            if (window.__bl) window.__bl('NATIVE backButton');
-            handleBack();
-          });
-          if (window.__bl) window.__bl('backButton listener registered');
-          return;
-        }
-      } catch (e) {
-        if (window.__bl) window.__bl('backButton register error: ' + e.message);
-      }
-      if (tries < maxTries) {
-        setTimeout(tryRegister, 250);
-      } else if (window.__bl) {
-        window.__bl('backButton listener not registered');
-      }
-    }
-
-    tryRegister();
-  })();
-
-  // 웹/PWA(및 폴백): history/popstate 방식. 네이티브에선 popstate가 안 일어나므로 무관.
+  // 웹/PWA: history/popstate 방식. (APK는 위 네이티브 경로만 사용)
   window.addEventListener("popstate", function () {
     if (window.__bl) window.__bl('POPSTATE len=' + history.length + ' st=' + (history.state && history.state.screen));
     handleBack();
