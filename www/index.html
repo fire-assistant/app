@@ -68,7 +68,7 @@
         if (_reloading) return;
         _reloading = true;
         window.showUpdateOverlay();
-        window.location.reload();
+        setTimeout(function(){ window.location.reload(); }, 1500);
       }
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('./sw.js?v=303', { updateViaCache: 'none' })

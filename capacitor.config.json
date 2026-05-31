@@ -4,7 +4,7 @@
   "webDir": "www",
   "server": {
     "androidScheme": "https",
-    "url": "https://carrotcakehope.github.io/fireapp",
+    "url": "https://fire-assistant.github.io/app",
     "errorPath": "index.html"
   },
   "android": {
