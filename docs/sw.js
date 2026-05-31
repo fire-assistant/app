@@ -1,4 +1,4 @@
-const CACHE = 'fireapp-v325';
+const CACHE = 'fireapp-v326';
 
 const PRECACHE_FILES = [
   './index.html',
@@ -54,7 +54,8 @@ self.addEventListener('fetch', e => {
       fetch(new Request(e.request.url, { cache: 'no-store' }))
         .then(res => {
           if (res && res.ok) {
-            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put(e.request, copy));
           }
           return res;
         })
@@ -69,7 +70,8 @@ self.addEventListener('fetch', e => {
       if (cached) return cached;
       return fetch(e.request).then(res => {
         if (res && res.ok) {
-          caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, copy));
         }
         return res;
       });
