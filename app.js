@@ -5350,7 +5350,7 @@ function renderOccupancyCalculator() {
       </div>
       </div>
     `;
-    animateSwipeNavigation(root);
+    animateSwipeNavigation(root, root.querySelector('.utility-tool-panel'));
     attachTabListeners();
 
     root.querySelectorAll("[data-staffing-target]").forEach((btn) => {
@@ -5472,7 +5472,7 @@ function renderOccupancyCalculator() {
     </section>
     </div>
   `;
-  animateSwipeNavigation(root);
+  animateSwipeNavigation(root, root.querySelector('.utility-tool-panel'));
   attachTabListeners();
 
   root.querySelectorAll("[data-occ-cat]").forEach((btn) => {

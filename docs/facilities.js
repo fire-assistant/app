@@ -58,7 +58,7 @@
       tabBar.querySelectorAll('.rg-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.idx === String(activeTabIndex)));
       contentArea.querySelectorAll('.fac-panel').forEach(p => p.classList.toggle('hidden', p.dataset.idx !== String(activeTabIndex)));
       contentArea.scrollTop = 0;
-      if (typeof animateSwipeNavigation === 'function') animateSwipeNavigation(contentEl);
+      if (typeof animateSwipeNavigation === 'function') animateSwipeNavigation(contentEl, contentArea);
     }
 
     tabBar.addEventListener('click', e => {

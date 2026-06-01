@@ -160,19 +160,27 @@ input:focus-visible {
 .rg-outer.swipe-tab-enter-next,
 .rg-outer.swipe-tab-enter-prev,
 .dc-body.swipe-tab-enter-next,
-.dc-body.swipe-tab-enter-prev {
+.dc-body.swipe-tab-enter-prev,
+.utility-tool-panel.swipe-tab-enter-next,
+.utility-tool-panel.swipe-tab-enter-prev,
+.rg-content.swipe-tab-enter-next,
+.rg-content.swipe-tab-enter-prev {
   will-change: opacity, transform;
 }
 
 .scroll-content.swipe-tab-enter-next,
 .rg-outer.swipe-tab-enter-next,
-.dc-body.swipe-tab-enter-next {
+.dc-body.swipe-tab-enter-next,
+.utility-tool-panel.swipe-tab-enter-next,
+.rg-content.swipe-tab-enter-next {
   animation: swipeTabInNext 0.34s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 .scroll-content.swipe-tab-enter-prev,
 .rg-outer.swipe-tab-enter-prev,
-.dc-body.swipe-tab-enter-prev {
+.dc-body.swipe-tab-enter-prev,
+.utility-tool-panel.swipe-tab-enter-prev,
+.rg-content.swipe-tab-enter-prev {
   animation: swipeTabInPrev 0.34s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
@@ -204,7 +212,11 @@ input:focus-visible {
   .rg-outer.swipe-tab-enter-next,
   .rg-outer.swipe-tab-enter-prev,
   .dc-body.swipe-tab-enter-next,
-  .dc-body.swipe-tab-enter-prev {
+  .dc-body.swipe-tab-enter-prev,
+  .utility-tool-panel.swipe-tab-enter-next,
+  .utility-tool-panel.swipe-tab-enter-prev,
+  .rg-content.swipe-tab-enter-next,
+  .rg-content.swipe-tab-enter-prev {
     animation: none;
   }
 }
