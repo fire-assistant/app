@@ -5293,6 +5293,8 @@ html[data-theme="light"] .cal-day.holiday::after {
 .rg-tab-bar {
   display: flex;
   flex-shrink: 0;
+  justify-content: space-between;
+  padding: 0 8px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
   overflow-x: auto;
@@ -5303,8 +5305,15 @@ html[data-theme="light"] .cal-day.holiday::after {
   display: none;
 }
 
+@media (min-width: 900px) {
+  .rg-tab-bar {
+    justify-content: center;
+    gap: 32px;
+  }
+}
+
 .rg-tab-btn {
-  flex: 1;
+  flex: 0 0 auto;
   min-width: 0;
   padding: 10px 4px 9px;
   border: none;
