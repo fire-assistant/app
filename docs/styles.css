@@ -2778,6 +2778,7 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
+  align-items: stretch; /* 탭 높이 통일 → 두 줄 탭과 밑줄 정렬 */
 }
 @media (min-width: 900px) {
   #date-content .dc-mode-tabs {
@@ -2787,17 +2788,26 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
 #date-content .dc-mode-tabs::-webkit-scrollbar { display: none; }
 
 #date-content .dc-mode-tab {
-  flex: 0 0 auto;
-  padding: 12px 18px 11px;
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  max-width: 5.4em;
+  padding: 9px 7px 8px;
   border: 0;
   border-bottom: 2px solid transparent;
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: -0.1px;
-  white-space: nowrap;
+  line-height: 1.24;
+  letter-spacing: -0.3px;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
   transition: color var(--transition), border-color var(--transition);
 }
 #date-content .dc-mode-tab:hover { color: var(--text); }

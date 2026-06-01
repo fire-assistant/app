@@ -614,7 +614,7 @@ const CALC_MODES = {
     ],
   },
   fire_safety_manager: {
-    short: "안전관리자",
+    short: "소방안전관리자",
     kind: "manager_dual",
     label: "소방안전관리자 기한 계산",
     baseDateLabel: "해임·퇴직일",
@@ -677,7 +677,7 @@ const CALC_MODES = {
     ],
   },
   fire_safety_assistant_manager: {
-    short: "보조자",
+    short: "소방안전관리보조자",
     kind: "manager_dual",
     label: "소방안전관리보조자 기한 계산",
     baseDateLabel: "해임·퇴직일",
@@ -742,7 +742,7 @@ const CALC_MODES = {
     ],
   },
   hazardous_material_manager: {
-    short: "위험물",
+    short: "위험물안전관리자",
     kind: "manager_dual",
     label: "위험물안전관리자 기한 계산",
     baseDateLabel: "해임·퇴직일",
@@ -762,7 +762,7 @@ const CALC_MODES = {
     ],
   },
   noncompliance_action: {
-    short: "부적합",
+    short: "부적합조치기한",
     kind: "noncompliance_dual",
     label: "부적합 조치기한 계산",
     baseDateLabel: "보고일",
