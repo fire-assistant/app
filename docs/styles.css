@@ -2831,9 +2831,10 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   color: var(--red-soft);
   border-bottom-color: var(--red);
 }
-/* Mobile: long(slash) label 표시, short 숨김 */
+
+/* Mobile: long label 표시 */
 #date-content .dc-tab-short { display: none; }
-/* PC: short 라벨 한 줄 표시 */
+/* PC: short 라벨 한 줄 */
 @media (min-width: 900px) {
   #date-content .dc-mode-tab {
     max-width: none;

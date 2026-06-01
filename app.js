@@ -3615,8 +3615,8 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
 function animateSwipeNavigation(root, animTarget) {
   const direction = root?.dataset?.swipeNavDirection;
   if (direction !== "next" && direction !== "prev") return;
-  const target = animTarget || root;
 
+  const target = animTarget || root;
   delete root.dataset.swipeNavDirection;
   target.classList.remove("swipe-tab-enter-next", "swipe-tab-enter-prev");
   void target.offsetWidth;
