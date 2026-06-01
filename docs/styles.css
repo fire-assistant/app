@@ -158,17 +158,21 @@ input:focus-visible {
 .scroll-content.swipe-tab-enter-next,
 .scroll-content.swipe-tab-enter-prev,
 .rg-outer.swipe-tab-enter-next,
-.rg-outer.swipe-tab-enter-prev {
+.rg-outer.swipe-tab-enter-prev,
+.dc-body.swipe-tab-enter-next,
+.dc-body.swipe-tab-enter-prev {
   will-change: opacity, transform;
 }
 
 .scroll-content.swipe-tab-enter-next,
-.rg-outer.swipe-tab-enter-next {
+.rg-outer.swipe-tab-enter-next,
+.dc-body.swipe-tab-enter-next {
   animation: swipeTabInNext 0.34s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 .scroll-content.swipe-tab-enter-prev,
-.rg-outer.swipe-tab-enter-prev {
+.rg-outer.swipe-tab-enter-prev,
+.dc-body.swipe-tab-enter-prev {
   animation: swipeTabInPrev 0.34s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
@@ -198,7 +202,9 @@ input:focus-visible {
   .scroll-content.swipe-tab-enter-next,
   .scroll-content.swipe-tab-enter-prev,
   .rg-outer.swipe-tab-enter-next,
-  .rg-outer.swipe-tab-enter-prev {
+  .rg-outer.swipe-tab-enter-prev,
+  .dc-body.swipe-tab-enter-next,
+  .dc-body.swipe-tab-enter-prev {
     animation: none;
   }
 }
@@ -2799,7 +2805,7 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1.24;
   letter-spacing: -0.3px;

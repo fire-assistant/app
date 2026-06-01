@@ -3612,16 +3612,17 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
   }, true);
 }
 
-function animateSwipeNavigation(root) {
+function animateSwipeNavigation(root, animTarget) {
   const direction = root?.dataset?.swipeNavDirection;
   if (direction !== "next" && direction !== "prev") return;
+  const target = animTarget || root;
 
   delete root.dataset.swipeNavDirection;
-  root.classList.remove("swipe-tab-enter-next", "swipe-tab-enter-prev");
-  void root.offsetWidth;
-  root.classList.add(direction === "next" ? "swipe-tab-enter-next" : "swipe-tab-enter-prev");
+  target.classList.remove("swipe-tab-enter-next", "swipe-tab-enter-prev");
+  void target.offsetWidth;
+  target.classList.add(direction === "next" ? "swipe-tab-enter-next" : "swipe-tab-enter-prev");
   window.setTimeout(() => {
-    root.classList.remove("swipe-tab-enter-next", "swipe-tab-enter-prev");
+    target.classList.remove("swipe-tab-enter-next", "swipe-tab-enter-prev");
   }, 380);
 }
 
@@ -3961,6 +3962,7 @@ function renderDateCalculator() {
       ).join("")}
     </div>
 
+    <div class="dc-body">
     <section class="dc-hero">
       <div class="dc-hero-main">
         <div class="dc-hero-results">${heroResultsHTML}</div>
@@ -4051,8 +4053,9 @@ function renderDateCalculator() {
     ${assistantCalculatorSection}
       </div>
     </div>
+    </div>
   `;
-  animateSwipeNavigation(root);
+  animateSwipeNavigation(root, root.querySelector('.dc-body'));
 
   const syncDateSplitHeight = () => {
     const calSection = root.querySelector(".dc-cal-section");
