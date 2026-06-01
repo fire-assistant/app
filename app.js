@@ -3957,7 +3957,7 @@ function renderDateCalculator() {
   root.innerHTML = `
     <div class="dc-mode-tabs">
       ${Object.entries(CALC_MODES).map(([key, cfg]) =>
-        `<button class="dc-mode-tab${key === state.dateCalc.mode ? " active" : ""}" type="button" data-mode="${key}">${cfg.tabLabel || cfg.short}</button>`
+        `<button class="dc-mode-tab${key === state.dateCalc.mode ? " active" : ""}" type="button" data-mode="${key}"><span class="dc-tab-long">${cfg.tabLabel || cfg.short}</span><span class="dc-tab-short">${cfg.short}</span></button>`
       ).join("")}
     </div>
 

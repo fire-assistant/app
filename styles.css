@@ -2793,7 +2793,6 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   align-items: center;
   justify-content: center;
   min-width: 0;
-  max-width: 5.4em;
   padding: 9px 7px 8px;
   border: 0;
   border-bottom: 2px solid transparent;
@@ -2813,6 +2812,18 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
 #date-content .dc-mode-tab.active {
   color: var(--red-soft);
   border-bottom-color: var(--red);
+}
+/* Mobile: long(slash) label 표시, short 숨김 */
+#date-content .dc-tab-short { display: none; }
+/* PC: short 라벨 한 줄 표시 */
+@media (min-width: 900px) {
+  #date-content .dc-mode-tab {
+    max-width: none;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+  #date-content .dc-tab-long { display: none; }
+  #date-content .dc-tab-short { display: inline; }
 }
 
 /* HERO — 결과/타임라인 풀폭 */
