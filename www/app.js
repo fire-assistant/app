@@ -3591,6 +3591,56 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
     setTransform(dx * damp);
   };
 
+  // 전환 확정: 옛 화면 스냅샷(clone)과 새 화면(root)을 한 쌍으로 같이 슬라이드
+  const slideTransition = (nextKey, dir, dx, onChange) => {
+    const rect = root.getBoundingClientRect();
+    const w = rect.width || width || window.innerWidth || 360;
+
+    const clone = root.cloneNode(true);
+    clone.removeAttribute("id");
+    clone.dataset.swipeClone = "1";
+    Object.assign(clone.style, {
+      position: "fixed",
+      left: rect.left + "px",
+      top: rect.top + "px",
+      width: rect.width + "px",
+      height: rect.height + "px",
+      margin: "0",
+      overflow: "hidden",
+      zIndex: "30",
+      pointerEvents: "none",
+      transition: "none",
+      transform: "translateX(0)", // rect가 이미 현재 끌린 위치를 반영하므로 0에서 시작
+    });
+    document.body.appendChild(clone);
+    clone.scrollTop = root.scrollTop; // root 자체가 스크롤 컨테이너인 경우 위치 보존
+
+    suppressClick = true;
+    decided = false;
+    dragging = false;
+
+    // 새 화면을 화면 밖(진행 방향 반대편)에 배치한 채 re-render
+    root.style.transition = "none";
+    root.style.transform = `translateX(${dir === "next" ? w : -w}px)`;
+    root.style.willChange = "transform";
+
+    onChange(nextKey); // root.innerHTML 교체(요소 자체 inline transform은 유지됨)
+
+    requestAnimationFrame(() => {
+      root.style.transition = "transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1)";
+      root.style.transform = "translateX(0)";
+      clone.style.transition = "transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1)";
+      clone.style.transform = `translateX(${dir === "next" ? -w : w}px)`;
+    });
+
+    window.setTimeout(() => {
+      root.style.transition = "";
+      root.style.transform = "";
+      root.style.removeProperty("will-change");
+      clone.remove();
+    }, 360);
+  };
+
   const finish = (x, y, id = null) => {
     if (id !== null && pointerId !== id) return;
     pointerId = null;
@@ -3611,10 +3661,7 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
             : Math.max(currentIndex - 1, 0);
           const next = options.keys[nextIndex];
           if (next && next !== options.current) {
-            suppressClick = true;
-            root.dataset.swipeNavDirection = dx < 0 ? "next" : "prev";
-            endDrag(false); // transform 즉시 0 → re-render가 슬라이드인 담당
-            options.onChange(next);
+            slideTransition(next, dx < 0 ? "next" : "prev", dx, options.onChange);
             return;
           }
         }
