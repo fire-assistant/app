@@ -10,8 +10,13 @@ echo  Web Deploy Start
 echo ================================
 echo.
 
+:: Stamp deploy date into app.js (version stays manual)
+echo [1/4] Updating deploy date...
+powershell -NoProfile -Command "$q=[char]34; $d=Get-Date -Format 'yyyy-MM-dd'; $f=Join-Path (Get-Location).Path 'app.js'; $enc=New-Object System.Text.UTF8Encoding($false); $c=[System.IO.File]::ReadAllText($f,[System.Text.Encoding]::UTF8); $c=$c -replace ('date:\s*'+$q+'\d{4}-\d{2}-\d{2}'+$q), ('date: '+$q+$d+$q); [System.IO.File]::WriteAllText($f,$c,$enc); Write-Host (' app.js date -> ' + $d)"
+echo       Done
+
 :: Copy source files to docs/ and www/
-echo [1/3] Copying files to docs/ and www/...
+echo [2/4] Copying files to docs/ and www/...
 if not exist docs mkdir docs
 if not exist www  mkdir www
 
@@ -44,14 +49,14 @@ if not exist www\.nojekyll  type nul > www\.nojekyll
 echo       Done
 
 :: Bump service worker cache version
-echo [2/3] Updating cache version...
-powershell -NoProfile -Command "$f='sw.js'; $c=Get-Content $f -Raw; if($c -match 'fireapp-v(\d+)'){$n=[int]$matches[1]+1; $r='fireapp-v'+$n; $c=$c -replace 'fireapp-v\d+', $r; Set-Content $f $c -NoNewline; Write-Host (' sw.js -> ' + $r)}"
-powershell -NoProfile -Command "$f='docs\sw.js'; $c=Get-Content $f -Raw; if($c -match 'fireapp-v(\d+)'){$n=[int]$matches[1]+1; $r='fireapp-v'+$n; $c=$c -replace 'fireapp-v\d+', $r; Set-Content $f $c -NoNewline; Write-Host (' docs\sw.js -> ' + $r)}"
-powershell -NoProfile -Command "$f='www\sw.js'; if(Test-Path $f){$c=Get-Content $f -Raw; if($c -match 'fireapp-v(\d+)'){$n=[int]$matches[1]+1; $r='fireapp-v'+$n; $c=$c -replace 'fireapp-v\d+', $r; Set-Content $f $c -NoNewline; Write-Host (' www\sw.js -> ' + $r)}}"
+echo [3/4] Updating cache version...
+powershell -NoProfile -Command "$f=Join-Path (Get-Location).Path 'sw.js'; $enc=New-Object System.Text.UTF8Encoding($false); $c=[System.IO.File]::ReadAllText($f,[System.Text.Encoding]::UTF8); if($c -match 'fireapp-v(\d+)'){$n=[int]$matches[1]+1; $r='fireapp-v'+$n; $c=$c -replace 'fireapp-v\d+', $r; [System.IO.File]::WriteAllText($f,$c,$enc); Write-Host (' sw.js -> ' + $r)}"
+powershell -NoProfile -Command "$f=Join-Path (Get-Location).Path 'docs\sw.js'; $enc=New-Object System.Text.UTF8Encoding($false); $c=[System.IO.File]::ReadAllText($f,[System.Text.Encoding]::UTF8); if($c -match 'fireapp-v(\d+)'){$n=[int]$matches[1]+1; $r='fireapp-v'+$n; $c=$c -replace 'fireapp-v\d+', $r; [System.IO.File]::WriteAllText($f,$c,$enc); Write-Host (' docs\sw.js -> ' + $r)}"
+powershell -NoProfile -Command "$f=Join-Path (Get-Location).Path 'www\sw.js'; if(Test-Path $f){$enc=New-Object System.Text.UTF8Encoding($false); $c=[System.IO.File]::ReadAllText($f,[System.Text.Encoding]::UTF8); if($c -match 'fireapp-v(\d+)'){$n=[int]$matches[1]+1; $r='fireapp-v'+$n; $c=$c -replace 'fireapp-v\d+', $r; [System.IO.File]::WriteAllText($f,$c,$enc); Write-Host (' www\sw.js -> ' + $r)}}"
 echo       Done
 
 :: Git commit and push
-echo [3/3] Pushing to GitHub...
+echo [4/4] Pushing to GitHub...
 
 :: Git 사용자 정보 자동 설정
 git config user.name "carrotcakehope" > nul 2>&1
@@ -62,6 +67,13 @@ git remote get-url fireapp > nul 2>&1
 if %errorlevel% neq 0 (
     git remote add fireapp https://github.com/carrotcakehope/fireapp.git
     echo  fireapp remote added
+)
+
+:: appsite remote (새 주소 fire-assistant/app) 없으면 자동 추가
+git remote get-url appsite > nul 2>&1
+if %errorlevel% neq 0 (
+    git remote add appsite https://github.com/fire-assistant/app.git
+    echo  appsite remote added
 )
 
 git fetch origin
@@ -90,11 +102,18 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
+git push appsite main --force
+if %errorlevel% neq 0 (
+    echo [ERROR] appsite push failed
+    pause
+    exit /b 1
+)
 
 echo.
 echo ================================
 echo  Done! Reflected in 1-2 min
-echo  https://carrotcakehope.github.io/fireapp
+echo  OLD: https://carrotcakehope.github.io/fireapp
+echo  NEW: https://fire-assistant.github.io/app
 echo ================================
 echo.
 pause
