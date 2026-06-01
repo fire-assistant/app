@@ -4495,6 +4495,44 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   .topbar .ilgu-summon-btn {
     margin-right: -7px;
   }
+  .topbar .home-jump-btn {
+    margin-right: -7px;
+  }
+}
+
+/* 메인 메뉴로 가기 버튼 (모바일 전용, 일구소환버튼의 거울상) */
+.topbar .home-jump-btn {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  margin-left: auto;
+  margin-right: 3px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  transition: background var(--transition), border-color var(--transition), color var(--transition), transform var(--transition);
+}
+
+.topbar .home-jump-btn:hover {
+  background: var(--surface3);
+  border-color: var(--border2);
+  color: var(--text);
+}
+
+.topbar .home-jump-btn:active {
+  transform: scale(0.94);
+}
+
+.topbar .home-jump-btn ~ .theme-toggle-btn {
+  margin-left: 0;
 }
 
 .home-header-right {

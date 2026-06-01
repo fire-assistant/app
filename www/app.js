@@ -39,7 +39,7 @@ function trackMenuClick(menuName) {
 // ── 패치노트 설정 (여기만 수정하면 됩니다) ──────────────────────────────
 const PATCH_NOTES = {
   version: "v1.0.2",
-  date: "2026-05-31",
+  date: "2026-06-01",
   items: [
     { type: "notice",  text: "이 사이트는 법적기준이 아닙니다. 참고만해주세요!" },
     { type: "new",     text: "① 소방시설 탐색기 '판매시설, 공동주택'<br>&nbsp;&nbsp;&nbsp;&nbsp;용도 추가<br>② 법정기한계산기 공휴일 자동반영<br>③ 참고법령 안내 기능 추가<br>④ 안내 펫 일구 기능 추가 <br>⑤ 계절테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면 우측 위 테마변경버튼 누르세요)" },
@@ -5621,7 +5621,7 @@ const yearState = {
     yEraChoice: "after2004",
     yOccupancyType: "neighborhood",
     yAutoCalcAreas: "yes",
-    yPermitdate: "2026-05-31",
+    yPermitdate: "2026-06-01",
     yTotalArea: "1500",
     yAboveGroundFloors: "4",
     yBasementFloors: "0",
@@ -14172,7 +14172,6 @@ renderHomeReminders();
 // ── Theme Toggle ──────────────────────────────────────────────
 (function initTheme() {
   const SEASON_DAY   = { spring: 'blossom', summer: 'summer', autumn: 'autumn', winter: 'winter' };
-  const SEASON_NIGHT = { spring: 'dark', summer: 'summer-night', autumn: 'dark', winter: 'dark' };
   const THEME_ICONS  = {
     blossom: '🌸', summer: '🌊', autumn: '🍂', winter: '❄️',
     'summer-night': '🌌', official: '☀️', dark: '🌙',
@@ -14182,8 +14181,6 @@ renderHomeReminders();
     'summer-night': '여름밤으로', official: '낮 모드로', dark: '밤 모드로',
   };
   const DEV_ALL = ['blossom', 'summer', 'autumn', 'winter', 'official', 'dark', 'summer-night'];
-  const SEASONAL = new Set(['blossom', 'summer', 'autumn', 'winter']);
-  const NIGHTS   = new Set(['dark', 'summer-night']);
 
   function getSeason() {
     const m = new Date().getMonth() + 1;
@@ -14198,12 +14195,18 @@ renderHomeReminders();
     return (h >= 9 && h < 18) ? 'summer' : 'summer-night';
   }
 
+  // 계절 슬롯: 여름은 시간대로 summer / summer-night, 그 외는 고정 계절테마
+  function getSeasonalTheme() {
+    const s = getSeason();
+    return s === 'summer' ? getSummerTheme() : SEASON_DAY[s];
+  }
+
+  // dev 아닐 때 토글 순환: [계절테마, 낮(official), 밤(dark)] 3슬롯 고정
   function getNextTheme(cur) {
     if (localStorage.getItem('devMode') === 'true') {
       return DEV_ALL[(DEV_ALL.indexOf(cur) + 1) % DEV_ALL.length];
     }
-    const s = getSeason();
-    const slots = [SEASON_DAY[s], 'official', SEASON_NIGHT[s]];
+    const slots = [getSeasonalTheme(), 'official', 'dark'];
     const idx = slots.indexOf(cur);
     return slots[(idx < 0 ? 1 : idx + 1) % slots.length];
   }
@@ -14227,17 +14230,12 @@ renderHomeReminders();
     tb.appendChild(btn);
   });
 
-  const s = getSeason();
   const isDev = localStorage.getItem('devMode') === 'true';
-  let saved = localStorage.getItem('theme') || SEASON_DAY[s];
+  let saved = localStorage.getItem('theme') || getSeasonalTheme();
   if (saved === 'light') saved = 'official';
   if (!isDev) {
-    if (s === 'summer') {
-      if (SEASONAL.has(saved) || saved === 'summer-night') saved = getSummerTheme();
-    } else {
-      if (SEASONAL.has(saved)) saved = SEASON_DAY[s];
-      else if (NIGHTS.has(saved)) saved = SEASON_NIGHT[s];
-    }
+    // 낮(official)·밤(dark) 모드는 그대로 유지, 그 외(계절테마)는 현재 계절로 수렴
+    if (saved !== 'official' && saved !== 'dark') saved = getSeasonalTheme();
   }
   applyTheme(saved);
 
@@ -16406,6 +16404,7 @@ function goToRgGuideSection(tab, sectionId) {
   const SALUTING_SHEET = "./assets/pets/mailpup/references/saluting.png";
   const EATING_SHEET = "./assets/pets/mailpup/references/eating.png";
   const STUDYING_SHEET = "./assets/pets/mailpup/references/studying.png";
+  const WAITING_SHEET = "./assets/pets/mailpup/references/wating.png";
   const DANCING_SHEET = "./assets/pets/mailpup/references/dancing.png";
   const PUSHUP_SHEET = "./assets/pets/mailpup/references/pushup.png";
   const SLEEPING_SHEET = "./assets/pets/mailpup/references/sleeping.png";
@@ -16417,8 +16416,12 @@ function goToRgGuideSection(tab, sectionId) {
   const SALUTING_CELL_H = 118;
   const EATING_CELL_W = 118;
   const EATING_CELL_H = 118;
-  const STUDYING_CELL_W = 118;
-  const STUDYING_CELL_H = 118;
+  const STUDYING_CELL_W = 216.5;
+  const STUDYING_CELL_H = 288;
+  const STUDYING_RENDER_SCALE = 0.55;
+  const WAITING_CELL_W = 144;
+  const WAITING_CELL_H = 289;
+  const WAITING_RENDER_SCALE = 0.68;
   const DANCING_CELL_W = 118;
   const DANCING_CELL_H = 118;
   const PUSHUP_CELL_W = 118;
@@ -16436,14 +16439,14 @@ function goToRgGuideSection(tab, sectionId) {
     "running-left": { row: 0, frames: 4, ms: 210, sheet: RUNNING_SHEET, frameW: RUNNING_CELL_W, frameH: RUNNING_CELL_H },
     saluting: { row: 0, frames: 4, ms: 220, sheet: SALUTING_SHEET, frameW: SALUTING_CELL_W, frameH: SALUTING_CELL_H },
     eating: { row: 0, frames: 4, ms: 240, sheet: EATING_SHEET, frameW: EATING_CELL_W, frameH: EATING_CELL_H },
-    studying: { row: 0, frames: 4, ms: 240, sheet: STUDYING_SHEET, frameW: STUDYING_CELL_W, frameH: STUDYING_CELL_H },
+    studying: { row: 0, frames: 4, ms: 240, sheet: STUDYING_SHEET, frameW: STUDYING_CELL_W, frameH: STUDYING_CELL_H, renderScale: STUDYING_RENDER_SCALE },
     dancing: { row: 0, frames: 8, ms: 240, sheet: DANCING_SHEET, frameW: DANCING_CELL_W, frameH: DANCING_CELL_H, cols: 4, rows: 2 },
     pushup: { row: 0, frames: 8, ms: 140, sheet: PUSHUP_SHEET, frameW: PUSHUP_CELL_W, frameH: PUSHUP_CELL_H, cols: 4, rows: 2, loops: 4 },
     sleeping: { row: 0, frames: 12, ms: 200, sheet: SLEEPING_SHEET, frameW: SLEEPING_CELL_W, frameH: SLEEPING_CELL_H, cols: 4, rows: 3, loops: 2, renderScale: SLEEPING_RENDER_SCALE },
     waving: { row: 3, frames: 4, ms: 220 },
     jumping: { row: 4, frames: 5, ms: 190 },
     failed: { row: 5, frames: 8, ms: 220 },
-    waiting: { row: 6, frames: 6, ms: 260 },
+    waiting: { row: 0, frames: 6, ms: 260, sheet: WAITING_SHEET, frameW: WAITING_CELL_W, frameH: WAITING_CELL_H, renderScale: WAITING_RENDER_SCALE },
     running: { row: 7, frames: 6, ms: 160 },
     review: { row: 8, frames: 6, ms: 240 },
   };
@@ -17298,6 +17301,58 @@ function goToRgGuideSection(tab, sectionId) {
         }
         buttons.forEach((b) => b.classList.add("is-active"));
       }
+    });
+  });
+})();
+
+(function initHomeJumpButton() {
+  function createBtn() {
+    const btn = document.createElement("button");
+    btn.className = "home-jump-btn";
+    btn.type = "button";
+    btn.setAttribute("aria-label", "메인 메뉴로");
+    btn.title = "메인 메뉴로";
+    btn.hidden = true;
+    btn.textContent = "🏠";
+    return btn;
+  }
+
+  // 일구소환버튼 앞에 삽입 → DOM 순서 [home][summon][theme].
+  // summon(+theme)의 기존 인접 규칙을 깨지 않으면서 home은 우측에 붙는다.
+  document.querySelectorAll(".topbar").forEach((tb) => {
+    if (tb.querySelector(".home-jump-btn")) return;
+    const summon = tb.querySelector(".ilgu-summon-btn");
+    const themeBtn = tb.querySelector(".theme-toggle-btn");
+    const btn = createBtn();
+    if (summon) tb.insertBefore(btn, summon);
+    else if (themeBtn) tb.insertBefore(btn, themeBtn);
+    else tb.appendChild(btn);
+  });
+
+  const buttons = Array.from(document.querySelectorAll(".home-jump-btn"));
+  if (!buttons.length) return;
+
+  // 일구소환버튼의 정확한 거울상: 모바일에서만 노출(소환은 PC에서만).
+  function syncHomeJumpButton() {
+    const isMobile = window.matchMedia("(max-width: 768px)").matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    buttons.forEach((btn) => {
+      btn.hidden = !isMobile;
+      btn.style.display = isMobile ? "flex" : "none";
+      btn.setAttribute("aria-hidden", isMobile ? "false" : "true");
+    });
+  }
+
+  window.syncHomeJumpButton = syncHomeJumpButton;
+  syncHomeJumpButton();
+  window.addEventListener("resize", syncHomeJumpButton);
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      if (btn.hidden) return;
+      // 일반 클릭 = forward 제스처라 fuel 1개 쌓임(.back-btn 아님). 홈 도착 후
+      // 뒤로가기 → "한 번 더 누르면 종료" 토스트 정상. showScreen만 호출한다.
+      showScreen("home");
     });
   });
 })();
