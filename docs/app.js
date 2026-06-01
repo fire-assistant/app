@@ -3524,150 +3524,50 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
   let pointerId = null;
   let ignoreSwipe = false;
   let suppressClick = false;
-  let decided = false;   // 드래그 축 판정 완료 여부
-  let dragging = false;  // 가로 드래그로 확정됨
-  let width = 0;
 
-  const interactiveSelector = [
+  // 본문(노란 네모)에서만 스와이프 전환. 탭 바(빨간 네모)·입력류는 무시 →
+  // 탭 바는 네이티브 가로 스크롤(목록만 보임, 선택 X)로 동작.
+  const ignoreSelector = [
     "input",
     "select",
     "textarea",
     "[contenteditable='true']",
+    ".dc-mode-tabs",
+    ".utility-tool-tabs",
+    ".rg-tab-bar",
   ].join(",");
-
-  const setTransform = (px) => {
-    root.style.transform = px ? `translateX(${px}px)` : "";
-  };
-
-  const endDrag = (snapBack) => {
-    if (snapBack) {
-      root.style.transition = "transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1)";
-      setTransform(0);
-      window.setTimeout(() => {
-        root.style.transition = "";
-        root.style.removeProperty("will-change");
-      }, 240);
-    } else {
-      root.style.transition = "";
-      setTransform(0);
-      root.style.removeProperty("will-change");
-    }
-    decided = false;
-    dragging = false;
-  };
 
   const start = (x, y, target, id = null) => {
     pointerId = id;
     startX = x;
     startY = y;
-    ignoreSwipe = !!target.closest?.(interactiveSelector);
-    decided = false;
-    dragging = false;
-    width = root.getBoundingClientRect().width || window.innerWidth || 360;
-    root.style.transition = "";
-  };
-
-  const move = (x, y, id, event) => {
-    if (id !== null && pointerId !== id) return;
-    if (ignoreSwipe) return;
-    const dx = x - startX;
-    const dy = y - startY;
-    if (!decided) {
-      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
-      decided = true;
-      dragging = Math.abs(dx) > Math.abs(dy);
-      if (dragging) root.style.willChange = "transform";
-    }
-    if (!dragging) return;
-    if (event && event.cancelable) event.preventDefault(); // 가로 드래그 중 세로 스크롤 차단
-
-    // 양 끝 탭에서 더 끌면 고무줄 저항
-    let damp = 1;
-    const options = getOptions();
-    if (options && Array.isArray(options.keys)) {
-      const i = options.keys.indexOf(options.current);
-      if ((dx < 0 && i >= options.keys.length - 1) || (dx > 0 && i <= 0)) damp = 0.35;
-    }
-    setTransform(dx * damp);
-  };
-
-  // 전환 확정: 옛 화면 스냅샷(clone)과 새 화면(root)을 한 쌍으로 같이 슬라이드
-  const slideTransition = (nextKey, dir, dx, onChange) => {
-    const rect = root.getBoundingClientRect();
-    const w = rect.width || width || window.innerWidth || 360;
-
-    const clone = root.cloneNode(true);
-    clone.removeAttribute("id");
-    clone.dataset.swipeClone = "1";
-    Object.assign(clone.style, {
-      position: "fixed",
-      left: rect.left + "px",
-      top: rect.top + "px",
-      width: rect.width + "px",
-      height: rect.height + "px",
-      margin: "0",
-      overflow: "hidden",
-      zIndex: "30",
-      pointerEvents: "none",
-      transition: "none",
-      transform: "translateX(0)", // rect가 이미 현재 끌린 위치를 반영하므로 0에서 시작
-    });
-    document.body.appendChild(clone);
-    clone.scrollTop = root.scrollTop; // root 자체가 스크롤 컨테이너인 경우 위치 보존
-
-    suppressClick = true;
-    decided = false;
-    dragging = false;
-
-    // 새 화면을 화면 밖(진행 방향 반대편)에 배치한 채 re-render
-    root.style.transition = "none";
-    root.style.transform = `translateX(${dir === "next" ? w : -w}px)`;
-    root.style.willChange = "transform";
-
-    onChange(nextKey); // root.innerHTML 교체(요소 자체 inline transform은 유지됨)
-
-    requestAnimationFrame(() => {
-      root.style.transition = "transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1)";
-      root.style.transform = "translateX(0)";
-      clone.style.transition = "transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1)";
-      clone.style.transform = `translateX(${dir === "next" ? -w : w}px)`;
-    });
-
-    window.setTimeout(() => {
-      root.style.transition = "";
-      root.style.transform = "";
-      root.style.removeProperty("will-change");
-      clone.remove();
-    }, 360);
+    ignoreSwipe = !!target.closest?.(ignoreSelector);
   };
 
   const finish = (x, y, id = null) => {
     if (id !== null && pointerId !== id) return;
+    if (ignoreSwipe) return;
     pointerId = null;
-    const wasDragging = dragging;
-    if (ignoreSwipe || !wasDragging) { endDrag(false); return; }
 
     const dx = x - startX;
     const dy = y - startY;
-    const threshold = Math.min(width * 0.22, 80);
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
 
-    if (Math.abs(dx) >= threshold && Math.abs(dx) > Math.abs(dy)) {
-      const options = getOptions();
-      if (options && Array.isArray(options.keys) && options.current && typeof options.onChange === "function") {
-        const currentIndex = options.keys.indexOf(options.current);
-        if (currentIndex >= 0) {
-          const nextIndex = dx < 0
-            ? Math.min(currentIndex + 1, options.keys.length - 1)
-            : Math.max(currentIndex - 1, 0);
-          const next = options.keys[nextIndex];
-          if (next && next !== options.current) {
-            slideTransition(next, dx < 0 ? "next" : "prev", dx, options.onChange);
-            return;
-          }
-        }
-      }
+    const options = getOptions();
+    if (!options || !Array.isArray(options.keys) || !options.current || typeof options.onChange !== "function") return;
+
+    const currentIndex = options.keys.indexOf(options.current);
+    if (currentIndex < 0) return;
+
+    const nextIndex = dx < 0
+      ? Math.min(currentIndex + 1, options.keys.length - 1)
+      : Math.max(currentIndex - 1, 0);
+    const next = options.keys[nextIndex];
+    if (next && next !== options.current) {
+      suppressClick = true;
+      root.dataset.swipeNavDirection = dx < 0 ? "next" : "prev";
+      options.onChange(next);
     }
-    endDrag(true); // 임계 미달 → 고무줄 복귀
   };
 
   root.addEventListener("pointerdown", (event) => {
@@ -3675,12 +3575,8 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
     start(event.clientX, event.clientY, event.target, event.pointerId);
   }, { passive: true });
 
-  root.addEventListener("pointermove", (event) => {
-    if (event.pointerType && event.pointerType !== "touch") return;
-    move(event.clientX, event.clientY, event.pointerId, event);
-  }, { passive: true });
-
   root.addEventListener("pointerup", (event) => {
+    if (pointerId !== event.pointerId) return;
     finish(event.clientX, event.clientY, event.pointerId);
   }, { passive: true });
 
@@ -3690,12 +3586,6 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
     start(touch.clientX, touch.clientY, event.target);
   }, { passive: true });
 
-  root.addEventListener("touchmove", (event) => {
-    const touch = event.touches[0];
-    if (!touch) return;
-    move(touch.clientX, touch.clientY, null, event);
-  }, { passive: false });
-
   root.addEventListener("touchend", (event) => {
     const touch = event.changedTouches[0];
     if (!touch) return;
@@ -3704,12 +3594,10 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
 
   root.addEventListener("pointercancel", () => {
     pointerId = null;
-    endDrag(true);
   }, { passive: true });
 
   root.addEventListener("touchcancel", () => {
     pointerId = null;
-    endDrag(true);
   }, { passive: true });
 
   root.addEventListener("click", (event) => {
