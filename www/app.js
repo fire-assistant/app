@@ -39,7 +39,7 @@ function trackMenuClick(menuName) {
 // ── 패치노트 설정 (여기만 수정하면 됩니다) ──────────────────────────────
 const PATCH_NOTES = {
   version: "v1.0.2",
-  date: "2026-06-01",
+  date: "2026-06-02",
   items: [
     { type: "notice",  text: "이 사이트는 법적기준이 아닙니다. 참고만해주세요!" },
     { type: "new",     text: "① 소방시설 탐색기 '판매시설, 공동주택'<br>&nbsp;&nbsp;&nbsp;&nbsp;용도 추가<br>② 법정기한계산기 공휴일 자동반영<br>③ 참고법령 안내 기능 추가<br>④ 안내 펫 일구 기능 추가 <br>⑤ 계절테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면 우측 위 테마변경버튼 누르세요)" },
@@ -5533,6 +5533,7 @@ function renderOccupancyCalculator() {
 screens.occupancy = document.getElementById("screen-occupancy");
 screens.lab = document.getElementById("screen-lab");
 screens.facilities = document.getElementById("screen-facilities");
+screens.sprinklerSeq = document.getElementById("screen-sprinkler-seq");
 document.getElementById("open-occupancy-calculator").addEventListener("click", () => {
   trackMenuClick("유틸리티 도구함");
   occupancyState.tool = "occupancy";
@@ -5557,6 +5558,11 @@ document.getElementById("open-lab").addEventListener("click", () => {
   showScreen("lab");
 });
 document.getElementById("back-from-lab").addEventListener("click", () => showScreen("home"));
+document.getElementById("open-sprinkler-seq").addEventListener("click", () => {
+  showScreen("sprinklerSeq");
+  if (typeof window.initSprinklerSeq === "function") window.initSprinklerSeq();
+});
+document.getElementById("back-from-sprinkler-seq").addEventListener("click", () => showScreen("lab"));
 
 document.getElementById("lab-open-multiuse-safety").addEventListener("click", () => {
   explorerRuntime.mode = "multiuse-only";
@@ -5633,7 +5639,7 @@ const yearState = {
     yEraChoice: "after2004",
     yOccupancyType: "neighborhood",
     yAutoCalcAreas: "yes",
-    yPermitdate: "2026-06-01",
+    yPermitdate: "2026-06-02",
     yTotalArea: "1500",
     yAboveGroundFloors: "4",
     yBasementFloors: "0",
