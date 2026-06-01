@@ -5305,8 +5305,8 @@ html[data-theme="light"] .cal-day.holiday::after {
 
 .rg-tab-btn {
   flex: 1;
-  min-width: 76px;
-  padding: 10px 6px 9px;
+  min-width: 0;
+  padding: 10px 4px 9px;
   border: none;
   border-bottom: 2px solid transparent;
   background: transparent;
@@ -5330,7 +5330,7 @@ html[data-theme="light"] .cal-day.holiday::after {
 }
 
 .rg-tab-main {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: -0.2px;
   white-space: nowrap;
