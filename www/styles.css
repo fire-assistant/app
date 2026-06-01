@@ -5305,13 +5305,6 @@ html[data-theme="light"] .cal-day.holiday::after {
   display: none;
 }
 
-@media (min-width: 900px) {
-  .rg-tab-bar {
-    justify-content: center;
-    gap: 32px;
-  }
-}
-
 .rg-tab-btn {
   flex: 0 0 auto;
   min-width: 0;
@@ -5343,6 +5336,16 @@ html[data-theme="light"] .cal-day.holiday::after {
   font-weight: 700;
   letter-spacing: -0.2px;
   white-space: nowrap;
+}
+
+/* PC: 탭이 화면 폭에 꽉 차게 균등 분배 (법정기한 계산기 탭과 동일) */
+@media (min-width: 900px) {
+  .rg-tab-btn {
+    flex: 1;
+  }
+  .rg-tab-main {
+    font-size: 13px;
+  }
 }
 
 .rg-tab-sub {
