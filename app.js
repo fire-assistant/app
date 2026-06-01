@@ -5533,6 +5533,7 @@ function renderOccupancyCalculator() {
 screens.occupancy = document.getElementById("screen-occupancy");
 screens.lab = document.getElementById("screen-lab");
 screens.facilities = document.getElementById("screen-facilities");
+screens.sprinklerSeq = document.getElementById("screen-sprinkler-seq");
 document.getElementById("open-occupancy-calculator").addEventListener("click", () => {
   trackMenuClick("유틸리티 도구함");
   occupancyState.tool = "occupancy";
@@ -5557,6 +5558,11 @@ document.getElementById("open-lab").addEventListener("click", () => {
   showScreen("lab");
 });
 document.getElementById("back-from-lab").addEventListener("click", () => showScreen("home"));
+document.getElementById("open-sprinkler-seq").addEventListener("click", () => {
+  showScreen("sprinklerSeq");
+  if (typeof window.initSprinklerSeq === "function") window.initSprinklerSeq();
+});
+document.getElementById("back-from-sprinkler-seq").addEventListener("click", () => showScreen("lab"));
 
 document.getElementById("lab-open-multiuse-safety").addEventListener("click", () => {
   explorerRuntime.mode = "multiuse-only";
