@@ -3554,9 +3554,10 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
     const currentIndex = options.keys.indexOf(options.current);
     if (currentIndex < 0) return;
 
+    const farSwipe = Math.abs(dx) >= (window.innerWidth || 360) * 0.5;
     const nextIndex = dx < 0
-      ? Math.min(currentIndex + 1, options.keys.length - 1)
-      : Math.max(currentIndex - 1, 0);
+      ? (farSwipe ? options.keys.length - 1 : Math.min(currentIndex + 1, options.keys.length - 1))
+      : (farSwipe ? 0 : Math.max(currentIndex - 1, 0));
     const next = options.keys[nextIndex];
     if (next && next !== options.current) {
       suppressClick = true;
