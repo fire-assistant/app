@@ -3524,6 +3524,9 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
   let pointerId = null;
   let ignoreSwipe = false;
   let suppressClick = false;
+  let decided = false;   // 드래그 축 판정 완료 여부
+  let dragging = false;  // 가로 드래그로 확정됨
+  let width = 0;
 
   const interactiveSelector = [
     "input",
@@ -3532,38 +3535,92 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
     "[contenteditable='true']",
   ].join(",");
 
+  const setTransform = (px) => {
+    root.style.transform = px ? `translateX(${px}px)` : "";
+  };
+
+  const endDrag = (snapBack) => {
+    if (snapBack) {
+      root.style.transition = "transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1)";
+      setTransform(0);
+      window.setTimeout(() => {
+        root.style.transition = "";
+        root.style.removeProperty("will-change");
+      }, 240);
+    } else {
+      root.style.transition = "";
+      setTransform(0);
+      root.style.removeProperty("will-change");
+    }
+    decided = false;
+    dragging = false;
+  };
+
   const start = (x, y, target, id = null) => {
     pointerId = id;
     startX = x;
     startY = y;
     ignoreSwipe = !!target.closest?.(interactiveSelector);
+    decided = false;
+    dragging = false;
+    width = root.getBoundingClientRect().width || window.innerWidth || 360;
+    root.style.transition = "";
+  };
+
+  const move = (x, y, id, event) => {
+    if (id !== null && pointerId !== id) return;
+    if (ignoreSwipe) return;
+    const dx = x - startX;
+    const dy = y - startY;
+    if (!decided) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      decided = true;
+      dragging = Math.abs(dx) > Math.abs(dy);
+      if (dragging) root.style.willChange = "transform";
+    }
+    if (!dragging) return;
+    if (event && event.cancelable) event.preventDefault(); // 가로 드래그 중 세로 스크롤 차단
+
+    // 양 끝 탭에서 더 끌면 고무줄 저항
+    let damp = 1;
+    const options = getOptions();
+    if (options && Array.isArray(options.keys)) {
+      const i = options.keys.indexOf(options.current);
+      if ((dx < 0 && i >= options.keys.length - 1) || (dx > 0 && i <= 0)) damp = 0.35;
+    }
+    setTransform(dx * damp);
   };
 
   const finish = (x, y, id = null) => {
     if (id !== null && pointerId !== id) return;
-    if (ignoreSwipe) return;
     pointerId = null;
+    const wasDragging = dragging;
+    if (ignoreSwipe || !wasDragging) { endDrag(false); return; }
 
     const dx = x - startX;
     const dy = y - startY;
-    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
+    const threshold = Math.min(width * 0.22, 80);
 
-    const options = getOptions();
-    if (!options || !Array.isArray(options.keys) || !options.current || typeof options.onChange !== "function") return;
-
-    const currentIndex = options.keys.indexOf(options.current);
-    if (currentIndex < 0) return;
-
-    const farSwipe = Math.abs(dx) >= (window.innerWidth || 360) * 0.5;
-    const nextIndex = dx < 0
-      ? (farSwipe ? options.keys.length - 1 : Math.min(currentIndex + 1, options.keys.length - 1))
-      : (farSwipe ? 0 : Math.max(currentIndex - 1, 0));
-    const next = options.keys[nextIndex];
-    if (next && next !== options.current) {
-      suppressClick = true;
-      root.dataset.swipeNavDirection = dx < 0 ? "next" : "prev";
-      options.onChange(next);
+    if (Math.abs(dx) >= threshold && Math.abs(dx) > Math.abs(dy)) {
+      const options = getOptions();
+      if (options && Array.isArray(options.keys) && options.current && typeof options.onChange === "function") {
+        const currentIndex = options.keys.indexOf(options.current);
+        if (currentIndex >= 0) {
+          const nextIndex = dx < 0
+            ? Math.min(currentIndex + 1, options.keys.length - 1)
+            : Math.max(currentIndex - 1, 0);
+          const next = options.keys[nextIndex];
+          if (next && next !== options.current) {
+            suppressClick = true;
+            root.dataset.swipeNavDirection = dx < 0 ? "next" : "prev";
+            endDrag(false); // transform 즉시 0 → re-render가 슬라이드인 담당
+            options.onChange(next);
+            return;
+          }
+        }
+      }
     }
+    endDrag(true); // 임계 미달 → 고무줄 복귀
   };
 
   root.addEventListener("pointerdown", (event) => {
@@ -3571,8 +3628,12 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
     start(event.clientX, event.clientY, event.target, event.pointerId);
   }, { passive: true });
 
+  root.addEventListener("pointermove", (event) => {
+    if (event.pointerType && event.pointerType !== "touch") return;
+    move(event.clientX, event.clientY, event.pointerId, event);
+  }, { passive: true });
+
   root.addEventListener("pointerup", (event) => {
-    if (pointerId !== event.pointerId) return;
     finish(event.clientX, event.clientY, event.pointerId);
   }, { passive: true });
 
@@ -3582,6 +3643,12 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
     start(touch.clientX, touch.clientY, event.target);
   }, { passive: true });
 
+  root.addEventListener("touchmove", (event) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+    move(touch.clientX, touch.clientY, null, event);
+  }, { passive: false });
+
   root.addEventListener("touchend", (event) => {
     const touch = event.changedTouches[0];
     if (!touch) return;
@@ -3590,10 +3657,12 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
 
   root.addEventListener("pointercancel", () => {
     pointerId = null;
+    endDrag(true);
   }, { passive: true });
 
   root.addEventListener("touchcancel", () => {
     pointerId = null;
+    endDrag(true);
   }, { passive: true });
 
   root.addEventListener("click", (event) => {
