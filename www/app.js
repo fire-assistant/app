@@ -159,7 +159,7 @@ const steps = [
     ],
   },
   { key: "firstSecondFloorArea", title: "지상 1층과 2층의 바닥면적 합계는 얼마인가요?", help: "연면적이 9,000㎡ 이상일 때만 묻습니다.", type: "number", onlyFor: "neighborhood", min: 0, step: 0.1, placeholder: "예: 9200" },
-  { key: "detailSet", title: "추가 조건을 입력해 주세요.", help: "주차 관련 공간과 전기실·발전실·변전실·전산실이 없으면 0으로 입력해 주세요.", type: "compound", onlyFor: "neighborhood" },
+  { key: "detailSet", title: "주차 관련 공간과 전기실·발전실·변전실·전산실 면적을 입력해주세요", help: "", type: "compound", onlyFor: "neighborhood" },
   {
     key: "has24HourStaff",
     title: "24시간 상주 근무자가 있나요?",
@@ -1489,6 +1489,7 @@ function makeBinaryChoiceField(labelText, name, opts = {}) {
 
   const label = document.createElement("label");
   label.textContent = labelText;
+  if (opts.labelStyle) label.style.cssText = opts.labelStyle;
   wrapper.appendChild(label);
 
   if (opts.help) {
@@ -1567,11 +1568,12 @@ function renderCompoundStep(step) {
       makeField("전기실·발전실·변전실·전산실 최대 바닥면적(㎡)", "electricalRoomArea", state.answers.electricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }),
     ].forEach((field) => wrapper.appendChild(field));
     const pilotiDivider = document.createElement("div");
-    pilotiDivider.style.cssText = "border-top:1px solid rgba(255,255,255,0.14);margin:22px 0 14px;padding-top:14px;";
-    pilotiDivider.innerHTML = '<p style="margin:0;font-size:12px;font-weight:700;letter-spacing:0.04em;color:#ff6b5e;">추가 확인 사항</p>';
+    pilotiDivider.style.cssText = "border-top:1px solid var(--border);margin:22px 0 14px;padding-top:14px;";
+    pilotiDivider.innerHTML = '<p style="margin:0;font-size:12px;font-weight:700;letter-spacing:0.04em;color:var(--red,#d93025);">추가 확인 사항</p>';
     wrapper.appendChild(pilotiDivider);
     wrapper.appendChild(makeBinaryChoiceField("1층이 '필로티 구조'로 트인 주차장인가요?", "pilotiParkingFirstFloor", {
-      help: "필로티 = 1층에 벽 없이 기둥만 세우고 그 아래를 주차장으로 쓰는 구조(위층은 건물). 이런 건물은 호스릴 가스계소화설비 설치 대상일 수 있어 따로 안내해 드립니다.",
+      labelStyle: "color:var(--text);font-size:18px;font-weight:700;line-height:1.45;letter-spacing:-0.3px;",
+      help: "필로티 = 1층에 벽 없이 기둥만 세우고 그 아래를 주차장으로 쓰는 구조(위층은 건물). 이런 건물은 호스릴 가스계소화설비가 설치되어 있을 수 있습니다.",
       yesDescription: "1층이 기둥만 있는 개방형 주차장",
       noDescription: "일반 주차장이거나 해당 없음",
     }));

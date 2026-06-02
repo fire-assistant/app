@@ -686,6 +686,13 @@ input:focus-visible {
   text-wrap: pretty;
 }
 
+/* 소방시설 탐색기 스텝 도움말은 너무 작아 가독성 위해 본문 크기로 키움 (연도별·점검 화면은 각자 .wq-sub 유지) */
+#question-help {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
 /* ?�?� Choice Buttons ?�?� */
 .choice-list {
   display: flex;

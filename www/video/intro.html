@@ -69,6 +69,10 @@ function Stage({
   persistKey = 'animstage', onComplete, children,
 }) {
   const [time, setTime] = React.useState(() => {
+    // 일반 재생은 항상 0부터. 저장된 시간 이어받기(resume)는 편집(admin) 모드 전용.
+    // (그렇지 않으면 이전에 끝부분에서 중단돼 남은 값 때문에 인트로가 마지막 몇 초만
+    //  재생되고 바로 완료/종료돼 버린다.)
+    if (!isAdminMode) return 0;
     try {
       const v = parseFloat(localStorage.getItem(persistKey + ':t') || '0');
       return isFinite(v) ? clamp(v, 0, duration) : 0;
@@ -84,6 +88,9 @@ function Stage({
   const completedRef = React.useRef(false);
 
   React.useEffect(() => {
+    // 저장은 편집(admin) 모드에서만. 일반 재생은 끝값(=duration)을 남기지 않아야
+    // 다음 재생이 처음부터 정상 재생된다.
+    if (!isAdminMode) return;
     try { localStorage.setItem(persistKey + ':t', String(time)); } catch {}
   }, [time, persistKey]);
 
