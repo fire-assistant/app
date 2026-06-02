@@ -500,6 +500,7 @@ const state = {
     parkingStructureArea: 0,
     mechanicalParkingCapacity: 0,
     electricalRoomArea: 0,
+    pilotiParkingFirstFloor: "no",
     has24HourStaff: "no",
     hasMultiuseBusiness: "no",
     multiuseInBasement: "no",
@@ -1482,7 +1483,7 @@ function makeField(labelText, name, value, extra = {}) {
   return wrapper;
 }
 
-function makeBinaryChoiceField(labelText, name) {
+function makeBinaryChoiceField(labelText, name, opts = {}) {
   const wrapper = document.createElement("div");
   wrapper.className = "calc-form-row";
 
@@ -1490,12 +1491,19 @@ function makeBinaryChoiceField(labelText, name) {
   label.textContent = labelText;
   wrapper.appendChild(label);
 
+  if (opts.help) {
+    const help = document.createElement("p");
+    help.style.cssText = "margin:2px 0 8px;font-size:13px;line-height:1.5;opacity:0.7;";
+    help.textContent = opts.help;
+    wrapper.appendChild(help);
+  }
+
   const buttons = document.createElement("div");
   buttons.className = "choice-list";
 
   [
-    { value: "yes", label: "예", description: "해당됨" },
-    { value: "no", label: "아니오", description: "해당되지 않음" },
+    { value: "yes", label: "예", description: opts.yesDescription || "해당됨" },
+    { value: "no", label: "아니오", description: opts.noDescription || "해당되지 않음" },
   ].forEach((option) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -1558,6 +1566,15 @@ function renderCompoundStep(step) {
       makeField("기계식 주차 가능 대수", "mechanicalParkingCapacity", state.answers.mechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }),
       makeField("전기실·발전실·변전실·전산실 최대 바닥면적(㎡)", "electricalRoomArea", state.answers.electricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }),
     ].forEach((field) => wrapper.appendChild(field));
+    const pilotiDivider = document.createElement("div");
+    pilotiDivider.style.cssText = "border-top:1px solid rgba(255,255,255,0.14);margin:22px 0 14px;padding-top:14px;";
+    pilotiDivider.innerHTML = '<p style="margin:0;font-size:12px;font-weight:700;letter-spacing:0.04em;color:#ff6b5e;">추가 확인 사항</p>';
+    wrapper.appendChild(pilotiDivider);
+    wrapper.appendChild(makeBinaryChoiceField("1층이 '필로티 구조'로 트인 주차장인가요?", "pilotiParkingFirstFloor", {
+      help: "필로티 = 1층에 벽 없이 기둥만 세우고 그 아래를 주차장으로 쓰는 구조(위층은 건물). 이런 건물은 호스릴 가스계소화설비 설치 대상일 수 있어 따로 안내해 드립니다.",
+      yesDescription: "1층이 기둥만 있는 개방형 주차장",
+      noDescription: "일반 주차장이거나 해당 없음",
+    }));
     return wrapper;
   }
 
@@ -1806,6 +1823,7 @@ function normalizeAnswers() {
     parkingStructureArea: toNumber(state.answers.parkingStructureArea),
     mechanicalParkingCapacity: toNumber(state.answers.mechanicalParkingCapacity),
     electricalRoomArea: toNumber(state.answers.electricalRoomArea),
+    pilotiParkingFirstFloor: toBool(state.answers.pilotiParkingFirstFloor),
     has24HourStaff: toBool(state.answers.has24HourStaff),
     hasMultiuseBusiness: toBool(state.answers.hasMultiuseBusiness),
     multiuseInBasement: toBool(state.answers.multiuseInBasement),
@@ -2790,6 +2808,9 @@ function buildExceptionItems(results, input) {
   if (waterSpray && waterSpray.status === "required" && hasParkingWaterSprayCondition) {
     exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 공간에 스프링클러설비가 설치될 수 있습니다." });
   }
+  if (input.pilotiParkingFirstFloor) {
+    exceptionItems.unshift({ category: "확인 필요", name: "호스릴 가스계소화설비", status: "review", reason: "1층 필로티 구조 주차장입니다. 2019년 8월 13일 이전 허가 건물의 필로티 1층 주차장에는 호스릴 방식 가스계소화설비가 설치돼 있을 수 있으니 현장 확인이 필요합니다." });
+  }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
   }
@@ -3372,6 +3393,7 @@ function restartExplorer() {
     parkingStructureArea: 0,
     mechanicalParkingCapacity: 0,
     electricalRoomArea: 0,
+    pilotiParkingFirstFloor: "no",
     has24HourStaff: "no",
     hasMultiuseBusiness: "no",
     multiuseInBasement: "no",
