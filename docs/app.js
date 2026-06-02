@@ -1982,19 +1982,19 @@ function evaluateNeighborhoodFacility(input) {
   const simpleSprinklerRequired = simpleSprinklerRequiredByRule && !sprinklerRequired;
 
   results.push(makeResult(categories.extinguishing, "소화기구", "", input.totalArea >= 33 ? "required" : "notRequired", input.totalArea >= 33 ? "연면적이 33㎡ 이상입니다." : "연면적이 33㎡ 미만입니다.", ""));
-  results.push(makeResult(categories.extinguishing, "옥내소화전설비", "", input.totalArea >= 1500 || input.hasLargeTargetFloor ? "required" : "notRequired", input.totalArea >= 1500 ? "연면적이 1,500㎡ 이상입니다." : input.hasLargeTargetFloor ? "지하층, 무창층 또는 4층 이상 층 중 300㎡ 이상인 층이 있습니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
-  results.push(makeResult(categories.extinguishing, "스프링클러설비", "", sprinklerRequired ? "required" : "notRequired", isPostpartum600Plus(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 이상입니다." : input.aboveGroundFloors >= 6 ? "지상층수가 6층 이상입니다." : "지상층수가 6층 미만입니다.", ""));
-  results.push(makeResult(categories.extinguishing, "간이스프링클러설비", "", simpleSprinklerRequired ? "required" : "notRequired", sprinklerRequired ? "스프링클러설비가 전층 설치 대상이므로 간이스프링클러설비는 제외 대상으로 봅니다." : input.neighborhoodArea >= 1000 ? "근린생활시설 사용면적이 1,000㎡ 이상입니다." : isClinicWithInpatient(input) ? "입원실 있는 의원급입니다." : isPostpartumUnder600(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 미만입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+  results.push(makeResult(categories.extinguishing, "옥내소화전설비", "", input.totalArea >= 1500 || input.hasLargeTargetFloor ? "required" : "notRequired", input.totalArea >= 1500 ? "연면적이 1,500㎡ 이상입니다." : input.hasLargeTargetFloor ? "지하층·무창층 또는 4층 이상 층 중 바닥면적 300㎡ 이상인 층이 있습니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+  results.push(makeResult(categories.extinguishing, "스프링클러설비", "", sprinklerRequired ? "required" : "notRequired", isPostpartum600Plus(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 이상입니다." : input.aboveGroundFloors >= 6 ? "층수가 6층 이상으로 전층 설치 대상입니다." : "지상층수가 6층 미만입니다.", ""));
+  results.push(makeResult(categories.extinguishing, "간이스프링클러설비", "", simpleSprinklerRequired ? "required" : "notRequired", sprinklerRequired ? "스프링클러설비 전층 설치 대상이므로 간이스프링클러설비는 제외됩니다." : input.neighborhoodArea >= 1000 ? "근린생활시설로 사용하는 바닥면적 합계가 1,000㎡ 이상입니다." : isClinicWithInpatient(input) ? "입원실이 있는 의원·치과의원·한의원입니다." : isPostpartumUnder600(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 미만입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
   results.push(makeResult(categories.extinguishing, "물분무등소화설비", "", waterSprayRequired ? "required" : "notRequired", buildWaterSprayReason(input.parkingStructureArea, input.indoorParkingArea, input.mechanicalParkingCapacity, input.electricalRoomArea), ""));
   results.push(makeResult(categories.extinguishing, "옥외소화전설비", "", input.firstSecondFloorArea >= 9000 ? "required" : "notRequired", input.firstSecondFloorArea >= 9000 ? "지상 1층과 2층의 바닥면적 합계가 9,000㎡ 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
 
   const emergencyAlarm = input.totalArea >= 400 || input.hasBasement150Plus || input.hasWindowless150Plus;
   const autoDetection = (input.facilitySubtype === "bathhouse" && input.totalArea >= 1000) || (input.facilitySubtype !== "bathhouse" && input.totalArea >= 600) || isPostpartum(input);
   results.push(makeResult(categories.alarm, "비상경보설비", "", emergencyAlarm ? "required" : "notRequired", input.totalArea >= 400 ? "연면적이 400㎡ 이상입니다." : input.hasBasement150Plus ? "지하층 평균 면적이 150㎡ 이상입니다." : input.hasWindowless150Plus ? "무창층 면적이 150㎡ 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
-  results.push(makeResult(categories.alarm, "자동화재탐지설비", "", autoDetection ? "required" : "notRequired", input.facilitySubtype === "bathhouse" && input.totalArea >= 1000 ? "목욕장이고 연면적이 1,000㎡ 이상입니다." : input.facilitySubtype !== "bathhouse" && input.totalArea >= 600 ? "일반 근린생활시설이며 연면적이 600㎡ 이상입니다." : isPostpartumUnder600(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 미만입니다." : isPostpartum600Plus(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+  results.push(makeResult(categories.alarm, "자동화재탐지설비", "", autoDetection ? "required" : "notRequired", input.facilitySubtype === "bathhouse" && input.totalArea >= 1000 ? "목욕장이며 연면적이 1,000㎡ 이상입니다." : input.facilitySubtype !== "bathhouse" && input.totalArea >= 600 ? "연면적이 600㎡ 이상입니다." : isPostpartumUnder600(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 미만입니다." : isPostpartum600Plus(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
   results.push(makeResult(categories.alarm, "비상방송설비", "", input.totalArea >= 3500 || input.aboveGroundFloors >= 11 || input.basementFloors >= 3 ? "required" : "notRequired", input.totalArea >= 3500 ? "연면적이 3,500㎡ 이상입니다." : input.aboveGroundFloors >= 11 ? "지상층수가 11층 이상입니다." : input.basementFloors >= 3 ? "지하층수가 3층 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
   const autoDispatchTarget = isClinicWithInpatient(input) || isPostpartum(input);
-  results.push(makeResult(categories.alarm, "자동화재속보설비", "", autoDispatchTarget ? (input.has24HourStaff ? "review" : "required") : "notRequired", autoDispatchTarget ? input.has24HourStaff ? "24시간 상주 근무자가 있어 면제 검토가 필요합니다." : isPostpartumUnder600(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 미만입니다." : isPostpartum600Plus(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 이상입니다." : "입원실 있는 의원급에 해당합니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+  results.push(makeResult(categories.alarm, "자동화재속보설비", "", autoDispatchTarget ? (input.has24HourStaff ? "review" : "required") : "notRequired", autoDispatchTarget ? input.has24HourStaff ? "24시간 상주 근무자가 있어 면제 검토가 필요합니다." : isPostpartumUnder600(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 미만입니다." : isPostpartum600Plus(input) ? "조산원·산후조리원이고 바닥면적이 600㎡ 이상입니다." : "입원실이 있는 의원급에 해당합니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
   results.push(makeResult(categories.alarm, "시각경보기", "", "required", "근린생활시설 용도이므로 설치해야 합니다.", ""));
 
   results.push(makeResult(categories.evacuation, "피난기구", "", input.aboveGroundFloors >= 3 ? "required" : "notRequired", input.aboveGroundFloors >= 3 ? "건축물 3층 이상 10층 이하의 층에 설치합니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
@@ -2004,11 +2004,11 @@ function evaluateNeighborhoodFacility(input) {
   results.push(makeResult(categories.waterSupply, "상수도소화용수설비", "", input.totalArea >= 5000 ? "required" : "notRequired", input.totalArea >= 5000 ? "연면적이 5,000㎡ 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
 
   const smokeReqNeighborhood = input.smokeControlArea >= 1000 || input.aboveGroundFloors >= 11;
-  results.push(makeResult(categories.fireSupport, "제연설비", "", smokeReqNeighborhood ? "required" : "notRequired", input.smokeControlArea >= 1000 ? "지하층과 무창층 면적 합계가 1,000㎡ 이상입니다." : input.aboveGroundFloors >= 11 ? "지상 11층 이상으로 특별피난계단에 제연설비를 설치해야 합니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+  results.push(makeResult(categories.fireSupport, "제연설비", "", smokeReqNeighborhood ? "required" : "notRequired", input.smokeControlArea >= 1000 ? "지하층·무창층 내 근린생활시설 바닥면적 합계가 1,000㎡ 이상입니다." : input.aboveGroundFloors >= 11 ? "지상 11층 이상으로 특별피난계단에 제연설비를 설치해야 합니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
   results.push(makeResult(categories.fireSupport, "연결송수관설비", "", (input.totalFloors >= 5 && input.totalArea >= 6000) || input.totalFloors >= 7 || (input.basementFloors >= 3 && input.basementAreaSum >= 1000) ? "required" : "notRequired", input.totalFloors >= 5 && input.totalArea >= 6000 ? "전체 층수가 5층 이상이고 연면적이 6,000㎡ 이상입니다." : input.totalFloors >= 7 ? "전체 층수가 7층 이상입니다." : input.basementFloors >= 3 && input.basementAreaSum >= 1000 ? "지하층이 3층 이상이고 지하층 바닥면적 합계가 1,000㎡ 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
   results.push(makeResult(categories.fireSupport, "연결살수설비", "", input.basementAreaSum >= 150 ? "required" : "notRequired", input.basementAreaSum >= 150 ? "지하층 바닥면적 합계가 150㎡ 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
   results.push(makeResult(categories.fireSupport, "비상콘센트설비", "", input.aboveGroundFloors >= 11 || (input.basementFloors >= 3 && input.basementAreaSum >= 1000) ? "required" : "notRequired", input.aboveGroundFloors >= 11 ? "지상층수가 11층 이상입니다." : input.basementFloors >= 3 && input.basementAreaSum >= 1000 ? "지하층이 3층 이상이고 지하층 바닥면적 합계가 1,000㎡ 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
-  results.push(makeResult(categories.fireSupport, "무선통신보조설비", "", input.aboveGroundFloors >= 30 || input.basementAreaSum >= 3000 || (input.basementFloors >= 3 && input.basementAreaSum >= 1000) ? "required" : "notRequired", input.aboveGroundFloors >= 30 ? "지상층수가 30층 이상입니다." : input.basementAreaSum >= 3000 ? "지하층 바닥면적 합계가 3,000㎡ 이상입니다." : input.basementFloors >= 3 && input.basementAreaSum >= 1000 ? "지하층이 3층 이상이고 지하층 바닥면적 합계가 1,000㎡ 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
+  results.push(makeResult(categories.fireSupport, "무선통신보조설비", "", input.aboveGroundFloors >= 30 || input.basementAreaSum >= 3000 || (input.basementFloors >= 3 && input.basementAreaSum >= 1000) ? "required" : "notRequired", input.aboveGroundFloors >= 30 ? "지상층수가 30층 이상으로 16층 이상 부분에 설치 대상입니다." : input.basementAreaSum >= 3000 ? "지하층 바닥면적 합계가 3,000㎡ 이상입니다." : input.basementFloors >= 3 && input.basementAreaSum >= 1000 ? "지하층이 3층 이상이고 지하층 바닥면적 합계가 1,000㎡ 이상입니다." : "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
   return results;
 }
 
@@ -5533,7 +5533,6 @@ function renderOccupancyCalculator() {
 screens.occupancy = document.getElementById("screen-occupancy");
 screens.lab = document.getElementById("screen-lab");
 screens.facilities = document.getElementById("screen-facilities");
-screens.sprinklerSeq = document.getElementById("screen-sprinkler-seq");
 document.getElementById("open-occupancy-calculator").addEventListener("click", () => {
   trackMenuClick("유틸리티 도구함");
   occupancyState.tool = "occupancy";
@@ -5558,11 +5557,6 @@ document.getElementById("open-lab").addEventListener("click", () => {
   showScreen("lab");
 });
 document.getElementById("back-from-lab").addEventListener("click", () => showScreen("home"));
-document.getElementById("open-sprinkler-seq").addEventListener("click", () => {
-  showScreen("sprinklerSeq");
-  if (typeof window.initSprinklerSeq === "function") window.initSprinklerSeq();
-});
-document.getElementById("back-from-sprinkler-seq").addEventListener("click", () => showScreen("lab"));
 
 document.getElementById("lab-open-multiuse-safety").addEventListener("click", () => {
   explorerRuntime.mode = "multiuse-only";
@@ -11325,7 +11319,7 @@ function yearEvaluateNeighborhood(inp) {
   // ── 피난기구 (기준 동일) ──
   results.push(makeResult(categories.evacuation, "피난기구", "",
     inp.aboveGroundFloors >= 3 ? "required" : "notRequired",
-    inp.aboveGroundFloors >= 3 ? "건축물 3층 이상 층에 설치합니다." :
+    inp.aboveGroundFloors >= 3 ? "건축물 3층 이상 10층 이하의 층에 설치합니다." :
       "현재 입력 기준으로는 설치 대상이 아닙니다.", ""));
 
   // ── 유도등 (기준 동일) ──
@@ -13795,6 +13789,18 @@ document.getElementById("open-guide").addEventListener("click", () => {
 
   if (!overlay || !frame || !closeBtn) return;
 
+  // 오전 08시 기준 "오늘"을 식별하는 키. 08시 전이면 전날로 친다.
+  // 하루에 한 번(그날 첫 방문)만 인트로 재생, 08시에 자동 초기화 효과.
+  function currentIntroDay() {
+    const now = new Date();
+    const d = new Date(now);
+    if (now.getHours() < 8) d.setDate(d.getDate() - 1);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+
   window.addEventListener("message", (e) => {
     if (e.data && e.data.type === "INTRO_DONE") closeIntroVideo();
   });
@@ -13809,7 +13815,7 @@ document.getElementById("open-guide").addEventListener("click", () => {
     requestAnimationFrame(() => {
       frame.src = "./video/chat streaming.html";
     });
-    if (markSeen) localStorage.setItem(INTRO_SEEN_KEY, "true");
+    if (markSeen) localStorage.setItem(INTRO_SEEN_KEY, currentIntroDay());
     closeTimer = setTimeout(closeIntroVideo, INTRO_DURATION_MS);
   }
 
@@ -13832,7 +13838,7 @@ document.getElementById("open-guide").addEventListener("click", () => {
     openBtn.addEventListener("click", () => openIntroVideo(false));
   }
 
-  if (!localStorage.getItem(INTRO_SEEN_KEY)) {
+  if (localStorage.getItem(INTRO_SEEN_KEY) !== currentIntroDay()) {
     document.documentElement.setAttribute("data-intro-active", "true");
     requestAnimationFrame(() => openIntroVideo(true));
   }
@@ -14344,9 +14350,9 @@ history.replaceState({ screen: 'home' }, '');
         moveStep(-1);
         return true;
       }
-      // 첫 질문 → explorerSelect (또는 multiuseSelect)
+      // 첫 질문 → 진입 출처로 (UI back-from-explorer와 동일: 전용모드는 lab/multiuseSelect)
       if (explorerRuntime.mode === "multiuse-only") {
-        showScreen("multiuseSelect");
+        showScreen(explorerRuntime.from === "lab" ? "lab" : "multiuseSelect");
       } else {
         showScreen("explorerSelect");
       }
@@ -14359,6 +14365,11 @@ history.replaceState({ screen: 'home' }, '');
         inspectionBack();
         return true;
       }
+      // 첫 질문 → 보고서 가이드 select (UI back-from-inspection과 동일)
+      rgState.mode = 'select';
+      renderReportGuide();
+      showScreen('reportGuide');
+      return false;
     }
 
     // 다중이용업소 판독기
@@ -14367,6 +14378,25 @@ history.replaceState({ screen: 'home' }, '');
         multiuseBack();
         return true;
       }
+      showScreen("multiuseSelect");   // 첫 질문 → multiuseSelect
+      return false;
+    }
+
+    // 보고서 가이드 (guide 서브모드 → select, 아니면 홈) — UI back-from-report-guide와 동일
+    if (current === "reportGuide") {
+      if (typeof rgState !== "undefined" && rgState.mode === 'guide') {
+        rgState.mode = 'select';
+        renderReportGuide();
+        return true;
+      }
+      showScreen("home");
+      return false;
+    }
+
+    // 평면도 학습 → lab (UI back-from-layout-learn과 동일)
+    if (current === "layoutLearn") {
+      showScreen("lab");
+      return false;
     }
 
     // 그 외 모든 화면 → 홈으로
@@ -14452,6 +14482,21 @@ history.replaceState({ screen: 'home' }, '');
     history.pushState({ screen: getCurrentScreen(), appFuel: true }, '');
     _appHistoryFuelDepth++;
     if (window.__bl) window.__bl('FUEL+ (' + getCurrentScreen() + ') len=' + history.length);
+  }, true);
+
+  // ── 화면 좌상단 ← 버튼 = 갤럭시 하드웨어 뒤로가기와 동일 동작 ──────────────
+  // 개별 back 버튼의 옛 showScreen 리스너 대신, 모든 .back-btn 클릭을 capture 단계에서
+  // 가로채 history.back() 한 경로로 통일한다(popstate→handleBack→doHandleBack).
+  // 이러면 한 단계씩 되감기·연료 소비가 하드웨어 뒤로와 완전히 같아진다.
+  // capture+stopImmediatePropagation으로 개별 버튼의 기존 click 리스너 실행을 막는다.
+  // (위 fuel 리스너는 이보다 먼저 등록돼 .back-btn에서 이미 no-op로 빠져나간 뒤다.)
+  document.addEventListener("click", function (event) {
+    var t = event && event.target;
+    if (!t || !t.closest || !t.closest(".back-btn")) return;
+    if (window._pnIsOpen && window._pnIsOpen()) return;   // 패치노트 모달은 자체 처리
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    history.back();
   }, true);
 
   // (호환용) 글로벌 핸들러
@@ -17285,8 +17330,10 @@ function goToRgGuideSection(tab, sectionId) {
 
   function syncSummonButton() {
     const isMobile = window.matchMedia("(max-width: 768px)").matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    const visible = !isMobile;
     buttons.forEach((btn) => {
+      // PC 홈화면(home-header-actions)에서만 노출. 서브화면 topbar의 소환버튼은
+      // 같은 자리를 홈버튼(home-jump-btn)에 양보하고 숨긴다. 모바일은 전부 숨김(기존).
+      const visible = !isMobile && !btn.closest(".topbar");
       btn.hidden = !visible;
       btn.style.display = visible ? "flex" : "none";
       btn.setAttribute("aria-hidden", visible ? "false" : "true");
@@ -17352,11 +17399,13 @@ function goToRgGuideSection(tab, sectionId) {
 
   // 일구소환버튼의 정확한 거울상: 모바일에서만 노출(소환은 PC에서만).
   function syncHomeJumpButton() {
-    const isMobile = window.matchMedia("(max-width: 768px)").matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    // 홈점프 버튼은 전부 서브화면 topbar에만 삽입된다(홈화면엔 topbar가 없어 존재X).
+    // 그래서 PC·모바일 무관하게 항상 노출 → 서브화면에선 늘 홈버튼이 보이고,
+    // PC에선 이 자리에 있던 소환버튼을 대체한다.
     buttons.forEach((btn) => {
-      btn.hidden = !isMobile;
-      btn.style.display = isMobile ? "flex" : "none";
-      btn.setAttribute("aria-hidden", isMobile ? "false" : "true");
+      btn.hidden = false;
+      btn.style.display = "flex";
+      btn.setAttribute("aria-hidden", "false");
     });
   }
 

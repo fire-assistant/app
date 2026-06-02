@@ -796,6 +796,8 @@
 
         <div id="devletter-chapters" class="devletter-chapters"></div>
 
+        <div class="devletter-sign">— 한 센터 대원 드림</div>
+
         <div id="devletter-reward" class="devletter-reward hidden" role="dialog" aria-hidden="true">
           <div class="devletter-reward-card">
             <div class="devletter-reward-stamp">정독<br>완료</div>
@@ -905,15 +907,6 @@
               <span class="cc-num">02</span>
               <strong>다중이용업소 안전시설 탐색</strong>
               <span class="cc-desc">다중이용업소에 설치해야 하는 소방·안전시설을 확인합니다.</span>
-            </span>
-            <span class="cc-arrow">›</span>
-          </button>
-          <button id="open-sprinkler-seq" class="choice-button choice-card" type="button">
-            <span class="cc-icon mc-blue">💧</span>
-            <span class="cc-body">
-              <span class="cc-num">03</span>
-              <strong>스프링클러 작동 순서</strong>
-              <span class="cc-desc">화재 발생부터 소화수 공급까지 단계별 작동 원리를 시각적으로 확인합니다.</span>
             </span>
             <span class="cc-arrow">›</span>
           </button>
@@ -1061,15 +1054,6 @@
     </div>
   </div>
 
-  <!-- 스프링클러 작동 순서 -->
-  <section id="screen-sprinkler-seq" class="screen">
-    <div class="topbar">
-      <button id="back-from-sprinkler-seq" class="back-btn" type="button">←</button>
-      <span class="tb-title">스프링클러 작동 순서</span>
-    </div>
-    <div class="scroll-content" id="sprinkler-seq-content"></div>
-  </section>
-
   <!-- 소방시설 배치 배우기 -->
   <section id="screen-layout-learn" class="screen">
     <div class="topbar">
@@ -1169,7 +1153,6 @@
   <script src="./facilities-data.js?v=300"></script>
   <script src="./facilities.js?v=300"></script>
   <script src="./layout-learn.js"></script>
-  <script src="./sprinkler-sequence.js"></script>
   <script>
   (() => {
     const canvas = document.getElementById('sakuraCanvas');

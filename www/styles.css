@@ -973,12 +973,12 @@ input:focus-visible {
 .btn-primary {
   background: var(--red);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(217, 48, 37, 0.35);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--red) 35%, transparent);
 }
 
 .btn-primary:hover {
   background: #e8352a;
-  box-shadow: 0 4px 14px rgba(217, 48, 37, 0.45);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--red) 45%, transparent);
 }
 
 .year-static-next {
@@ -1665,7 +1665,7 @@ html[data-theme="official"] .lli-kind {
   background: var(--red);
   color: #fff;
   border-color: var(--red);
-  box-shadow: 0 2px 10px -2px rgba(217, 48, 37, 0.5);
+  box-shadow: 0 2px 10px -2px color-mix(in srgb, var(--red) 50%, transparent);
 }
 
 @media (max-width: 560px) {
@@ -2873,12 +2873,12 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   font-size: 13px;
   font-weight: 700;
   letter-spacing: -0.1px;
-  box-shadow: 0 2px 8px rgba(217, 48, 37, 0.3);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--red) 30%, transparent);
   transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
 }
 #date-content .dc-hero-save-btn:hover {
   background: #e8352a;
-  box-shadow: 0 4px 14px rgba(217, 48, 37, 0.42);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--red) 42%, transparent);
 }
 #date-content .dc-hero-save-btn:active {
   transform: scale(0.98);
@@ -3310,11 +3310,11 @@ html[data-theme="blossom"] #date-content .dc-hero-date.dc-accent-blue { color: v
   font-weight: 700;
   letter-spacing: -0.1px;
   transition: background var(--transition), box-shadow var(--transition);
-  box-shadow: 0 2px 8px rgba(217, 48, 37, 0.3);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--red) 30%, transparent);
 }
 #date-content .dc-save-btn:hover {
   background: #e8352a;
-  box-shadow: 0 4px 14px rgba(217, 48, 37, 0.42);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--red) 42%, transparent);
 }
 
 /* info-box 새 톤 (스코프 확장) */
@@ -4643,7 +4643,7 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(217, 48, 37, 0.28);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--red) 28%, transparent);
 }
 
 .guide-intro-video-btn:active {
@@ -9279,7 +9279,7 @@ html[data-theme="dark"] .devletter-divider { color: var(--text-dim); }
   cursor: pointer;
   font-size: 15px;
   font-weight: 700;
-  box-shadow: 0 3px 10px rgba(217,48,37,0.32);
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--red) 32%, transparent);
   transition: transform .12s ease, background .15s ease;
 }
 .devletter-feedback-btn:hover { background: #e8352a; }
@@ -9415,147 +9415,4 @@ html[data-theme="dark"] .devletter-reward-stamp { background: #1e1810; }
   0%   { box-shadow: 0 0 0 0 var(--red, #d93025); }
   15%  { box-shadow: 0 0 0 4px var(--red, #d93025); }
   100% { box-shadow: 0 0 0 0 rgba(255, 107, 157, 0); }
-}
-
-/* ── 스프링클러 작동 순서 ── */
-.ss-info-card {
-  margin-bottom: 10px;
-}
-.ss-step-top {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 10px;
-}
-.ss-badge {
-  font-size: 28px;
-  flex-shrink: 0;
-  line-height: 1;
-}
-.ss-step-meta {
-  flex: 1;
-  min-width: 0;
-}
-.ss-step-num {
-  margin-bottom: 3px;
-  font-size: 10px;
-}
-.ss-step-title {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-}
-.ss-step-desc {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 12.5px;
-  line-height: 1.75;
-  word-break: keep-all;
-}
-.ss-svg-wrap {
-  background: #0f0f0f;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-.ss-dots {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-.ss-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--border2);
-  transition: background 0.2s, transform 0.2s;
-}
-.ss-dot.done {
-  background: rgba(217, 48, 37, 0.4);
-}
-.ss-dot.active {
-  background: var(--red);
-  transform: scale(1.35);
-}
-.ss-nav {
-  margin-top: 0;
-}
-
-/* fire flicker */
-.ss-flame {
-  animation: ss-flicker 0.7s ease-in-out infinite alternate;
-}
-.ss-flame:nth-child(2) { animation-delay: 0.1s; }
-.ss-flame:nth-child(3) { animation-delay: 0.2s; }
-.ss-flame:nth-child(4) { animation-delay: 0.35s; }
-.ss-fire-glow {
-  animation: ss-glow-pulse 1.2s ease-in-out infinite alternate;
-}
-@keyframes ss-flicker {
-  from { opacity: 0.7; transform: scaleY(0.95); }
-  to   { opacity: 1;   transform: scaleY(1.05); }
-}
-@keyframes ss-glow-pulse {
-  from { opacity: 0.15; }
-  to   { opacity: 0.35; }
-}
-
-/* flow animations */
-#ss-anim-signal[opacity="1"] {
-  animation: ss-dash-y 1.2s linear infinite;
-}
-#ss-anim-pump[opacity="1"] {
-  animation: ss-dash-g 1s linear infinite;
-}
-#ss-anim-supply[opacity="1"] {
-  animation: ss-dash-b 1.5s linear infinite;
-}
-@keyframes ss-dash-y {
-  from { stroke-dashoffset: 150; }
-  to   { stroke-dashoffset: 0; }
-}
-@keyframes ss-dash-g {
-  from { stroke-dashoffset: 120; }
-  to   { stroke-dashoffset: 0; }
-}
-@keyframes ss-dash-b {
-  from { stroke-dashoffset: 300; }
-  to   { stroke-dashoffset: 0; }
-}
-
-/* water drops bounce */
-#ss-drops[opacity="1"] circle {
-  animation: ss-drop 1.4s ease-in infinite;
-}
-#ss-drops[opacity="1"] circle:nth-child(2) { animation-delay: 0.2s; }
-#ss-drops[opacity="1"] circle:nth-child(3) { animation-delay: 0.4s; }
-#ss-drops[opacity="1"] circle:nth-child(4) { animation-delay: 0.6s; }
-#ss-drops[opacity="1"] circle:nth-child(5) { animation-delay: 0.1s; }
-#ss-drops[opacity="1"] circle:nth-child(6) { animation-delay: 0.3s; }
-#ss-drops[opacity="1"] circle:nth-child(7) { animation-delay: 0.5s; }
-#ss-drops[opacity="1"] circle:nth-child(8) { animation-delay: 0.7s; }
-@keyframes ss-drop {
-  0%   { transform: translateY(0); opacity: 0.9; }
-  80%  { transform: translateY(18px); opacity: 0.4; }
-  100% { transform: translateY(18px); opacity: 0; }
-}
-
-/* alarm pulse */
-#ss-alarm-bg[stroke="#f9ab00"] {
-  animation: ss-alarm-pulse 0.6s ease-in-out infinite alternate;
-}
-@keyframes ss-alarm-pulse {
-  from { opacity: 0.7; }
-  to   { opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ss-flame, .ss-fire-glow,
-  #ss-anim-signal, #ss-anim-pump, #ss-anim-supply,
-  #ss-drops circle, #ss-alarm-bg {
-    animation: none;
-  }
 }
