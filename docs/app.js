@@ -39,7 +39,7 @@ function trackMenuClick(menuName) {
 // ── 패치노트 설정 (여기만 수정하면 됩니다) ──────────────────────────────
 const PATCH_NOTES = {
   version: "v1.0.2",
-  date: "2026-06-02",
+  date: "2026-06-04",
   items: [
     { type: "notice",  text: "이 사이트는 법적기준이 아닙니다. 참고만해주세요!" },
     { type: "new",     text: "① 소방시설 탐색기 '판매시설, 공동주택'<br>&nbsp;&nbsp;&nbsp;&nbsp;용도 추가<br>② 법정기한계산기 공휴일 자동반영<br>③ 참고법령 안내 기능 추가<br>④ 안내 펫 일구 기능 추가 <br>⑤ 계절테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면 우측 위 테마변경버튼 누르세요)" },
@@ -5657,7 +5657,7 @@ const yearState = {
     yEraChoice: "after2004",
     yOccupancyType: "neighborhood",
     yAutoCalcAreas: "yes",
-    yPermitdate: "2026-06-02",
+    yPermitdate: "2026-06-04",
     yTotalArea: "1500",
     yAboveGroundFloors: "4",
     yBasementFloors: "0",
@@ -14523,6 +14523,26 @@ history.replaceState({ screen: 'home' }, '');
     history.back();
   }, true);
 
+  // ── PC 키보드 ESC = 뒤로가기 버튼과 동일 동작 ──────────────
+  // back-btn 클릭과 똑같이 history.back()으로 통일(popstate→handleBack→doHandleBack).
+  // 단, 입력 중(input/textarea/select/contenteditable)·IME 조합 중·열린 모달은 제외.
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape") return;
+    if (event.isComposing || event.keyCode === 229) return;   // 한글 등 IME 조합 중
+    var ae = document.activeElement;
+    if (ae) {
+      var tag = ae.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || ae.isContentEditable) return;
+    }
+    if (window._pnIsOpen && window._pnIsOpen()) {              // 패치노트 모달은 자체 처리(아래 history.back로 닫힘)
+      event.preventDefault();
+      history.back();
+      return;
+    }
+    event.preventDefault();
+    history.back();
+  });
+
   // (호환용) 글로벌 핸들러
   window._appHandleBack = handleBack;
 
@@ -17800,9 +17820,9 @@ function goToRgGuideSection(tab, sectionId) {
     if (e.target === reward) hideReward();
   });
 
-  // 점검용: '— 한 센터 대원 드림' 서명 5번 연속 클릭 시 보상카드 강제 출력
+  // 점검용: '개발자 노트' 제목(kicker) 5번 연속 클릭 시 보상카드 강제 출력
   (function attachSignSecret() {
-    const sign = document.querySelector("#screen-developer-letter .devletter-sign");
+    const sign = document.querySelector("#screen-developer-letter .devletter-kicker");
     if (!sign) return;
     sign.style.cursor = "pointer";
     let count = 0;
