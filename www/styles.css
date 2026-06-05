@@ -1597,6 +1597,32 @@ html[data-theme="official"] .lli-kind {
   line-height: 1.6;
 }
 
+/* 결과 복사 버튼: 메인화면 표시 버튼과 한 줄에 나란히, 보조(아웃라인) 스타일 */
+#date-content .dc-hero-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+#date-content .dc-hero-actions .dc-hero-save-btn {
+  flex: 1;
+  margin-top: 0;
+}
+#date-content .dc-hero-actions .dc-copy-result-btn {
+  background: transparent;
+  color: var(--red);
+  border: 1px solid color-mix(in srgb, var(--red) 50%, transparent);
+  box-shadow: none;
+}
+#date-content .dc-hero-actions .dc-copy-result-btn:hover {
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+  box-shadow: none;
+}
+#date-content .dc-hero-actions .dc-copy-result-btn.is-copied {
+  color: #2e7d46;
+  border-color: rgba(52, 168, 83, 0.7);
+  background: rgba(52, 168, 83, 0.14);
+}
+
 /* ── Occupancy calculator (1-screen segmented design) ── */
 .occ-calc-card {
   background: var(--surface);
