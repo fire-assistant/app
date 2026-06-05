@@ -13810,6 +13810,9 @@ document.getElementById("open-guide").addEventListener("click", () => {
   const closeBtn = document.getElementById("intro-video-close");
   const openBtn = document.getElementById("open-intro-video");
   let closeTimer = null;
+  let fadeTimer = null;
+  // 자동재생(첫 진입)으로 띄운 인트로만 끝날 때 페이드아웃. 이용안내 수동재생은 즉시 닫음.
+  let autoPlayed = false;
 
   if (!overlay || !frame || !closeBtn) return;
 
@@ -13831,6 +13834,9 @@ document.getElementById("open-guide").addEventListener("click", () => {
 
   function openIntroVideo(markSeen) {
     clearTimeout(closeTimer);
+    clearTimeout(fadeTimer);
+    autoPlayed = !!markSeen;
+    overlay.classList.remove("intro-fade-out");
     try { localStorage.removeItem("fire-intro:t"); } catch {}
     document.documentElement.setAttribute("data-intro-active", "true");
     // Show overlay BEFORE setting iframe src so iframe isn't loaded
@@ -13843,12 +13849,25 @@ document.getElementById("open-guide").addEventListener("click", () => {
     closeTimer = setTimeout(closeIntroVideo, INTRO_DURATION_MS);
   }
 
+  function finishClose() {
+    overlay.classList.add("hidden");
+    overlay.classList.remove("intro-fade-out");
+    frame.src = "about:blank";
+    document.documentElement.removeAttribute("data-intro-active");
+  }
+
   function closeIntroVideo() {
     clearTimeout(closeTimer);
     closeTimer = null;
-    overlay.classList.add("hidden");
-    frame.src = "about:blank";
-    document.documentElement.removeAttribute("data-intro-active");
+    if (autoPlayed) {
+      // 자동재생 인트로: 검은화면 0.5초 페이드아웃 후 닫기 (메인이 서서히 드러남)
+      autoPlayed = false;
+      overlay.classList.add("intro-fade-out");
+      clearTimeout(fadeTimer);
+      fadeTimer = setTimeout(finishClose, 500);
+    } else {
+      finishClose();
+    }
   }
 
   closeBtn.addEventListener("click", closeIntroVideo);

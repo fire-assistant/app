@@ -75,11 +75,30 @@
         document.body.appendChild(o);
         return o;
       };
-      function _forceReload() {
+      var _pendingReload = false;
+      function _doReload() {
         if (_reloading) return;
         _reloading = true;
         window.showUpdateOverlay();
         setTimeout(function(){ window.location.reload(); }, 1500);
+      }
+      function _forceReload() {
+        if (_reloading) return;
+        // 인트로 영상 재생 중이면 끝날 때까지 새로고침 보류 (영상 끊김 방지)
+        if (document.documentElement.getAttribute('data-intro-active') === 'true') {
+          if (!_pendingReload) {
+            _pendingReload = true;
+            var mo = new MutationObserver(function() {
+              if (document.documentElement.getAttribute('data-intro-active') !== 'true') {
+                mo.disconnect();
+                _doReload();
+              }
+            });
+            mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-intro-active'] });
+          }
+          return;
+        }
+        _doReload();
       }
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('./sw.js?v=306', { updateViaCache: 'none' })
