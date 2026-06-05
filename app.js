@@ -5273,6 +5273,14 @@ function calcOccupancy(type, vals) {
   }
 }
 
+function shouldShowOccupancyResult(type, fields, vals) {
+  const hasValue = (f) => vals[f.key] !== undefined && vals[f.key] !== "";
+  if (["lodging_bed", "lodging_no_bed"].includes(type)) {
+    return fields.some(hasValue);
+  }
+  return fields.every(hasValue);
+}
+
 function getOccupancyFields(type) {
   switch (type) {
     case "lodging_bed":
@@ -5486,11 +5494,8 @@ function renderOccupancyCalculator() {
   const typeInfo = occupancyTypes.find((t) => t.key === effType);
   const fields = getOccupancyFields(effType);
   const fieldValues = occupancyState.values || {};
-  const allFilled = fields.every((f) => {
-    const v = fieldValues[f.key];
-    return v !== undefined && v !== "";
-  });
-  const calcResult = allFilled ? calcOccupancy(effType, fieldValues) : null;
+  const showResult = shouldShowOccupancyResult(effType, fields, fieldValues);
+  const calcResult = showResult ? calcOccupancy(effType, fieldValues) : null;
 
   const subTypesByCat = {
     lodging: [
@@ -5586,8 +5591,8 @@ function renderOccupancyCalculator() {
       // 입력란을 재생성하지 않고 결과만 갱신 (number 입력 커서 역순 입력 버그 방지)
       if (occResultCard) {
         const vals = occupancyState.values;
-        const filled = fields.every((f) => vals[f.key] !== undefined && vals[f.key] !== "");
-        const res = filled ? calcOccupancy(effType, vals) : null;
+        const showResultNow = shouldShowOccupancyResult(effType, fields, vals);
+        const res = showResultNow ? calcOccupancy(effType, vals) : null;
         occResultCard.classList.toggle("has-result", res !== null);
         occResultCard.innerHTML = `
           <div class="occ-result-label">산정 결과</div>
