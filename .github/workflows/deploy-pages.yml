@@ -17,10 +17,12 @@ concurrency:
 
 jobs:
   deploy:
-    # appsite(fire-assistant/app)에서만 실행.
-    # fireapp(carrotcakehope)은 legacy(branch/docs) 방식이 더 안정적이라 워크플로 제외(legacy가 알아서 배포).
+    # appsite(fire-assistant/app)와 fireapp(carrotcakehope) 둘 다 실행.
+    # fireapp도 legacy(branch/docs)→workflow 전환: legacy는 stuck 빌드 자동복구가 없어
+    # 한 번 끼면 후속 배포가 줄줄이 "in progress" 400으로 실패(실패메일 연쇄)했기 때문.
+    # workflow는 아래 concurrency cancel-in-progress + 재시도로 흡수.
     # supply-fireapp은 Pages 미사용이라 제외.
-    if: github.repository == 'fire-assistant/app'
+    if: github.repository == 'fire-assistant/app' || github.repository == 'carrotcakehope/fireapp'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
