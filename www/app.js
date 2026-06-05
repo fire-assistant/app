@@ -2,7 +2,13 @@ history.scrollRestoration = 'manual';
 let _suppressHistoryPush = false;
 
 if (new URLSearchParams(location.search).has('reset-intro')) {
-  try { localStorage.removeItem('introVideoSeen'); } catch {}
+  // introVideoSeen, introVideoSeen_v5 등 인트로 "봤음" 키를 모두 제거 → 첫 방문처럼 인트로 재생
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && k.indexOf('introVideoSeen') === 0) localStorage.removeItem(k);
+    }
+  } catch {}
 }
 
 // ── 개발자 모드 (GA 추적 비활성화) ───────────────────────────────────────
@@ -1571,12 +1577,50 @@ function renderCompoundStep(step) {
     pilotiDivider.style.cssText = "border-top:1px solid var(--border);margin:22px 0 14px;padding-top:14px;";
     pilotiDivider.innerHTML = '<p style="margin:0;font-size:12px;font-weight:700;letter-spacing:0.04em;color:var(--red,#d93025);">추가 확인 사항</p>';
     wrapper.appendChild(pilotiDivider);
-    wrapper.appendChild(makeBinaryChoiceField("1층이 '필로티 구조'로 트인 주차장인가요?", "pilotiParkingFirstFloor", {
-      labelStyle: "color:var(--text);font-size:18px;font-weight:700;line-height:1.45;letter-spacing:-0.3px;",
-      help: "필로티 = 1층에 벽 없이 기둥만 세우고 그 아래를 주차장으로 쓰는 구조(위층은 건물). 이런 건물은 호스릴 가스계소화설비가 설치되어 있을 수 있습니다.",
-      yesDescription: "1층이 기둥만 있는 개방형 주차장",
-      noDescription: "일반 주차장이거나 해당 없음",
-    }));
+    const pilotiRow = document.createElement("div");
+    pilotiRow.style.cssText = "display:flex;align-items:center;gap:8px;";
+
+    const pilotiToggle = document.createElement("button");
+    pilotiToggle.type = "button";
+    pilotiToggle.setAttribute("role", "checkbox");
+    pilotiToggle.style.cssText = "flex:1;display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;text-align:left;font-size:14px;font-weight:600;transition:background var(--transition),border-color var(--transition),color var(--transition);";
+
+    const pilotiBox = document.createElement("span");
+    pilotiBox.style.cssText = "width:18px;height:18px;flex-shrink:0;border-radius:5px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;line-height:1;color:#fff;transition:background var(--transition),border-color var(--transition);";
+
+    const pilotiText = document.createElement("span");
+    pilotiText.textContent = "1층이 필로티 구조 개방형 주차장";
+
+    pilotiToggle.appendChild(pilotiBox);
+    pilotiToggle.appendChild(pilotiText);
+
+    const applyPilotiState = () => {
+      const on = state.answers.pilotiParkingFirstFloor === "yes";
+      pilotiToggle.setAttribute("aria-checked", on ? "true" : "false");
+      pilotiToggle.style.borderColor = on ? "var(--red)" : "var(--border)";
+      pilotiToggle.style.background = on ? "var(--red-dim2)" : "var(--surface2)";
+      pilotiToggle.style.color = on ? "var(--red-soft)" : "var(--text)";
+      pilotiBox.style.background = on ? "var(--red)" : "transparent";
+      pilotiBox.style.borderColor = on ? "var(--red)" : "var(--border2)";
+      pilotiBox.textContent = on ? "✓" : "";
+    };
+    applyPilotiState();
+    pilotiToggle.addEventListener("click", () => {
+      state.answers.pilotiParkingFirstFloor = state.answers.pilotiParkingFirstFloor === "yes" ? "no" : "yes";
+      applyPilotiState();
+    });
+
+    const pilotiInfo = document.createElement("span");
+    pilotiInfo.className = "calc-mode-info";
+    pilotiInfo.textContent = "i";
+    pilotiInfo.setAttribute("aria-label", "필로티 구조 설명");
+    pilotiInfo.style.flexShrink = "0";
+    pilotiInfo.setAttribute("data-floating-tooltip", "필로티 = 1층에 벽 없이 기둥만 세우고 그 아래를 주차장으로 쓰는 구조(위층은 건물).");
+    pilotiInfo.addEventListener("click", (e) => e.stopPropagation());
+
+    pilotiRow.appendChild(pilotiToggle);
+    pilotiRow.appendChild(pilotiInfo);
+    wrapper.appendChild(pilotiRow);
     return wrapper;
   }
 
@@ -1777,6 +1821,7 @@ function renderCurrentStep() {
   else node = renderNumberStep(step);
 
   questionElements.input.appendChild(node);
+  initFloatingTooltips(node);
   document.getElementById("prev-step").disabled = false;
   if (state.currentStep === activeSteps.length - 1) {
     document.getElementById("next-step").textContent = explorerRuntime.mode === "year" ? "결과 준비중" : "결과 보기";
@@ -4343,7 +4388,7 @@ const inspectionNodes = {
       { label: "물분무등소화설비가 설치되어 있나요?", next: "waterSpray" },
       { label: "터널인가요?", next: "tunnel" },
       { label: "공공기관인가요?", next: "publicOrg" },
-      { label: "해당 없음", next: { result: "operational", reason: "종합정밀점검 대상 조건에 해당하지 않습니다." } },
+      { label: "해당 없음", next: "operationFacilityCheck" },
     ],
   },
   tunnel: {
@@ -4351,7 +4396,7 @@ const inspectionNodes = {
     help: "제연설비가 없는 터널은 해당되지 않습니다.",
     options: [
       { label: "예", next: { result: "comprehensive", reason: "터널에 제연설비가 설치된 경우 종합정밀점검 대상에 해당합니다." } },
-      { label: "아니오", next: { result: "operational", reason: "제연설비가 설치되지 않은 터널은 종합정밀점검 대상에 해당하지 않습니다." } },
+      { label: "아니오", next: "operationFacilityCheck" },
     ],
   },
   waterSpray: {
@@ -4359,7 +4404,7 @@ const inspectionNodes = {
     help: "호스릴(hose reel) 방식만 단독으로 설치한 경우와 제조소등은 제외됩니다.",
     options: [
       { label: "예", next: { result: "comprehensive", reason: "물분무등소화설비[호스릴 방식 제외]가 설치된 특정소방대상물은 연면적 5,000㎡ 이상일 때 종합정밀점검 대상에 해당합니다." } },
-      { label: "아니오", next: { result: "operational", reason: "물분무등소화설비가 설치되어 있더라도 연면적 5,000㎡ 미만이면 종합정밀점검 대상에 해당하지 않습니다." } },
+      { label: "아니오", next: "operationFacilityCheck" },
     ],
   },
   multiuse: {
@@ -4367,7 +4412,7 @@ const inspectionNodes = {
     help: "해당 업종: 시행령 제2조제1호나목, 제2호(비디오물소극장업 제외)·제6호·제7호·제7호의2·제7호의5. 이 외 업종은 해당되지 않습니다.",
     options: [
       { label: "예", next: { result: "comprehensive", reason: "다중이용업소법 시행령 해당 업종의 영업장이 설치된 특정소방대상물은 연면적 2,000㎡ 이상일 때 종합정밀점검 대상에 해당합니다." } },
-      { label: "아니오", next: { result: "operational", reason: "해당 다중이용업소가 설치되어 있더라도 연면적 2,000㎡ 미만이면 종합정밀점검 대상에 해당하지 않습니다." } },
+      { label: "아니오", next: "operationFacilityCheck" },
     ],
   },
   publicOrg: {
@@ -4375,7 +4420,7 @@ const inspectionNodes = {
     help: "소방대가 근무하는 공공기관은 제외됩니다.",
     options: [
       { label: "예", next: "publicOrgFacility" },
-      { label: "아니오", next: { result: "operational", reason: "연면적 1,000㎡ 미만의 공공기관은 종합정밀점검 대상에 해당하지 않습니다." } },
+      { label: "아니오", next: "operationFacilityCheck" },
     ],
   },
   publicOrgFacility: {
@@ -4383,7 +4428,15 @@ const inspectionNodes = {
     help: "두 설비 모두 없는 경우에는 해당되지 않습니다. 하나라도 있으면 다음 단계에서 확인합니다.",
     options: [
       { label: "예", next: { result: "comprehensive", reason: "공공기관의 소방안전관리에 관한 규정 제2조에 따른 공공기관으로, 연면적 1,000㎡ 이상이고 옥내소화전설비 또는 자동화재탐지설비가 설치된 경우 종합정밀점검 대상에 해당합니다." } },
-      { label: "아니오", next: { result: "operational", reason: "연면적 조건은 충족하나 옥내소화전설비·자동화재탐지설비가 모두 미설치되어 종합정밀점검 대상에 해당하지 않습니다." } },
+      { label: "아니오", next: "operationFacilityCheck" },
+    ],
+  },
+  operationFacilityCheck: {
+    title: "자동화재탐지설비 또는 간이스프링클러설비가 설치되어 있나요?",
+    help: "둘 중 하나라도 설치되어 있으면 작동기능점검 대상입니다.",
+    options: [
+      { label: "예", next: { result: "operational", reason: "종합정밀점검 대상 조건에는 해당하지 않지만, 자동화재탐지설비 또는 간이스프링클러설비가 설치되어 있어 작동기능점검 대상입니다." } },
+      { label: "아니오", next: { result: "notInspection", reason: "종합정밀점검 대상 조건에 해당하지 않고, 자동화재탐지설비 또는 간이스프링클러설비도 설치되어 있지 않아 자체점검 대상이 아닙니다." } },
     ],
   },
 };
@@ -4450,12 +4503,16 @@ function renderInspection() {
 
   if (current && typeof current === "object") {
     const isComp = current.result === "comprehensive";
+    const isNotInspection = current.result === "notInspection";
+    const resultClass = isComp ? "insp-comprehensive" : "insp-operational";
+    const resultBadge = isComp ? "종합정밀점검" : isNotInspection ? "자체점검 제외" : "작동기능점검";
+    const resultTitle = isComp ? "종합정밀점검 대상입니다." : isNotInspection ? "자체점검 대상이 아닙니다." : "작동기능점검 대상입니다.";
     const card = document.createElement("div");
     card.className = "wq-card";
     card.innerHTML = `
-      <div class="insp-result ${isComp ? "insp-comprehensive" : "insp-operational"}">
-        <div class="ir-badge">${isComp ? "종합정밀점검" : "작동기능점검"}</div>
-        <div class="ir-title">${isComp ? "종합정밀점검 대상입니다." : "작동기능점검 대상입니다."}</div>
+      <div class="insp-result ${resultClass}">
+        <div class="ir-badge">${resultBadge}</div>
+        <div class="ir-title">${resultTitle}</div>
         <p class="ir-reason">${current.reason}</p>
       </div>
     `;
@@ -5647,6 +5704,7 @@ const YD = {
   D20221201: 20221201,
   D20231201: 20231201,
   D20240517: 20240517,
+  D20241201: 20241201, // 연립주택·다세대주택 별표2(특정소방대상물) 편입 시행일
   D20241231: 20241231,
   D20251201: 20251201,
 };
@@ -5877,7 +5935,7 @@ const yearSteps = [
       { value: "medical", label: "의료시설", description: "종합병원·병원·요양병원·정신의료기관 등" },
       { value: "religious", label: "종교시설", description: "교회·성당·사찰·사당·기도원 등" },
       { value: "sales", label: "판매시설", description: "백화점·대형마트·쇼핑센터·상점·전통시장 등" },
-      { value: "apartment", label: "공동주택", description: "아파트·연립주택·다세대주택·기숙사" },
+      { value: "apartment", label: "공동주택", description: "아파트등 (연립·다세대·기숙사는 미지원)" },
     ],
   },
   {
@@ -5887,10 +5945,13 @@ const yearSteps = [
     help: "세부 분류에 따라 간이스프링클러·자동화재탐지설비·단독경보형감지기 등의 설치 기준이 크게 달라집니다.",
     options: [
       { value: "apt", label: "아파트등", description: "주택으로 쓰는 층수가 5층 이상인 주택" },
-      { value: "row", label: "연립주택·다세대주택", description: "주택으로 쓰는 층수가 4층 이하인 주택" },
+      { value: "row", label: "연립주택·다세대주택", description: "주택으로 쓰는 층수가 4층 이하인 주택", condition: (ya, pd) => pd >= YD.D20241201 },
       { value: "dorm", label: "기숙사", description: "학교·공장 등의 학생·종업원 공동거주 시설" },
     ],
-    condition: (ya) => ya.yEraChoice === "after2004" && ya.yOccupancyType === "apartment",
+    // 공동주택은 아파트등만 지원(연립·다세대·기숙사 미지원) → 세부분류 질문 숨김.
+    // 부활: 아래 조건을 `(ya) => ya.yEraChoice === "after2004" && ya.yOccupancyType === "apartment"`로 복원하고
+    //       yOccupancyType 클릭 핸들러의 apt 고정 라인을 제거할 것.
+    condition: () => false,
   },
   {
     key: "yAptBuildingCount",
@@ -5992,7 +6053,7 @@ const yearSteps = [
       { value: "yes", label: "예 (50세대 미만)", description: "주차장 기준 제외" },
       { value: "no", label: "아니오 (50세대 이상)", description: "주차장 기준 적용" },
     ],
-    condition: (ya, pd) => ya.yOccupancyType === "apartment" && ya.yApartmentSubtype === "row" && pd >= YD.D20221201 && ((ya.yAptHasParkingBuilding === "yes" ? parseFloat(ya.yAptParkingArea) : parseFloat(ya.yAptIndoorParkingArea)) || 0) >= 200,
+    condition: (ya, pd) => ya.yOccupancyType === "apartment" && ya.yApartmentSubtype === "row" && pd >= YD.D20241201 && ((ya.yAptHasParkingBuilding === "yes" ? parseFloat(ya.yAptParkingArea) : parseFloat(ya.yAptIndoorParkingArea)) || 0) >= 200,
   },
   {
     key: "yAptIsNationalHousing",
@@ -8056,17 +8117,28 @@ function yearRenderChoiceStep(step) {
   const container = document.createElement("div");
   const wrapper = document.createElement("div");
   wrapper.className = "choice-list";
-  step.options.forEach((option) => {
+  const pd = yPermitDateInt();
+  const visibleOptions = step.options.filter((option) => !option.condition || option.condition(yearState.answers, pd));
+  // 동적 조건으로 숨겨진 선택지가 이미 선택돼 있으면 초기화 (예: 허가일을 2024.12.1 미만으로 되돌리면 연립·다세대 해제)
+  if (yearState.answers[step.key] != null && !visibleOptions.some((option) => option.value === yearState.answers[step.key])) {
+    delete yearState.answers[step.key];
+  }
+  visibleOptions.forEach((option) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "choice-button";
     if (String(yearState.answers[step.key]) === option.value) btn.classList.add("selected");
-    btn.innerHTML = `<strong>${option.label}</strong><span>${option.description}</span>`;
+    const optionDesc = typeof option.description === "function" ? option.description(yearState.answers, pd) : option.description;
+    btn.innerHTML = `<strong>${option.label}</strong><span>${optionDesc}</span>`;
     btn.addEventListener("click", () => {
       yearState.answers[step.key] = option.value;
       // 분법 이전/이후 선택 시 허가일 기본값 자동 전환
       if (step.key === "yEraChoice") {
         yearState.answers.yPermitDate = option.value === "before2004" ? "1992-07-28" : "2019-02-18";
+      }
+      // 공동주택은 아파트등만 지원 → 세부분류 자동 고정(숨긴 질문 대체, stale row/dorm 방지)
+      if (step.key === "yOccupancyType" && option.value === "apartment") {
+        yearState.answers.yApartmentSubtype = "apt";
       }
       yearRenderCurrentStep();
     });
@@ -8121,6 +8193,15 @@ function yearRenderNumberStep(step) {
     yearState.answers.yBefore2004SalesArea = yearState.answers.yTotalArea;
   }
   input.value = yearState.answers[step.key] ?? "";
+  // 연립주택·다세대주택은 지상 4층 이하 (5층 이상은 아파트등)
+  const rowFloorCap = step.key === "yAboveGroundFloors" && yearState.answers.yApartmentSubtype === "row";
+  if (rowFloorCap) {
+    input.max = "4";
+    if ((parseInt(yearState.answers.yAboveGroundFloors, 10) || 0) > 4) {
+      yearState.answers.yAboveGroundFloors = "4";
+      input.value = "4";
+    }
+  }
   // 용도별 바닥면적 필드는 연면적을 초과할 수 없음
   const areaFields = ["yNeighborhoodArea", "yLodgingArea", "yElderlyArea", "yMedicalArea", "ySalesArea", "yBefore2004SalesArea"];
   if (areaFields.includes(step.key)) {
@@ -8135,6 +8216,10 @@ function yearRenderNumberStep(step) {
         e.target.value = String(ta);
         showToast("해당 용도 바닥면적 합계는 건물 연면적(" + ta + "㎡)을 초과할 수 없습니다.");
       }
+    }
+    if (rowFloorCap && (parseInt(e.target.value, 10) || 0) > 4) {
+      e.target.value = "4";
+      showToast("연립주택·다세대주택은 지상 4층 이하입니다. 5층 이상은 아파트등으로 분류됩니다.");
     }
     yearState.answers[step.key] = e.target.value;
     // yTotalArea 변경 시 관련 필드 자동 파생
@@ -12269,6 +12354,8 @@ function yearEvaluateApartment(inp) {
   const wl = inp.windowlessArea;
   const bsmtAvg = bf > 0 ? ba / bf : 0;
   const post2022 = pd >= YD.D20221201;
+  // 연립·다세대주택은 별표2(특정소방대상물) 편입일인 2024.12.1 이후 건축허가분부터 의무 성립
+  const rowTargeted = isRow && pd >= YD.D20241201;
 
   const hasBasement150 = bf > 0 && bsmtAvg >= 150;
   const hasBasement450 = bf > 0 && bsmtAvg >= 450;
@@ -12315,18 +12402,18 @@ function yearEvaluateApartment(inp) {
   }
   results.push(makeResult(categories.extinguishing, "스프링클러설비", "", spReq ? "required" : "notRequired", spReason, ""));
 
-  // 4. 간이스프링클러설비 (연립·다세대, 2022.12.1~ 주택전용)
-  if (isRow && post2022) {
+  // 4. 간이스프링클러설비 (연립·다세대, 2024.12.1~ 주택전용 / 별표2 편입)
+  if (rowTargeted) {
     results.push(makeResult(categories.extinguishing, "간이스프링클러설비", "", "required",
-      "연립주택·다세대주택은 2022.12.1부터 주택전용 간이스프링클러설비 설치 대상입니다.", ""));
+      "연립주택·다세대주택은 2024.12.1부터 주택전용 간이스프링클러설비 설치 대상입니다.", ""));
   } else {
     results.push(makeResult(categories.extinguishing, "간이스프링클러설비", "", "notRequired",
-      isRow ? "연립주택·다세대주택의 간이스프링클러 의무는 2022.12.1 이후 허가분부터 적용됩니다."
+      isRow ? "연립주택·다세대주택의 간이스프링클러 의무는 2024.12.1 이후 허가분부터 적용됩니다."
             : "아파트등·기숙사는 간이스프링클러설비 의무 설치 대상이 아닙니다.", ""));
   }
 
   // 5. 물분무등소화설비 (용도무관: 주차장 200㎡·기계식 20대·전기실 300㎡)
-  const parkingExcluded = isRow && inp.aptHouseholdsUnder50 && post2022;
+  const parkingExcluded = rowTargeted && inp.aptHouseholdsUnder50;
   const parkingArea = inp.aptHasParkingBuilding ? inp.aptParkingArea : inp.aptIndoorParkingArea;
   const parkingTrigger = !parkingExcluded && parkingArea >= 200;
   const wsReq = parkingTrigger || inp.aptMechanicalParkingCapacity >= 20 || inp.aptElectricalRoomArea >= 300;
@@ -12334,7 +12421,7 @@ function yearEvaluateApartment(inp) {
   if (inp.aptElectricalRoomArea >= 300) wsReason = "전기실·발전실 등 바닥면적이 300㎡ 이상입니다.";
   else if (inp.aptMechanicalParkingCapacity >= 20) wsReason = "기계식 주차장치가 20대 이상입니다.";
   else if (parkingTrigger) wsReason = (inp.aptHasParkingBuilding ? "주차장동 연면적" : "건물 내 차고·주차장 면적") + "이 200㎡ 이상입니다.";
-  else if (parkingExcluded && parkingArea >= 200) wsReason = "50세대 미만 연립주택·다세대주택은 차고·주차장(200㎡ 이상) 기준에서 제외됩니다. (2022.12.1~)";
+  else if (parkingExcluded && parkingArea >= 200) wsReason = "50세대 미만 연립주택·다세대주택은 차고·주차장(200㎡ 이상) 기준에서 제외됩니다. (2024.12.1~)";
   else wsReason = "현재 입력 기준으로는 설치 대상이 아닙니다.";
   results.push(makeResult(categories.extinguishing, "물분무등소화설비", "", wsReq ? "required" : "notRequired", wsReason, ""));
 
@@ -12364,7 +12451,7 @@ function yearEvaluateApartment(inp) {
   if (post2022) {
     if (isApt || isDorm) { facpReq = true; facpReason = (isApt ? "아파트등" : "기숙사") + "은 2022.12.1부터 면적·층수와 무관하게 모든 층에 설치해야 합니다."; }
     else if (ag >= 6) { facpReq = true; facpReason = "층수가 6층 이상인 건축물입니다. (2022.12.1~ 용도무관 기준)"; }
-    else facpReason = "연립주택·다세대주택은 2022.12.1부터 자동화재탐지설비 대신 연동형 단독경보형감지기 대상입니다.";
+    else facpReason = "연립주택·다세대주택은 2024.12.1부터 자동화재탐지설비 대신 연동형 단독경보형감지기 대상입니다.";
   } else {
     if (ta >= 1000) { facpReq = true; facpReason = "연면적 1,000㎡ 이상인 공동주택입니다."; }
     else facpReason = "연면적 1,000㎡ 미만으로 자동화재탐지설비 대상이 아닙니다. (단독경보형감지기 대상)";
@@ -12376,7 +12463,7 @@ function yearEvaluateApartment(inp) {
   if (facpReq) {
     singleReason = "자동화재탐지설비 설치 대상이어서 단독경보형감지기는 면제됩니다.";
   } else if (post2022) {
-    if (isRow) { singleReq = true; singleReason = "연립주택·다세대주택은 2022.12.1부터 연동형 단독경보형감지기를 설치해야 합니다."; }
+    if (isRow) { singleReq = true; singleReason = "연립주택·다세대주택은 2024.12.1부터 연동형 단독경보형감지기를 설치해야 합니다."; }
     else singleReason = (isApt ? "아파트등" : "기숙사") + "은 자동화재탐지설비 대상이어서 단독경보형감지기 대상에서 제외됩니다.";
   } else if (isApt && ta < 1000) {
     singleReq = true; singleReason = "연면적 1,000㎡ 미만 아파트등으로 단독경보형감지기 설치 대상입니다.";
@@ -13599,9 +13686,12 @@ function yearShowResults() {
   renderSimpleRequiredList(requiredItems, "year-required-list");
   renderYearExtraItems(inp);
   renderResultGroup("year-criteria-list", results, [...excludedNames], requiredItems.map((i) => i.name));
-  const visibleExceptionItems = inp.occupancyType === "apartment"
+  let visibleExceptionItems = inp.occupancyType === "apartment"
     ? exceptionItems.filter((item) => item.status !== "notRequired")
     : exceptionItems;
+  if (!visibleExceptionItems.length) {
+    visibleExceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." }];
+  }
   renderResultGroup("year-exception-list", visibleExceptionItems);
 
   // 다중이용업소 버튼 표시 여부
@@ -13860,11 +13950,11 @@ document.getElementById("open-guide").addEventListener("click", () => {
     clearTimeout(closeTimer);
     closeTimer = null;
     if (autoPlayed) {
-      // 자동재생 인트로: 검은화면 0.5초 페이드아웃 후 닫기 (메인이 서서히 드러남)
+      // 자동재생 인트로: 검은화면 1.2초 페이드아웃 후 닫기 (메인이 서서히 드러남)
       autoPlayed = false;
       overlay.classList.add("intro-fade-out");
       clearTimeout(fadeTimer);
-      fadeTimer = setTimeout(finishClose, 500);
+      fadeTimer = setTimeout(finishClose, 1200);
     } else {
       finishClose();
     }
