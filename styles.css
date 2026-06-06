@@ -4318,13 +4318,13 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
 }
 
 .reminder-card.reminder-urgent {
-  border-color: rgba(217, 48, 37, 0.45);
-  background: rgba(217, 48, 37, 0.07);
+  border-color: var(--red-soft);
+  background: var(--red-dim);
 }
 
 .reminder-card.reminder-overdue {
-  border-color: rgba(120, 0, 0, 0.5);
-  background: rgba(100, 0, 0, 0.1);
+  border-color: var(--red-soft);
+  background: var(--red-dim2);
 }
 
 .reminder-delete-btn {
@@ -4367,7 +4367,7 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   font-weight: 600;
   background: var(--red-dim);
   color: var(--red-soft);
-  border: 1px solid rgba(217, 48, 37, 0.2);
+  border: 1px solid var(--red-dim2);
   margin-bottom: 9px;
 }
 
@@ -4399,8 +4399,8 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   margin-top: 8px;
   padding: 5px 10px;
   border-radius: 8px;
-  background: rgba(217, 48, 37, 0.12);
-  border: 1px solid rgba(217, 48, 37, 0.25);
+  background: var(--red-dim2);
+  border: 1px solid var(--red-soft);
   color: var(--red-soft);
   font-size: 12px;
   font-weight: 700;
