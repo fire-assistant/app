@@ -48,8 +48,8 @@ const PATCH_NOTES = {
   date: "2026-06-06",
   items: [
     { type: "notice",  text: "이 사이트는 법적기준이 아닙니다. 참고만해주세요!" },
-    { type: "new",     text: "① 소방시설 탐색기 '판매시설, 공동주택'<br>&nbsp;&nbsp;&nbsp;&nbsp;용도 추가<br>② 법정기한계산기 공휴일 자동반영<br>③ 참고법령 안내 기능 추가<br>④ 안내 펫 일구 기능 추가 <br>⑤ 계절테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면 우측 위 테마변경버튼 누르세요)" },
-    { type: "improve", text: "메인화면 메뉴 배치 및 이름, UI 변경 등" },
+    { type: "new",     text: "① 참고법령 안내 기능 추가<br> ② 법정기한계산기 공휴일 자동반영<br>③ 안내 펫 일구 기능 추가<br>④ 계절테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면 우측 위 테마변경버튼 누르세요)" },
+    { type: "improve", text: "① 메인화면 메뉴 배치 및 이름, UI 변경 등<br>② 모바일 화면 확대 기능 추가" },
     { type: "fix",     text: "유틸리티 도구함 숫자입력 버그 수정" },
   ],
 };
@@ -878,6 +878,8 @@ const multiuseSafetyCard = document.getElementById("multiuse-safety-card");
 
 const explorerViewState = {
   lastInput: null,
+  lastRequiredItems: null,   // 소방시설 탐색기 — 설치 필요 시설 이름 배열
+  lastMultiuseItems: null,   // 다중이용업소 — 설치 필요 안전시설 이름 배열
 };
 
 function todayString() {
@@ -3112,6 +3114,10 @@ function renderLodgingMultiuseEntryButton(_input) {
 function renderMultiuseSafetyCard(input) {
   clearMultiuseSections();
   const multiuse = evaluateMultiuseFacilities(input);
+  const seen = new Set();
+  explorerViewState.lastMultiuseItems = (multiuse.reasonItems || [])
+    .filter((i) => i.status === "required" && i.name && !seen.has(i.name) && seen.add(i.name))
+    .map((i) => i.name);
   document.getElementById("multiuse-safety-summary").innerHTML = `<div class="ib-title">다중이용업소 안전시설 기준</div>입력한 조건을 기준으로 다중이용업소에 설치해야 하는 안전시설만 별도로 정리했습니다.`;
   renderMultiuseRequiredSafetyList(multiuse, "multiuse-required-list");
   renderResultGroup("multiuse-reason-list", multiuse.reasonItems);
@@ -3121,6 +3127,10 @@ function renderMultiuseSafetyCard(input) {
 function renderLodgingMultiuseSafetyCard(input) {
   clearMultiuseSections();
   const multiuse = evaluateLodgingMultiuseFacilities(input);
+  const seen = new Set();
+  explorerViewState.lastMultiuseItems = (multiuse.reasonItems || [])
+    .filter((i) => i.status === "required" && i.name && !seen.has(i.name) && seen.add(i.name))
+    .map((i) => i.name);
   document.getElementById("multiuse-safety-summary").innerHTML = `<div class="ib-title">다중이용업소 안전시설 기준</div>입력한 조건을 기준으로 다중이용업소에 설치해야 하는 안전시설만 별도로 정리했습니다.`;
   renderMultiuseRequiredSafetyList(multiuse, "multiuse-required-list");
   renderResultGroup("multiuse-reason-list", multiuse.reasonItems);
@@ -3133,6 +3143,8 @@ function renderResults(results, input) {
   const requiredItems = buildRequiredItems(results, input, exceptionItems);
   const excludedNames = exceptionItems.filter((e) => e.category === "설치 제외").map((e) => e.name);
   explorerViewState.lastInput = input;
+  explorerViewState.lastRequiredItems = requiredItems.map((i) => i.name);
+  explorerViewState.lastMultiuseItems = null;
   document.getElementById("result-summary").innerHTML = `<div class="ib-title">입력값 기준</div>${getSubtypeLabel(input.facilitySubtype)}, 연면적 ${input.totalArea}㎡, 지상 ${input.aboveGroundFloors}층, 지하 ${input.basementFloors}층`;
   renderSimpleRequiredList(requiredItems);
   renderResultGroup("criteria-list", results, excludedNames, requiredItems.map((i) => i.name));
@@ -3143,6 +3155,8 @@ function renderResults(results, input) {
 function renderThirdClassPre1992Results(results, input) {
   const requiredItems = results.filter((item) => item.status === "required");
   explorerViewState.lastInput = input;
+  explorerViewState.lastRequiredItems = requiredItems.map((i) => i.name);
+  explorerViewState.lastMultiuseItems = null;
   document.getElementById("result-summary").innerHTML = `<div class="ib-title">3급 근린생활시설 기준</div>${getThirdClassPeriodLabel(input.pre1992PermitRange)} / ${getThirdClassDetailLabel(input.thirdClassDetailUse)} / 연면적 ${input.totalArea}㎡ / 지상 ${input.aboveGroundFloors}층 / 지하 ${input.basementFloors}층`;
   renderSimpleRequiredList(requiredItems);
   renderResultGroup("criteria-list", results, undefined, requiredItems.map((i) => i.name));
@@ -3236,6 +3250,60 @@ function copyResultText(text, btn) {
     onFail();
   }
 }
+
+/* ── 소방시설 탐색기 결과 복사 ── */
+(function initExplorerCopyBtn() {
+  const btn = document.getElementById("explorer-copy-result-btn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    const input = explorerViewState.lastInput;
+    const items = explorerViewState.lastRequiredItems;
+    if (!items || items.length === 0) {
+      showToast("복사할 결과가 없습니다.");
+      return;
+    }
+    const lines = [];
+    lines.push("[예방업무 어시스턴트] 소방시설 탐색기 결과");
+    lines.push("");
+    if (input) {
+      const subtype = getSubtypeLabel(input.facilitySubtype) || "";
+      if (subtype) lines.push("용도: " + subtype);
+      const areaLine = [
+        input.totalArea ? "연면적 " + input.totalArea + "㎡" : "",
+        input.aboveGroundFloors ? "지상 " + input.aboveGroundFloors + "층" : "",
+        input.basementFloors ? "지하 " + input.basementFloors + "층" : "",
+      ].filter(Boolean).join("  ·  ");
+      if (areaLine) lines.push(areaLine);
+      lines.push("");
+    }
+    lines.push("▶ 설치 필요한 소방시설");
+    items.forEach((name) => lines.push("• " + name));
+    lines.push("");
+    lines.push("※ 본 결과는 입력값 기준의 실무 참고용입니다. (앱 " + PATCH_NOTES.version + " · " + PATCH_NOTES.date + " 기준)");
+    copyResultText(lines.join("\n"), btn);
+  });
+})();
+
+/* ── 다중이용업소 탐색기 결과 복사 ── */
+(function initMultiuseCopyBtn() {
+  const btn = document.getElementById("multiuse-copy-result-btn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    const items = explorerViewState.lastMultiuseItems;
+    if (!items || items.length === 0) {
+      showToast("복사할 결과가 없습니다.");
+      return;
+    }
+    const lines = [];
+    lines.push("[예방업무 어시스턴트] 다중이용업소 안전시설 탐색 결과");
+    lines.push("");
+    lines.push("▶ 설치해야 하는 안전시설");
+    items.forEach((name) => lines.push("• " + name));
+    lines.push("");
+    lines.push("※ 본 결과는 입력값 기준의 실무 참고용입니다. (앱 " + PATCH_NOTES.version + " · " + PATCH_NOTES.date + " 기준)");
+    copyResultText(lines.join("\n"), btn);
+  });
+})();
 
 function scrollToTop() {
   const scrollEl = document.querySelector("#screen-explorer .scroll-content");
@@ -14994,18 +15062,6 @@ document.getElementById("open-guide").addEventListener("click", () => {
 
   if (!overlay || !frame || !closeBtn) return;
 
-  // 오전 08시 기준 "오늘"을 식별하는 키. 08시 전이면 전날로 친다.
-  // 하루에 한 번(그날 첫 방문)만 인트로 재생, 08시에 자동 초기화 효과.
-  function currentIntroDay() {
-    const now = new Date();
-    const d = new Date(now);
-    if (now.getHours() < 8) d.setDate(d.getDate() - 1);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return y + "-" + m + "-" + day;
-  }
-
   window.addEventListener("message", (e) => {
     if (e.data && e.data.type === "INTRO_DONE") closeIntroVideo();
   });
@@ -15023,7 +15079,7 @@ document.getElementById("open-guide").addEventListener("click", () => {
     requestAnimationFrame(() => {
       frame.src = "./video/chat streaming.html";
     });
-    if (markSeen) localStorage.setItem(INTRO_SEEN_KEY, currentIntroDay());
+    if (markSeen) localStorage.setItem(INTRO_SEEN_KEY, "1");
     closeTimer = setTimeout(closeIntroVideo, INTRO_DURATION_MS);
   }
 
@@ -15059,7 +15115,7 @@ document.getElementById("open-guide").addEventListener("click", () => {
     openBtn.addEventListener("click", () => openIntroVideo(false));
   }
 
-  if (localStorage.getItem(INTRO_SEEN_KEY) !== currentIntroDay()) {
+  if (!localStorage.getItem(INTRO_SEEN_KEY)) {
     document.documentElement.setAttribute("data-intro-active", "true");
     requestAnimationFrame(() => openIntroVideo(true));
   }

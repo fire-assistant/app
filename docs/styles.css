@@ -1623,6 +1623,25 @@ html[data-theme="official"] .lli-kind {
   background: rgba(52, 168, 83, 0.14);
 }
 
+/* ── 탐색기 결과 복사 버튼 ── */
+.explorer-copy-btn {
+  width: 100%;
+  margin-top: 8px;
+  background: transparent;
+  color: var(--red);
+  border: 1px solid color-mix(in srgb, var(--red) 50%, transparent);
+  box-shadow: none;
+}
+.explorer-copy-btn:hover {
+  background: color-mix(in srgb, var(--red) 10%, transparent);
+  box-shadow: none;
+}
+.explorer-copy-btn.is-copied {
+  color: #2e7d46;
+  border-color: rgba(52, 168, 83, 0.7);
+  background: rgba(52, 168, 83, 0.14);
+}
+
 /* ── Occupancy calculator (1-screen segmented design) ── */
 .occ-calc-card {
   background: var(--surface);
