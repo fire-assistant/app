@@ -2966,7 +2966,7 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
 }
 #date-content .dc-hero-save-btn:hover {
-  background: #e8352a;
+  background: color-mix(in srgb, var(--red) 88%, #ffffff);
   box-shadow: 0 4px 14px color-mix(in srgb, var(--red) 42%, transparent);
 }
 #date-content .dc-hero-save-btn:active {
@@ -3237,7 +3237,7 @@ html[data-theme="blossom"] #date-content .dc-hero-date.dc-accent-blue { color: v
   font-weight: 700;
   cursor: pointer;
 }
-#date-content .dc-cal-apply-btn:hover { background: #e8352a; }
+#date-content .dc-cal-apply-btn:hover { background: color-mix(in srgb, var(--red) 88%, #ffffff); }
 #date-content .dc-cal-nav-btn {
   width: 32px;
   height: 32px;
@@ -3402,7 +3402,7 @@ html[data-theme="blossom"] #date-content .dc-hero-date.dc-accent-blue { color: v
   box-shadow: 0 2px 8px color-mix(in srgb, var(--red) 30%, transparent);
 }
 #date-content .dc-save-btn:hover {
-  background: #e8352a;
+  background: color-mix(in srgb, var(--red) 88%, #ffffff);
   box-shadow: 0 4px 14px color-mix(in srgb, var(--red) 42%, transparent);
 }
 
@@ -6689,7 +6689,7 @@ html[data-theme="light"] .fac-photo-source-badge {
   border-radius: 999px;
   background: var(--red-dim2);
   color: var(--red-soft);
-  border: 1px solid rgba(217, 48, 37, 0.3);
+  border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
 }
 
 .pn-date {
@@ -6761,7 +6761,7 @@ html[data-theme="light"] .fac-photo-source-badge {
 .pn-tag-notice {
   background: var(--red-dim2);
   color: var(--red-soft);
-  border: 1px solid rgba(217, 48, 37, 0.3);
+  border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
 }
 
 .pn-text {
@@ -9377,7 +9377,7 @@ html[data-theme="dark"] .devletter-divider { color: var(--text-dim); }
   box-shadow: 0 3px 10px color-mix(in srgb, var(--red) 32%, transparent);
   transition: transform .12s ease, background .15s ease;
 }
-.devletter-feedback-btn:hover { background: #e8352a; }
+.devletter-feedback-btn:hover { background: color-mix(in srgb, var(--red) 88%, #ffffff); }
 .devletter-feedback-btn:active { transform: scale(0.97); }
 
 /* 좁은 화면 */
