@@ -1,4 +1,4 @@
-const CACHE = 'fireapp-v379';
+const CACHE = 'fireapp-v380';
 
 const PRECACHE_FILES = [
   './index.html',

@@ -16640,6 +16640,7 @@ const RG_WATER_COMMON = [
 ];
 
 function renderReportGuide(restoreScroll) {
+  resetPinchZoom();
   var root = document.getElementById('report-guide-content');
 
   // 모드별 상단 제목·근거법령 칩 (select=가이드 메뉴, guide=보고서 읽는법)
