@@ -3395,6 +3395,7 @@ function copyResultText(text, btn) {
 function scrollToTop() {
   const scrollEl = document.querySelector("#screen-explorer .scroll-content");
   if (scrollEl) scrollEl.scrollTop = 0;
+  resetPinchZoom();
 }
 
 function moveStep(direction) {
@@ -5236,6 +5237,7 @@ function buildMultiuseHistoryPanel() {
 }
 
 function renderMultiuse() {
+  resetPinchZoom();
   const root = document.getElementById("multiuse-content");
   const current = multiuseState.current;
   const currentStep = multiuseState.history.length + 1;
@@ -9119,6 +9121,7 @@ function yearCurrentStepIsValid() {
 function yearScrollToTop() {
   const el = document.querySelector("#screen-explorer-year .scroll-content");
   if (el) el.scrollTop = 0;
+  resetPinchZoom();
 }
 
 function showYearResultWithLoading() {
