@@ -45,7 +45,7 @@ function trackMenuClick(menuName) {
 // ── 패치노트 설정 (여기만 수정하면 됩니다) ──────────────────────────────
 const PATCH_NOTES = {
   version: "v1.0.2",
-  date: "2026-06-05",
+  date: "2026-06-06",
   items: [
     { type: "notice",  text: "이 사이트는 법적기준이 아닙니다. 참고만해주세요!" },
     { type: "new",     text: "① 소방시설 탐색기 '판매시설, 공동주택'<br>&nbsp;&nbsp;&nbsp;&nbsp;용도 추가<br>② 법정기한계산기 공휴일 자동반영<br>③ 참고법령 안내 기능 추가<br>④ 안내 펫 일구 기능 추가 <br>⑤ 계절테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면 우측 위 테마변경버튼 누르세요)" },
@@ -4200,16 +4200,18 @@ function renderDateCalculator() {
       lines.push((mode.baseDateLabel || "기산일") + ": " + formatDate(baseDate));
       if (mode.kind === "inspect_report") {
         lines.push("제출기한: " + formatDate(deadline));
+        lines.push("산정기준: 점검완료일부터 " + mode.days + "일 이내 (주말·공휴일 제외)");
       } else if (mode.kind === "manager_dual") {
         lines.push("선임기한: " + formatDate(appointDeadline));
         lines.push("선임신고기한: " + formatDate(reportDeadline));
+        lines.push("산정기준: 선임 " + mode.appointDays + "일 · 신고 " + mode.reportDays + "일 이내 (신고 마감이 주말·공휴일이면 다음 평일)");
       } else if (mode.kind === "noncompliance_dual") {
         const at = mode.actionTypes[state.dateCalc.noncomplianceType] ?? mode.actionTypes.repair;
         lines.push("조치구분: " + at.label + " (" + at.description + ")");
         lines.push("이행완료기한: " + formatDate(appointDeadline));
         lines.push("완료신고기한: " + formatDate(reportDeadline));
+        lines.push("산정기준: 이행 " + at.completionDays + "일 · 신고 " + mode.reportDays + "일 이내 (신고 주말·공휴일 제외)");
       }
-      lines.push("휴일 반영: " + (mode.supportsHolidaySelection ? "적용" : "미적용"));
       lines.push("근거: " + (DATE_LAW_NAME[state.dateCalc.mode] || "관계 법령"));
       lines.push("");
       lines.push("※ 본 결과는 입력값 기준의 실무 참고용입니다. (앱 " + PATCH_NOTES.version + " · " + PATCH_NOTES.date + " 기준)");
@@ -5801,7 +5803,7 @@ const yearState = {
     yEraChoice: "after2004",
     yOccupancyType: "neighborhood",
     yAutoCalcAreas: "yes",
-    yPermitdate: "2026-06-05",
+    yPermitdate: "2026-06-06",
     yTotalArea: "1500",
     yAboveGroundFloors: "4",
     yBasementFloors: "0",
@@ -15884,13 +15886,35 @@ history.replaceState({ screen: 'home' }, '');
 
 // ── 자체점검 보고서 읽는법 ────────────────────────────────────────
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
-
 let _pdfDocCache = null;
+let _pdfJsPromise = null;
+
+// pdf.min.js는 첫 진입 속도를 위해 자체점검 보고서를 실제로 열 때만 동적 로드한다.
+function ensurePdfJs() {
+  if (_pdfJsPromise) return _pdfJsPromise;
+  _pdfJsPromise = new Promise(function (resolve, reject) {
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
+      resolve(window.pdfjsLib);
+      return;
+    }
+    var s = document.createElement('script');
+    s.src = './pdf.min.js';
+    s.onload = function () {
+      if (!window.pdfjsLib) { _pdfJsPromise = null; reject(new Error('pdf.min.js 로드됐지만 pdfjsLib 없음')); return; }
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
+      resolve(window.pdfjsLib);
+    };
+    s.onerror = function () { _pdfJsPromise = null; reject(new Error('pdf.min.js 로드 실패')); };
+    document.head.appendChild(s);
+  });
+  return _pdfJsPromise;
+}
 
 function getPdfDoc() {
   if (_pdfDocCache) return Promise.resolve(_pdfDocCache);
-  return fetch('./report-guide.pdf')
+  return ensurePdfJs()
+    .then(function () { return fetch('./report-guide.pdf'); })
     .then(function (res) {
       if (!res.ok) throw new Error('report-guide.pdf 파일을 찾을 수 없습니다 (HTTP ' + res.status + ')');
       return res.arrayBuffer();
@@ -17864,6 +17888,7 @@ function goToRgGuideSection(tab, sectionId) {
   }
 
   window.syncIlguAssistantAvailability = syncAvailability;
+  localStorage.removeItem("ilguAssistantVisible");
   syncAvailability();
 
   function readPosition() {
@@ -18664,7 +18689,7 @@ function goToRgGuideSection(tab, sectionId) {
 })();
 
 /* ============================================================
-   개발자 이야기 — txt fetch + 챕터 파싱 + 보상카드
+   개발자 이야기 — txt fetch + 챕터 파싱
    ============================================================ */
 (function initDevLetter() {
   const openBtn = document.getElementById("open-dev-letter");
@@ -18680,9 +18705,6 @@ function goToRgGuideSection(tab, sectionId) {
   const musicProgress = document.getElementById("devletter-music-progress");
   const musicVolume = document.getElementById("devletter-music-volume");
   const musicTimeEl = document.getElementById("devletter-music-time");
-  const reward = document.getElementById("devletter-reward");
-  const rewardFortuneEl = document.getElementById("devletter-reward-fortune");
-  const rewardCloseBtn = document.getElementById("devletter-reward-close");
   const musicModal = document.getElementById("devletter-music-modal");
   const musicModalYes = document.getElementById("devletter-music-yes");
   const musicModalNo = document.getElementById("devletter-music-no");
@@ -18697,28 +18719,20 @@ function goToRgGuideSection(tab, sectionId) {
     }
   } catch {}
 
-  const FORTUNES = [
-    "퇴근길에 만 원짜리 한 장 발견함",
-    "오늘 밤 출동 없이 긴 밤 보냄",
-    "매수한 주식 5% 상승함",
-    "오늘 점심으로 제일 좋아하는 메뉴 나옴",
-  ];
-  const READ_FLAG = "devLetterFullyRead_v1";
-
   // 글 본문 — 수정은 이 LETTER_TEXT 상수만 고치면 됨.
   // 형식: 첫 문단 = 도입부 / "[개발자가 전하는 글]" = 구분선 / "숫자. 제목" = 챕터 시작
   const LETTER_TEXT = `작년, 화재안전조사를 하면서 자주 들었던 생각이 있습니다. 건물의 규모와 용도, 허가일자 같은 정보를 넣으면 이 건물에 어떤 소방시설이 필요한지 한눈에 정리해주는 도구가 있으면 좋겠다는 생각이었습니다.
 
 예방업무는 처음 접하면 부담이 큰 업무라고 생각합니다. 법도 많고, 예외도 많고, 법을 찾아도 그 내용을 실제 건물에 어떻게 적용해야 하는지 막막할 때가 많습니다. 그런데 어느 정도 알고 보면, 건물을 보면서 필요한 시설을 하나씩 떠올려보는 과정이 꽤 재미있기도 합니다.
 
-이 앱은 그런 생각에서 시작했습니다. 예방업무를 대신해주는 정답지가 아니라, 처음 방향을 잡고 반복해서 연습해볼 수 있는 작은 도구가 있으면 좋겠다는 마음으로 만들었습니다.
+이 앱은 그런 생각에서 시작했습니다. 예방업무를 대신해주는 정답지가 아니라, 처음 방향을 잡고 반복해서 연습해볼 수 있는 어떤 도구가 있으면 좋겠다는 마음으로 만들었습니다.
 
 [개발자가 전하는 글]
 1. 막연한 생각을 도구로
-처음에는 막연한 생각이었습니다. 건물 정보를 넣으면 필요한 소방시설이 바로 정리되어 나오면 좋겠다는 정도였습니다. AI라면 금방 만들 수 있지 않을까 싶어 ChatGPT, Gemini, Claude 같은 여러 도구로도 시도해봤습니다. 하지만 소방 법령과 현장 예외를 원하는 만큼 다루는 일은 생각보다 쉽지 않았습니다. 결국 조금 돌아가더라도 직접 만들어보기로 했습니다. 대단한 기술이 있어서라기보다, 현장에서 필요하다고 느낀 것을 한번 끝까지 붙잡아보고 싶었습니다.
+처음에는 막연한 생각이었습니다. 건물 정보를 넣으면 필요한 소방시설이 바로 정리되어 나오면 좋겠다는 정도였습니다. AI라면 금방 만들 수 있지 않을까 싶어 ChatGPT, Gemini, Claude 같은 여러 도구로도 시도해봤습니다만, 소방 법령과 현장 예외를 원하는 만큼 다루는 일은 생각보다 쉽지 않았습니다. 결국 조금 돌아가더라도 직접 만들어보기로 했습니다. 대단한 기술이 있어서라기보다, 현장에서 필요하다고 느낀 것을 한번 끝까지 붙잡아보고 싶었습니다.
 
 2. 만든 사람 이야기
-솔직히 말하면 저는 예방업무에 통달한 사람은 아닙니다. 아직 배울 것도 많고, 남들이 한 번에 이해하는 내용을 두세 번씩 다시 봐야 할 때도 많습니다. 다만 예방업무에 관심이 많았고, 어렵지만 알수록 재미있는 업무라고 느꼈습니다. 건물의 규모와 용도, 구조를 보면서 어떤 시설이 필요할지 혼자 떠올려보는 연습도 자주 했습니다. 그런 시간이 쌓이다 보니, 처음 예방업무를 접하는 분들도 이런 감각을 조금 더 쉽게 연습해볼 수 있으면 좋겠다는 생각을 하게 됐습니다.
+솔직히 말하면 저는 예방업무에 통달한 사람은 아닙니다. 아직 배울 것도 많고, 남들이 한 번에 이해하는 내용을 두세 번씩 다시 봐야 할 정도로 머리가 그렇게 좋지도 않습니. 다만 예방업무에 관심이 많았고, 어렵지만 알수록 재미있는 업무라고 느꼈습니다. 건물의 규모와 용도, 구조를 보면서 어떤 시설이 필요할지 혼자 떠올려보는 연습도 자주 했습니다. 그런 시간이 쌓이다 보니, 처음 예방업무를 접하는 분들도 이런 감각을 조금 더 쉽게 연습해볼 수 있으면 좋겠다는 생각을 하게 됐습니다.
 
 3. 누구를 위해 만들었나
 이 앱은 예방업무를 처음 맡았거나, 소방시설이 아직 낯선 분들을 가장 많이 떠올리며 만들었습니다. 예방업무는 결국 직접 찾아보고, 물어보고, 현장에서 부딪히며 배워야 하는 부분이 많습니다. 그런데 곁에서 차근히 알려줄 사람이 항상 있는 것도 아니고, 법제처를 열어도 그 내용을 업무에 바로 연결하기 어려울 때가 있습니다. 그래서 이 앱이 정답을 알려주는 도구라기보다, 어디서부터 봐야 할지 감을 잡는 데 도움이 되는 도구였으면 했습니다.
@@ -18727,11 +18741,9 @@ function goToRgGuideSection(tab, sectionId) {
 가장 중심이 되는 기능은 '소방시설 탐색기'입니다. 건물의 규모, 용도, 허가일자 등을 입력하면 확인해야 할 소방시설을 정리해 보여주는 기능입니다. 여기에 법정기한 계산기처럼 실무에서 자주 헷갈리거나 놓치기 쉬운 기능도 함께 담았습니다. 다만 실제 건물에는 면제 조건, 자진 설치, 과거 법령 적용 등 여러 예외가 있을 수 있습니다. 그래서 이 앱은 최종 판단을 대신하는 도구는 아닙니다. 먼저 방향을 잡고, 이후 관련 법령과 현장 조건을 확인하는 참고용 길잡이로 봐주시면 좋겠습니다.
 
 5. 배포를 앞두고
-업무를 마친 뒤의 시간과 비번 날의 시간을 모아 조금씩 만들었습니다. 다 만들고 나서도 공개하기까지는 망설임이 있었습니다. 괜히 나선 것처럼 보이지 않을까 하는 걱정도 있었습니다. 그래도 제가 소방에서 일하며 받았던 도움과 가르침을 조금이라도 돌려드릴 수 있다면 좋겠다고 생각했습니다. 부족한 부분이 분명 있을 수 있습니다. 버그 제보, 기능 제안, 법적 오류에 대한 의견을 주시면 확인하고 가능한 범위에서 계속 고쳐가겠습니다.`;
+업무를 마친 뒤의 시간과 비번 날의 시간을 모아 조금씩 만들었습니다. 다 만들고 나서도 공개하기까지는 망설임이 있었습니다. 괜히 쓸데없이 나서는 것처럼 보이지 않을까 하는 걱정도 있었습니다. 그래도 제가 소방에서 일하며 받았던 도움과 가르침을 조금이라도 돌려드릴 수 있다면 좋겠다고 생각했습니다. 부족한 부분이 분명 있을 수 있습니다. 버그 제보, 기능 제안, 법적 오류에 대한 의견을 주시면 확인하고 가능한 범위에서 계속 고쳐가겠습니다.`;
 
   let loaded = false;
-  let totalChapters = 0;
-  const openedOnce = new Set();
 
   function formatMusicTime(seconds) {
     if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -18835,10 +18847,6 @@ function goToRgGuideSection(tab, sectionId) {
     stopDevLetterMusic();
   }
 
-  function pickFortune() {
-    return FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
-  }
-
   function escapeHtml(s) {
     return s.replace(/[&<>"']/g, (c) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -18881,8 +18889,6 @@ function goToRgGuideSection(tab, sectionId) {
   function render(data) {
     introEl.textContent = data.intro;
     chaptersEl.innerHTML = "";
-    totalChapters = data.chapters.length;
-    openedOnce.clear();
     data.chapters.forEach((c) => {
       const det = document.createElement("details");
       det.className = "devletter-chapter";
@@ -18894,31 +18900,8 @@ function goToRgGuideSection(tab, sectionId) {
         </summary>
         <div class="devletter-chapter-body">${escapeHtml(c.body)}</div>
       `;
-      det.addEventListener("toggle", () => onChapterToggle(det));
       chaptersEl.appendChild(det);
     });
-  }
-
-  function onChapterToggle(det) {
-    if (!det.open) return;
-    openedOnce.add(det.dataset.chapterNum);
-    if (localStorage.getItem(READ_FLAG)) return;
-    if (openedOnce.size >= totalChapters && totalChapters > 0) {
-      try { localStorage.setItem(READ_FLAG, "1"); } catch {}
-      setTimeout(showReward, 350);
-    }
-  }
-
-  function showReward() {
-    if (!reward) return;
-    rewardFortuneEl.textContent = pickFortune();
-    reward.classList.remove("hidden");
-    reward.setAttribute("aria-hidden", "false");
-  }
-  function hideReward() {
-    if (!reward) return;
-    reward.classList.add("hidden");
-    reward.setAttribute("aria-hidden", "true");
   }
 
   function loadLetter() {
@@ -19010,28 +18993,6 @@ function goToRgGuideSection(tab, sectionId) {
   if (musicModalNo) musicModalNo.addEventListener("click", hideMusicPrompt);
   if (musicModal) musicModal.addEventListener("click", (e) => { if (e.target === musicModal) hideMusicPrompt(); });
 
-  if (rewardCloseBtn) rewardCloseBtn.addEventListener("click", hideReward);
-  if (reward) reward.addEventListener("click", (e) => {
-    if (e.target === reward) hideReward();
-  });
-
-  // 점검용: '개발자 노트' 제목(kicker) 5번 연속 클릭 시 보상카드 강제 출력
-  (function attachSignSecret() {
-    const sign = document.querySelector("#screen-developer-letter .devletter-kicker");
-    if (!sign) return;
-    sign.style.cursor = "pointer";
-    let count = 0;
-    let timer = null;
-    sign.addEventListener("click", () => {
-      count++;
-      clearTimeout(timer);
-      timer = setTimeout(() => { count = 0; }, 1500);
-      if (count >= 5) {
-        count = 0;
-        showReward();
-      }
-    });
-  })();
 })();
 
 /* ── 근거 법령 안내 모달 ── */

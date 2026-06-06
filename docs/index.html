@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>예방업무 어시스턴트</title>
   <link rel="stylesheet" href="./styles.css?v=300">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +14,18 @@
   <meta name="apple-mobile-web-app-title" content="예방 어시스턴트">
   <link rel="apple-touch-icon" href="./icon-192.png">
   <meta name="theme-color" content="#d93025">
+  <!-- SEO / 공유 미리보기 (og:image는 임시로 앱 아이콘 사용, 추후 1200x630 배너로 교체) -->
+  <meta name="description" content="소방 예방업무를 스마트하게 해결하는 실무형 도우미. 소방시설·다중이용업소 탐색기, 법정기한 계산기, 자체점검 가이드, 소방시설 도감을 한 곳에서.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="예방업무 어시스턴트">
+  <meta property="og:title" content="예방업무 어시스턴트">
+  <meta property="og:description" content="소방 예방업무를 스마트하게 해결하는 실무형 도우미. 탐색기·법정기한 계산기·자체점검 가이드·도감을 한 곳에서.">
+  <meta property="og:url" content="https://fire-assistant.github.io/app">
+  <meta property="og:image" content="https://fire-assistant.github.io/app/icon-512.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="예방업무 어시스턴트">
+  <meta name="twitter:description" content="소방 예방업무를 스마트하게 해결하는 실무형 도우미.">
+  <meta name="twitter:image" content="https://fire-assistant.github.io/app/icon-512.png">
   <!-- Analytics (devMode/gaSuppressed면 GTM·gtag 스크립트 자체를 로드하지 않음) -->
   <script>(function(){
     var until = Number(localStorage.getItem('gaSuppressedUntil') || '0');
@@ -814,16 +826,6 @@
         <div class="devletter-divider">이런 마음으로 만들었습니다</div>
 
         <div id="devletter-chapters" class="devletter-chapters"></div>
-
-        <div id="devletter-reward" class="devletter-reward hidden" role="dialog" aria-hidden="true">
-          <div class="devletter-reward-card">
-            <div class="devletter-reward-stamp">정독<br>완료</div>
-            <h3 class="devletter-reward-title">여기까지 읽어주셔서,<br>진심으로 감사합니다.</h3>
-            <p class="devletter-reward-sub">오늘의 운세</p>
-            <p id="devletter-reward-fortune" class="devletter-reward-fortune"></p>
-            <button id="devletter-reward-close" class="devletter-reward-close" type="button">닫기</button>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -1165,7 +1167,7 @@
     </div>
   </div>
 
-  <script src="./pdf.min.js"></script>
+  <!-- pdf.min.js는 자체점검 보고서 화면 진입 시 app.js의 ensurePdfJs()가 동적 로드 -->
   <script src="./app.js?v=306"></script>
   <script src="./facilities-data.js?v=300"></script>
   <script src="./facilities.js?v=300"></script>
