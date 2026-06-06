@@ -3284,6 +3284,60 @@ function copyResultText(text, btn) {
   });
 })();
 
+/* ── 연도별 탐색기 결과 복사 ── */
+(function initYearExplorerCopyBtn() {
+  const btn = document.getElementById("year-explorer-copy-result-btn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    const rows = document.querySelectorAll("#year-required-list .facility-row");
+    const items = Array.from(rows).map((r) => {
+      const spans = r.querySelectorAll("span");
+      return spans.length >= 2 ? spans[spans.length - 1].textContent.trim() : "";
+    }).filter(Boolean);
+    if (items.length === 0) {
+      showToast("복사할 결과가 없습니다.");
+      return;
+    }
+    const summaryEl = document.getElementById("year-result-summary");
+    const summaryText = summaryEl ? summaryEl.textContent.replace(/\s+/g, " ").trim() : "";
+    const lines = [];
+    lines.push("[예방업무 어시스턴트] 소방시설 탐색기 결과 (연도별)");
+    lines.push("");
+    if (summaryText) lines.push(summaryText);
+    lines.push("");
+    lines.push("▶ 설치 필요한 소방시설");
+    items.forEach((name) => lines.push("• " + name));
+    lines.push("");
+    lines.push("※ 본 결과는 입력값 기준의 실무 참고용입니다. (앱 " + PATCH_NOTES.version + " · " + PATCH_NOTES.date + " 기준)");
+    copyResultText(lines.join("\n"), btn);
+  });
+})();
+
+/* ── 연도별 다중이용업소 결과 복사 ── */
+(function initYearMultiuseCopyBtn() {
+  const btn = document.getElementById("year-multiuse-copy-result-btn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    const rows = document.querySelectorAll("#year-multiuse-required-list .facility-row");
+    const items = Array.from(rows).map((r) => {
+      const spans = r.querySelectorAll("span");
+      return spans.length >= 2 ? spans[spans.length - 1].textContent.trim() : "";
+    }).filter(Boolean);
+    if (items.length === 0) {
+      showToast("복사할 결과가 없습니다.");
+      return;
+    }
+    const lines = [];
+    lines.push("[예방업무 어시스턴트] 다중이용업소 안전시설 탐색 결과 (연도별)");
+    lines.push("");
+    lines.push("▶ 설치해야 하는 안전시설");
+    items.forEach((name) => lines.push("• " + name));
+    lines.push("");
+    lines.push("※ 본 결과는 입력값 기준의 실무 참고용입니다. (앱 " + PATCH_NOTES.version + " · " + PATCH_NOTES.date + " 기준)");
+    copyResultText(lines.join("\n"), btn);
+  });
+})();
+
 /* ── 다중이용업소 탐색기 결과 복사 ── */
 (function initMultiuseCopyBtn() {
   const btn = document.getElementById("multiuse-copy-result-btn");
@@ -5255,13 +5309,13 @@ function renderMultiuse() {
 
   card.appendChild(list);
 
-  if (multiuseState.history.length > 0) {
+  {
     const backBtn = document.createElement("button");
     backBtn.type = "button";
     backBtn.className = "btn btn-ghost";
     backBtn.style.cssText = "width:100%;margin-top:12px;";
     backBtn.textContent = "이전으로";
-    backBtn.addEventListener("click", multiuseBack);
+    backBtn.addEventListener("click", multiuseState.history.length > 0 ? multiuseBack : () => showScreen("multiuseSelect"));
     card.appendChild(backBtn);
   }
 
@@ -14705,6 +14759,16 @@ function yearShowResults() {
   let results;
   let summaryHtml;
 
+  // 입력값 요약 칩 그리드 헬퍼
+  const nf = (v) => { const n = Number(v); return Number.isFinite(n) ? n.toLocaleString() : v; };
+  const ibChip = (icon, label, value) =>
+    `<div class="ib-chip"><div class="ib-chip-label">${icon} ${label}</div><div class="ib-chip-value">${value}</div></div>`;
+  const ibSummary = (chips, note) =>
+    `<div class="ib-title">입력값 기준</div><div class="ib-grid">${chips.join("")}</div>${note || ""}`;
+  const floorsChip = () => ibChip("🏬", "층수", `지상 ${inp.aboveGroundFloors} · 지하 ${inp.basementFloors}`);
+  const permitChip = () => ibChip("📅", "건축허가일", permitStr);
+  const areaChip = () => ibChip("📐", "연면적", `${nf(inp.totalArea)}㎡`);
+
   let exceptionItems = [];
   const autoNoteParts = (kind) => {
     if (!yearIsAutoAreaMode()) return "";
@@ -14746,17 +14810,29 @@ function yearShowResults() {
       parts.push(`1,000㎡ 이상 층 ${inp.aptHasFloor1000 ? "있음" : "없음"}`);
       parts.push(`동 수 ${dongCount}개`);
     }
-    return `<br><span style="font-size:11px;opacity:0.85;">※ 면적 자동산정 적용: ${parts.join(", ")} (직사각형·전 층 동일 용도 가정)</span>`;
+    return `<div class="ib-note">※ 면적 자동산정 적용: ${parts.join(", ")} (직사각형·전 층 동일 용도 가정)</div>`;
   };
   if (inp.occupancyType === "lodging") {
     results = yearEvaluateLodging(inp);
     exceptionItems = yearBuildLodgingExceptionItems(results, inp);
-    summaryHtml = `<div class="ib-title">입력값 기준</div>숙박시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 숙박 사용면적 ${inp.lodgingArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층${autoNoteParts("lodging")}`;
+    summaryHtml = ibSummary([
+      ibChip("🏨", "용도", "숙박시설"),
+      permitChip(),
+      areaChip(),
+      ibChip("📏", "숙박 사용면적", `${nf(inp.lodgingArea)}㎡`),
+      floorsChip(),
+    ], autoNoteParts("lodging"));
   } else if (inp.occupancyType === "elderly") {
     results = yearEvaluateElderly(inp);
     exceptionItems = yearBuildElderlyExceptionItems(results, inp);
     const subtypeLabel = inp.elderlySubtype === "living" ? "노유자 생활시설" : "일반 노유자시설";
-    summaryHtml = `<div class="ib-title">입력값 기준</div>노유자시설(${subtypeLabel}), 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 노유자 사용면적 ${inp.elderlyArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층${autoNoteParts("elderly")}`;
+    summaryHtml = ibSummary([
+      ibChip("🧓", "용도", `노유자시설(${subtypeLabel})`),
+      permitChip(),
+      areaChip(),
+      ibChip("📏", "노유자 사용면적", `${nf(inp.elderlyArea)}㎡`),
+      floorsChip(),
+    ], autoNoteParts("elderly"));
   } else if (inp.occupancyType === "medical") {
     results = yearEvaluateMedical(inp);
     exceptionItems = yearBuildMedicalExceptionItems(results, inp);
@@ -14768,11 +14844,22 @@ function yearShowResults() {
       rehabilitationFacility: "의료재활시설",
     };
     const subtypeLabel = medicalSubtypeLabels[inp.medicalSubtype] || "의료시설";
-    summaryHtml = `<div class="ib-title">입력값 기준</div>의료시설(${subtypeLabel}), 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 의료 사용면적 ${inp.medicalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층${autoNoteParts("medical")}`;
+    summaryHtml = ibSummary([
+      ibChip("🏥", "용도", `의료시설(${subtypeLabel})`),
+      permitChip(),
+      areaChip(),
+      ibChip("📏", "의료 사용면적", `${nf(inp.medicalArea)}㎡`),
+      floorsChip(),
+    ], autoNoteParts("medical"));
   } else if (inp.occupancyType === "religious") {
     results = yearEvaluateReligious(inp);
     exceptionItems = yearBuildReligiousExceptionItems(results, inp);
-    summaryHtml = `<div class="ib-title">입력값 기준</div>종교시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층${autoNoteParts("religious")}`;
+    summaryHtml = ibSummary([
+      ibChip("⛪", "용도", "종교시설"),
+      permitChip(),
+      areaChip(),
+      floorsChip(),
+    ], autoNoteParts("religious"));
   } else if (inp.occupancyType === "sales") {
     results = yearEvaluateSales(inp);
     exceptionItems = yearBuildSalesExceptionItems(results, inp);
@@ -14780,12 +14867,23 @@ function yearShowResults() {
     if (inp.salesIsTraditionalMarket) salesTags.push("전통시장");
     if (inp.salesIsLargeStore) salesTags.push("대규모점포");
     const salesTagStr = salesTags.length ? `(${salesTags.join("·")})` : "";
-    summaryHtml = `<div class="ib-title">입력값 기준</div>판매시설${salesTagStr}, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 판매 사용면적 ${inp.salesArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층${autoNoteParts("sales")}`;
+    summaryHtml = ibSummary([
+      ibChip("🛒", "용도", `판매시설${salesTagStr}`),
+      permitChip(),
+      areaChip(),
+      ibChip("📏", "판매 사용면적", `${nf(inp.salesArea)}㎡`),
+      floorsChip(),
+    ], autoNoteParts("sales"));
   } else if (inp.occupancyType === "office") {
     results = yearEvaluateOffice(inp);
     exceptionItems = yearBuildOfficeExceptionItems(results, inp);
     const officeTag = inp.officeIsOfficetel ? "(오피스텔)" : "";
-    summaryHtml = `<div class="ib-title">입력값 기준</div>업무시설${officeTag}, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층${autoNoteParts("office")}`;
+    summaryHtml = ibSummary([
+      ibChip("🏢", "용도", `업무시설${officeTag}`),
+      permitChip(),
+      areaChip(),
+      floorsChip(),
+    ], autoNoteParts("office"));
   } else if (inp.occupancyType === "apartment") {
     results = yearEvaluateApartment(inp);
     exceptionItems = yearBuildApartmentExceptionItems(results, inp);
@@ -14794,12 +14892,25 @@ function yearShowResults() {
     const dongCount = inp.aptBuildingCount || 1;
     const perDong = dongCount > 0 ? Math.round(inp.totalArea / dongCount) : inp.totalArea;
     const householdText = inp.apartmentSubtype === "apt" ? `, ${inp.aptHouseholdCount}세대` : "";
-    summaryHtml = `<div class="ib-title">입력값 기준</div>공동주택(${subtypeLabel}), 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡ · ${dongCount}개 동(동당 약 ${perDong}㎡)${householdText}, 가장 높은 지상 ${inp.aboveGroundFloors}층, 가장 깊은 지하 ${inp.basementFloors}층`
-      + `<br><span style="font-size:11px;opacity:0.85;">※ 단지 단위 근사: 면적 기준은 동당 평균(연면적÷동수), 층수·지하는 최고 동·통합 지하 기준. 동마다 규모가 크게 다르면 동별로 따로 확인하세요.</span>${autoNoteParts("apartment")}`;
+    const aptChips = [
+      ibChip("🏢", "용도", `공동주택(${subtypeLabel})`),
+      permitChip(),
+      ibChip("📐", "연면적", `${nf(inp.totalArea)}㎡`),
+      ibChip("🏘️", "동 수", `${dongCount}개 (동당 약 ${nf(perDong)}㎡)`),
+    ];
+    if (inp.apartmentSubtype === "apt") aptChips.push(ibChip("🚪", "세대수", `${nf(inp.aptHouseholdCount)}세대`));
+    aptChips.push(ibChip("🏬", "층수", `지상 ${inp.aboveGroundFloors} · 지하 ${inp.basementFloors}`));
+    summaryHtml = ibSummary(aptChips,
+      `<div class="ib-note">※ 단지 단위 근사: 면적 기준은 동당 평균(연면적÷동수), 층수·지하는 최고 동·통합 지하 기준. 동마다 규모가 크게 다르면 동별로 따로 확인하세요.</div>${autoNoteParts("apartment")}`);
   } else {
     results = yearEvaluateNeighborhood(inp);
     exceptionItems = yearBuildNeighborhoodExceptionItems(results, inp);
-    summaryHtml = `<div class="ib-title">입력값 기준</div>근린생활시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층${autoNoteParts("neighborhood")}`;
+    summaryHtml = ibSummary([
+      ibChip("🏪", "용도", "근린생활시설"),
+      permitChip(),
+      areaChip(),
+      floorsChip(),
+    ], autoNoteParts("neighborhood"));
   }
 
   ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
