@@ -1367,6 +1367,19 @@ function showIlguLoading(callback) {
   ilguLoadingFrame = requestAnimationFrame(tick);
 }
 
+// 핀치줌(확대) 상태를 1배로 강제 복원. JS로 scale 직접 변경이 안 되므로
+// viewport meta에 maximum-scale=1을 잠깐 걸었다 풀어 WebView가 리셋하게 함.
+let _vpResetTimer = null;
+function resetPinchZoom() {
+  const vp = document.querySelector('meta[name="viewport"]');
+  if (!vp) return;
+  vp.setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
+  clearTimeout(_vpResetTimer);
+  _vpResetTimer = setTimeout(() => {
+    vp.setAttribute("content", "width=device-width, initial-scale=1.0");
+  }, 350);
+}
+
 function showScreen(name) {
   Object.entries(screens).forEach(([key, element]) => {
     element.classList.toggle("active", key === name);
@@ -1377,6 +1390,7 @@ function showScreen(name) {
     scrollable.scrollTop = 0;
   }
   window.scrollTo(0, 0);
+  resetPinchZoom();
 }
 
 function getTotalFloors() {
@@ -3137,6 +3151,16 @@ function renderLodgingMultiuseSafetyCard(input) {
   renderTransitionalNotes(multiuse.transitionalNotes);
 }
 
+// 입력값 요약 칩 그리드 (전역 헬퍼)
+function ibNumFmt(v) { const n = Number(v); return Number.isFinite(n) ? n.toLocaleString() : v; }
+function ibChipHtml(icon, label, value) {
+  return `<div class="ib-chip"><div class="ib-chip-label">${icon} ${label}</div><div class="ib-chip-value">${value}</div></div>`;
+}
+function ibFloorsChip(above, below) { return ibChipHtml("🏬", "층수", `지상 ${above} · 지하 ${below}`); }
+function ibSummaryHtml(chips, note, title) {
+  return `<div class="ib-title">${title || "입력값 기준"}</div><div class="ib-grid">${chips.join("")}</div>${note || ""}`;
+}
+
 function renderResults(results, input) {
   ensureEmergencyElevatorSmokeControl(results, input, { allowRefugeElevator: true });
   const exceptionItems = buildExceptionItems(results, input);
@@ -3145,7 +3169,11 @@ function renderResults(results, input) {
   explorerViewState.lastInput = input;
   explorerViewState.lastRequiredItems = requiredItems.map((i) => i.name);
   explorerViewState.lastMultiuseItems = null;
-  document.getElementById("result-summary").innerHTML = `<div class="ib-title">입력값 기준</div>${getSubtypeLabel(input.facilitySubtype)}, 연면적 ${input.totalArea}㎡, 지상 ${input.aboveGroundFloors}층, 지하 ${input.basementFloors}층`;
+  document.getElementById("result-summary").innerHTML = ibSummaryHtml([
+    ibChipHtml("🏢", "용도", getSubtypeLabel(input.facilitySubtype)),
+    ibChipHtml("📐", "연면적", `${ibNumFmt(input.totalArea)}㎡`),
+    ibFloorsChip(input.aboveGroundFloors, input.basementFloors),
+  ]);
   renderSimpleRequiredList(requiredItems);
   renderResultGroup("criteria-list", results, excludedNames, requiredItems.map((i) => i.name));
   renderResultGroup("exception-list", exceptionItems);
@@ -3157,7 +3185,12 @@ function renderThirdClassPre1992Results(results, input) {
   explorerViewState.lastInput = input;
   explorerViewState.lastRequiredItems = requiredItems.map((i) => i.name);
   explorerViewState.lastMultiuseItems = null;
-  document.getElementById("result-summary").innerHTML = `<div class="ib-title">3급 근린생활시설 기준</div>${getThirdClassPeriodLabel(input.pre1992PermitRange)} / ${getThirdClassDetailLabel(input.thirdClassDetailUse)} / 연면적 ${input.totalArea}㎡ / 지상 ${input.aboveGroundFloors}층 / 지하 ${input.basementFloors}층`;
+  document.getElementById("result-summary").innerHTML = ibSummaryHtml([
+    ibChipHtml("📅", "허가시기", getThirdClassPeriodLabel(input.pre1992PermitRange)),
+    ibChipHtml("🏪", "세부용도", getThirdClassDetailLabel(input.thirdClassDetailUse)),
+    ibChipHtml("📐", "연면적", `${ibNumFmt(input.totalArea)}㎡`),
+    ibFloorsChip(input.aboveGroundFloors, input.basementFloors),
+  ], null, "3급 근린생활시설 기준");
   renderSimpleRequiredList(requiredItems);
   renderResultGroup("criteria-list", results, undefined, requiredItems.map((i) => i.name));
   if (input.totalArea >= 2100) {
@@ -3402,7 +3435,12 @@ function showResults() {
     const requiredItems = buildLodgingRequiredItems(results, input, exceptionItems);
     const excludedNames = exceptionItems.filter((e) => e.category === "설치 제외").map((e) => e.name);
     explorerViewState.lastInput = input;
-    document.getElementById("result-summary").innerHTML = `<div class="ib-title">입력값 기준</div>숙박시설, 연면적 ${input.lodgingTotalArea}㎡, 숙박 사용면적 ${input.lodgingArea}㎡, 지상 ${input.lodgingAboveGroundFloors}층, 지하 ${input.lodgingBasementFloors}층`;
+    document.getElementById("result-summary").innerHTML = ibSummaryHtml([
+      ibChipHtml("🏨", "용도", "숙박시설"),
+      ibChipHtml("📐", "연면적", `${ibNumFmt(input.lodgingTotalArea)}㎡`),
+      ibChipHtml("📏", "숙박 사용면적", `${ibNumFmt(input.lodgingArea)}㎡`),
+      ibFloorsChip(input.lodgingAboveGroundFloors, input.lodgingBasementFloors),
+    ]);
     renderSimpleRequiredList(requiredItems);
     renderResultGroup("criteria-list", results, excludedNames, requiredItems.map((i) => i.name));
     renderResultGroup("exception-list", exceptionItems);
@@ -3420,7 +3458,12 @@ function showResults() {
     const excludedNames = exceptionItems.filter((e) => e.category === "설치 제외").map((e) => e.name);
     explorerViewState.lastInput = input;
     const subtypeLabel = input.elderlySubtype === "livingFacility" ? "노유자 생활시설" : "일반 노유자시설";
-    document.getElementById("result-summary").innerHTML = `<div class="ib-title">입력값 기준</div>노유자시설(${subtypeLabel}), 연면적 ${input.elderlyTotalArea}㎡, 노유자 사용면적 ${input.elderlyArea}㎡, 지상 ${input.elderlyAboveGroundFloors}층, 지하 ${input.elderlyBasementFloors}층`;
+    document.getElementById("result-summary").innerHTML = ibSummaryHtml([
+      ibChipHtml("🧓", "용도", `노유자시설(${subtypeLabel})`),
+      ibChipHtml("📐", "연면적", `${ibNumFmt(input.elderlyTotalArea)}㎡`),
+      ibChipHtml("📏", "노유자 사용면적", `${ibNumFmt(input.elderlyArea)}㎡`),
+      ibFloorsChip(input.elderlyAboveGroundFloors, input.elderlyBasementFloors),
+    ]);
     renderSimpleRequiredList(requiredItems);
     renderResultGroup("criteria-list", results, excludedNames, requiredItems.map((i) => i.name));
     renderResultGroup("exception-list", exceptionItems);
@@ -3446,7 +3489,12 @@ function showResults() {
       rehabilitationFacility: "의료재활시설",
     };
     const subtypeLabel = subtypeLabels[input.medicalSubtype] || "의료시설";
-    document.getElementById("result-summary").innerHTML = `<div class="ib-title">입력값 기준</div>의료시설(${subtypeLabel}), 연면적 ${input.medicalTotalArea}㎡, 의료 사용면적 ${input.medicalArea}㎡, 지상 ${input.medicalAboveGroundFloors}층, 지하 ${input.medicalBasementFloors}층`;
+    document.getElementById("result-summary").innerHTML = ibSummaryHtml([
+      ibChipHtml("🏥", "용도", `의료시설(${subtypeLabel})`),
+      ibChipHtml("📐", "연면적", `${ibNumFmt(input.medicalTotalArea)}㎡`),
+      ibChipHtml("📏", "의료 사용면적", `${ibNumFmt(input.medicalArea)}㎡`),
+      ibFloorsChip(input.medicalAboveGroundFloors, input.medicalBasementFloors),
+    ]);
     renderSimpleRequiredList(requiredItems);
     renderResultGroup("criteria-list", results, excludedNames, requiredItems.map((i) => i.name));
     renderResultGroup("exception-list", exceptionItems);
@@ -14529,7 +14577,12 @@ function yearShowResults() {
     const results = yearEvaluateNeighborhoodBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     suppressBefore2004LowRiseEscapeItems(results, inp);
-    const summaryHtml = `<div class="ib-title">입력값 기준</div>근린생활시설(${subtypeLabel}), 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
+    const summaryHtml = ibSummaryHtml([
+      ibChipHtml("🏪", "용도", `근린생활시설(${subtypeLabel})`),
+      ibChipHtml("📅", "건축허가일", permitStr),
+      ibChipHtml("📐", "연면적", `${ibNumFmt(inp.totalArea)}㎡`),
+      ibFloorsChip(inp.aboveGroundFloors, inp.basementFloors),
+    ]);
     const exceptionItems = buildBefore2004ExceptionItems(results, pd);
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
     document.getElementById("year-result-summary").innerHTML = summaryHtml;
@@ -14555,7 +14608,12 @@ function yearShowResults() {
     const results = yearEvaluateLodgingBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     suppressBefore2004LowRiseEscapeItems(results, inp);
-    const summaryHtml = `<div class="ib-title">입력값 기준</div>숙박시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
+    const summaryHtml = ibSummaryHtml([
+      ibChipHtml("🏨", "용도", "숙박시설"),
+      ibChipHtml("📅", "건축허가일", permitStr),
+      ibChipHtml("📐", "연면적", `${ibNumFmt(inp.totalArea)}㎡`),
+      ibFloorsChip(inp.aboveGroundFloors, inp.basementFloors),
+    ]);
     const exceptionItems = buildBefore2004ExceptionItems(results, pd);
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
     document.getElementById("year-result-summary").innerHTML = summaryHtml;
@@ -14581,7 +14639,12 @@ function yearShowResults() {
     const results = yearEvaluateElderlyBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     suppressBefore2004LowRiseEscapeItems(results, inp);
-    const summaryHtml = `<div class="ib-title">입력값 기준</div>노유자시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
+    const summaryHtml = ibSummaryHtml([
+      ibChipHtml("🧓", "용도", "노유자시설"),
+      ibChipHtml("📅", "건축허가일", permitStr),
+      ibChipHtml("📐", "연면적", `${ibNumFmt(inp.totalArea)}㎡`),
+      ibFloorsChip(inp.aboveGroundFloors, inp.basementFloors),
+    ]);
     const exceptionItems = buildBefore2004ExceptionItems(results, pd);
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
     document.getElementById("year-result-summary").innerHTML = summaryHtml;
@@ -14608,7 +14671,12 @@ function yearShowResults() {
     const results = yearEvaluateMedicalBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     suppressBefore2004LowRiseEscapeItems(results, inp);
-    const summaryHtml = `<div class="ib-title">입력값 기준</div>의료시설(${subtypeLabel}), 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
+    const summaryHtml = ibSummaryHtml([
+      ibChipHtml("🏥", "용도", `의료시설(${subtypeLabel})`),
+      ibChipHtml("📅", "건축허가일", permitStr),
+      ibChipHtml("📐", "연면적", `${ibNumFmt(inp.totalArea)}㎡`),
+      ibFloorsChip(inp.aboveGroundFloors, inp.basementFloors),
+    ]);
     const exceptionItems = buildBefore2004ExceptionItems(results, pd);
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
     document.getElementById("year-result-summary").innerHTML = summaryHtml;
@@ -14634,7 +14702,12 @@ function yearShowResults() {
     const results = yearEvaluateReligiousBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     suppressBefore2004LowRiseEscapeItems(results, inp);
-    const summaryHtml = `<div class="ib-title">입력값 기준</div>종교시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
+    const summaryHtml = ibSummaryHtml([
+      ibChipHtml("⛪", "용도", "종교시설"),
+      ibChipHtml("📅", "건축허가일", permitStr),
+      ibChipHtml("📐", "연면적", `${ibNumFmt(inp.totalArea)}㎡`),
+      ibFloorsChip(inp.aboveGroundFloors, inp.basementFloors),
+    ]);
     const exceptionItems = buildBefore2004ExceptionItems(results, pd);
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
     document.getElementById("year-result-summary").innerHTML = summaryHtml;
@@ -14660,7 +14733,13 @@ function yearShowResults() {
     const results = yearEvaluateSalesBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     suppressBefore2004LowRiseEscapeItems(results, inp);
-    const summaryHtml = `<div class="ib-title">입력값 기준</div>판매시설${eraNote}, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 판매 사용면적 ${inp.before2004SalesArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
+    const summaryHtml = ibSummaryHtml([
+      ibChipHtml("🛒", "용도", `판매시설${eraNote}`),
+      ibChipHtml("📅", "건축허가일", permitStr),
+      ibChipHtml("📐", "연면적", `${ibNumFmt(inp.totalArea)}㎡`),
+      ibChipHtml("📏", "판매 사용면적", `${ibNumFmt(inp.before2004SalesArea)}㎡`),
+      ibFloorsChip(inp.aboveGroundFloors, inp.basementFloors),
+    ]);
     const exceptionItems = buildBefore2004ExceptionItems(results, pd);
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
     document.getElementById("year-result-summary").innerHTML = summaryHtml;
@@ -14686,7 +14765,12 @@ function yearShowResults() {
     const results = yearEvaluateOfficeBefore2004(inp);
     ensureEmergencyElevatorSmokeControl(results, inp, { allowRefugeElevator: true, requirePermitDateForRefugeElevator: true, usePermitBasedLodgingFlameproof: true });
     suppressBefore2004LowRiseEscapeItems(results, inp);
-    const summaryHtml = `<div class="ib-title">입력값 기준</div>업무시설, 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡, 지상 ${inp.aboveGroundFloors}층, 지하 ${inp.basementFloors}층`;
+    const summaryHtml = ibSummaryHtml([
+      ibChipHtml("🏢", "용도", "업무시설"),
+      ibChipHtml("📅", "건축허가일", permitStr),
+      ibChipHtml("📐", "연면적", `${ibNumFmt(inp.totalArea)}㎡`),
+      ibFloorsChip(inp.aboveGroundFloors, inp.basementFloors),
+    ]);
     const exceptionItems = buildBefore2004ExceptionItems(results, pd);
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
     document.getElementById("year-result-summary").innerHTML = summaryHtml;
@@ -14719,10 +14803,19 @@ function yearShowResults() {
     suppressBefore2004LowRiseEscapeItems(results, inp);
     const dongCount = Math.max(inp.aptBuildingCount || 1, 1);
     const perDong = Math.round(inp.totalArea / dongCount);
-    const parkingNote = hasParkingBuilding
-      ? ` + 별동 주차장 ${inp.aptParkingArea}㎡(지상 ${inp.aptParkingAbove}층·지하 ${inp.aptParkingBelow}층)` : "";
-    const summaryHtml = `<div class="ib-title">입력값 기준</div>공동주택(아파트), 건축허가일 ${permitStr}, 연면적 ${inp.totalArea}㎡ · ${dongCount}개 동(동당 약 ${perDong}㎡), ${inp.before2004AptHouseholds}세대, 가장 높은 지상 ${inp.aboveGroundFloors}층, 가장 깊은 지하 ${inp.basementFloors}층${parkingNote}`
-      + `<br><span style="font-size:11px;opacity:0.85;">※ 단지 단위 근사: 지상 연면적만 동당 평균(÷동수), 지하 바닥면적(통합 주차장 포함)·층수·세대수는 단지 통합/최고 기준. 별동 주차장은 따로 판정해 합산. 동마다 규모가 크게 다르면 동별로 따로 확인하세요.</span>`;
+    const aptChips = [
+      ibChipHtml("🏢", "용도", "공동주택(아파트)"),
+      ibChipHtml("📅", "건축허가일", permitStr),
+      ibChipHtml("📐", "연면적", `${ibNumFmt(inp.totalArea)}㎡`),
+      ibChipHtml("🏘️", "동 수", `${dongCount}개 (동당 약 ${ibNumFmt(perDong)}㎡)`),
+      ibChipHtml("🚪", "세대수", `${ibNumFmt(inp.before2004AptHouseholds)}세대`),
+      ibFloorsChip(inp.aboveGroundFloors, inp.basementFloors),
+    ];
+    if (hasParkingBuilding) {
+      aptChips.push(ibChipHtml("🅿️", "별동 주차장", `${ibNumFmt(inp.aptParkingArea)}㎡ (지상 ${inp.aptParkingAbove} · 지하 ${inp.aptParkingBelow})`));
+    }
+    const summaryHtml = ibSummaryHtml(aptChips,
+      `<div class="ib-note">※ 단지 단위 근사: 지상 연면적만 동당 평균(÷동수), 지하 바닥면적(통합 주차장 포함)·층수·세대수는 단지 통합/최고 기준. 별동 주차장은 따로 판정해 합산. 동마다 규모가 크게 다르면 동별로 따로 확인하세요.</div>`);
     // 아파트 스프링클러는 16층 이상 층만 설치(전층 아님) → SP로 연결살수설비 면제 불가
     const exceptionItems = buildBefore2004ExceptionItems(results, pd, { sprinklerSuppressesConnSpray: false });
     const allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
