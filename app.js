@@ -1367,17 +1367,18 @@ function showIlguLoading(callback) {
   ilguLoadingFrame = requestAnimationFrame(tick);
 }
 
-// 핀치줌(확대) 상태를 1배로 강제 복원. JS로 scale 직접 변경이 안 되므로
-// viewport meta에 maximum-scale=1을 잠깐 걸었다 풀어 WebView가 리셋하게 함.
-let _vpResetTimer = null;
-function resetPinchZoom() {
+// 핀치줌(확대)은 자체점검 보고서 읽는법(guide 모드)에서만 허용, 그 외 전 화면은 끔.
+// WebView가 viewport meta 동적 변경에 반응하므로 content를 갈아끼워 on/off.
+// off로 바꾸면 현재 확대 배율도 1배로 강제 복원된다.
+function setPinchZoom(enabled) {
   const vp = document.querySelector('meta[name="viewport"]');
   if (!vp) return;
-  vp.setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
-  clearTimeout(_vpResetTimer);
-  _vpResetTimer = setTimeout(() => {
-    vp.setAttribute("content", "width=device-width, initial-scale=1.0");
-  }, 350);
+  vp.setAttribute(
+    "content",
+    enabled
+      ? "width=device-width, initial-scale=1.0"
+      : "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  );
 }
 
 function showScreen(name) {
@@ -1390,7 +1391,7 @@ function showScreen(name) {
     scrollable.scrollTop = 0;
   }
   window.scrollTo(0, 0);
-  resetPinchZoom();
+  setPinchZoom(false);
 }
 
 function getTotalFloors() {
@@ -3395,7 +3396,6 @@ function copyResultText(text, btn) {
 function scrollToTop() {
   const scrollEl = document.querySelector("#screen-explorer .scroll-content");
   if (scrollEl) scrollEl.scrollTop = 0;
-  resetPinchZoom();
 }
 
 function moveStep(direction) {
@@ -3864,6 +3864,8 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
 
   root.addEventListener("pointerdown", (event) => {
     if (event.pointerType && event.pointerType !== "touch") return;
+    // 두 번째 손가락(비주 포인터) = 핀치 확대 → 탭 스와이프로 오인 않게 무시
+    if (!event.isPrimary) { ignoreSwipe = true; return; }
     start(event.clientX, event.clientY, event.target, event.pointerId);
   }, { passive: true });
 
@@ -3873,6 +3875,8 @@ function attachHorizontalSwipeNavigation(root, getOptions) {
   }, { passive: true });
 
   root.addEventListener("touchstart", (event) => {
+    // 두 손가락 이상 = 핀치 확대 제스처 → 탭 스와이프로 오인 않게 무시
+    if (event.touches.length > 1) { ignoreSwipe = true; return; }
     const touch = event.touches[0];
     if (!touch) return;
     start(touch.clientX, touch.clientY, event.target);
@@ -5237,7 +5241,6 @@ function buildMultiuseHistoryPanel() {
 }
 
 function renderMultiuse() {
-  resetPinchZoom();
   const root = document.getElementById("multiuse-content");
   const current = multiuseState.current;
   const currentStep = multiuseState.history.length + 1;
@@ -9121,7 +9124,6 @@ function yearCurrentStepIsValid() {
 function yearScrollToTop() {
   const el = document.querySelector("#screen-explorer-year .scroll-content");
   if (el) el.scrollTop = 0;
-  resetPinchZoom();
 }
 
 function showYearResultWithLoading() {
@@ -16640,7 +16642,8 @@ const RG_WATER_COMMON = [
 ];
 
 function renderReportGuide(restoreScroll) {
-  resetPinchZoom();
+  // 보고서 읽는법(guide)에서만 핀치 확대 허용, select 등 그 외 모드는 끔(+1배 복원)
+  setPinchZoom(rgState.mode === 'guide');
   var root = document.getElementById('report-guide-content');
 
   // 모드별 상단 제목·근거법령 칩 (select=가이드 메뉴, guide=보고서 읽는법)
