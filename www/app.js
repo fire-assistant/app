@@ -45,7 +45,7 @@ function trackMenuClick(menuName) {
 // ── 패치노트 설정 (여기만 수정하면 됩니다) ──────────────────────────────
 const PATCH_NOTES = {
   version: "v1.0.2",
-  date: "2026-06-06",
+  date: "2026-06-07",
   items: [
     { type: "notice",  text: "이 사이트는 법적기준이 아닙니다. 참고만해주세요!" },
     { type: "new",     text: "① 참고법령 안내 기능 추가<br> ② 법정기한계산기 공휴일 자동반영<br>③ 안내 펫 일구 기능 추가<br>④ 계절테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면 우측 위 테마변경버튼 누르세요)" },
@@ -881,6 +881,8 @@ const explorerViewState = {
   lastRequiredItems: null,   // 소방시설 탐색기 — 설치 필요 시설 이름 배열
   lastMultiuseItems: null,   // 다중이용업소 — 설치 필요 안전시설 이름 배열
 };
+
+let _feedbackSnapshot = null;
 
 function todayString() {
   const now = new Date();
@@ -3155,9 +3157,9 @@ function renderLodgingMultiuseSafetyCard(input) {
 // 입력값 요약 칩 그리드 (전역 헬퍼)
 function ibNumFmt(v) { const n = Number(v); return Number.isFinite(n) ? n.toLocaleString() : v; }
 function ibChipHtml(icon, label, value) {
-  return `<div class="ib-chip"><div class="ib-chip-label">${icon} ${label}</div><div class="ib-chip-value">${value}</div></div>`;
+  return `<div class="ib-chip"><div class="ib-chip-label">${label}</div><div class="ib-chip-value">${value}</div></div>`;
 }
-function ibFloorsChip(above, below) { return ibChipHtml("🏬", "층수", `지상 ${above} · 지하 ${below}`); }
+function ibFloorsChip(above, below) { return ibChipHtml("", "층수", `지상 ${above} · 지하 ${below}`); }
 function ibSummaryHtml(chips, note, title) {
   return `<div class="ib-title">${title || "입력값 기준"}</div><div class="ib-grid">${chips.join("")}</div>${note || ""}`;
 }
@@ -3391,6 +3393,115 @@ function copyResultText(text, btn) {
     lines.push("※ 본 결과는 입력값 기준의 실무 참고용입니다. (앱 " + PATCH_NOTES.version + " · " + PATCH_NOTES.date + " 기준)");
     copyResultText(lines.join("\n"), btn);
   });
+})();
+
+/* ── 오류 제보: 스냅샷 빌더 ── */
+function _buildFeedbackEmailBody(contextLines) {
+  const time = new Date().toLocaleString("ko-KR");
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+  const ua = navigator.userAgent.slice(0, 120);
+  return [
+    "[오류 제보]",
+    "",
+    "아래 내용을 작성해 주세요:",
+    "- 어떤 동작을 했나요?",
+    "- 기대했던 결과는 무엇인가요?",
+    "- 실제로 어떻게 나왔나요?",
+    "",
+    "",
+    "---",
+    "[자동 첨부 정보]",
+    "버전: " + PATCH_NOTES.version + " (" + PATCH_NOTES.date + ")",
+    "시각: " + time,
+    "설치앱: " + (isStandalone ? "예" : "아니오"),
+    "",
+    "[화면/입력값]",
+    contextLines,
+    "",
+    "[기기]",
+    ua,
+  ].join("\n");
+}
+
+function _openFeedbackModal(snapshot) {
+  _feedbackSnapshot = snapshot;
+  document.getElementById("contact-modal-title").textContent = "⚠️ 오류 제보";
+  document.getElementById("contact-modal-desc").classList.add("hidden");
+  document.getElementById("contact-report-note").classList.remove("hidden");
+  document.getElementById("contact-confirm-modal").classList.remove("hidden");
+}
+
+function _resetContactModal() {
+  _feedbackSnapshot = null;
+  document.getElementById("contact-modal-title").textContent = "✉️ 문의하기";
+  document.getElementById("contact-modal-desc").classList.remove("hidden");
+  document.getElementById("contact-report-note").classList.add("hidden");
+}
+
+/* ── 오류 제보 버튼 핸들러: 탐색기 4종 ── */
+(function initReportBtns() {
+  // 소방시설 탐색기
+  const explorerBtn = document.getElementById("explorer-report-btn");
+  if (explorerBtn) {
+    explorerBtn.addEventListener("click", () => {
+      const input = explorerViewState.lastInput;
+      const items = explorerViewState.lastRequiredItems || [];
+      const lines = ["화면: 소방시설 탐색기"];
+      if (input) {
+        const subtype = getSubtypeLabel(input.facilitySubtype) || "";
+        if (subtype) lines.push("용도: " + subtype);
+        if (input.totalArea) lines.push("연면적: " + input.totalArea + "㎡");
+        if (input.aboveGroundFloors) lines.push("지상: " + input.aboveGroundFloors + "층");
+        if (input.basementFloors) lines.push("지하: " + input.basementFloors + "층");
+      }
+      if (items.length > 0) lines.push("결과시설: " + items.join(", "));
+      _openFeedbackModal(lines.join("\n"));
+    });
+  }
+
+  // 소방시설 탐색기 (연도별)
+  const yearBtn = document.getElementById("year-explorer-report-btn");
+  if (yearBtn) {
+    yearBtn.addEventListener("click", () => {
+      const summaryEl = document.getElementById("year-result-summary");
+      const summaryText = summaryEl ? summaryEl.textContent.replace(/\s+/g, " ").trim() : "";
+      const rows = document.querySelectorAll("#year-required-list .facility-row");
+      const items = Array.from(rows).map((r) => {
+        const spans = r.querySelectorAll("span");
+        return spans.length >= 2 ? spans[spans.length - 1].textContent.trim() : "";
+      }).filter(Boolean);
+      const lines = ["화면: 소방시설 탐색기 (연도별)"];
+      if (summaryText) lines.push(summaryText);
+      if (items.length > 0) lines.push("결과시설: " + items.join(", "));
+      _openFeedbackModal(lines.join("\n"));
+    });
+  }
+
+  // 다중이용업소 안전시설 (연도별)
+  const yearMultiuseBtn = document.getElementById("year-multiuse-report-btn");
+  if (yearMultiuseBtn) {
+    yearMultiuseBtn.addEventListener("click", () => {
+      const rows = document.querySelectorAll("#year-multiuse-required-list .facility-row");
+      const items = Array.from(rows).map((r) => {
+        const spans = r.querySelectorAll("span");
+        return spans.length >= 2 ? spans[spans.length - 1].textContent.trim() : "";
+      }).filter(Boolean);
+      const lines = ["화면: 다중이용업소 안전시설 탐색기 (연도별)"];
+      if (items.length > 0) lines.push("결과시설: " + items.join(", "));
+      _openFeedbackModal(lines.join("\n"));
+    });
+  }
+
+  // 다중이용업소 안전시설
+  const multiuseBtn = document.getElementById("multiuse-report-btn");
+  if (multiuseBtn) {
+    multiuseBtn.addEventListener("click", () => {
+      const items = explorerViewState.lastMultiuseItems || [];
+      const lines = ["화면: 다중이용업소 안전시설 탐색기"];
+      if (items.length > 0) lines.push("결과시설: " + items.join(", "));
+      _openFeedbackModal(lines.join("\n"));
+    });
+  }
 })();
 
 function scrollToTop() {
@@ -4267,6 +4378,9 @@ function renderDateCalculator() {
         <button id="dc-copy-result-btn" class="dc-hero-save-btn dc-copy-result-btn" type="button">
           📋 <span class="dc-hero-save-label">결과 복사</span>
         </button>
+        <button id="dc-report-btn" class="dc-hero-save-btn" type="button">
+          ⚠️ <span class="dc-hero-save-label">오류 제보</span>
+        </button>
       </div>
     </section>
 
@@ -4391,6 +4505,18 @@ function renderDateCalculator() {
       lines.push("");
       lines.push("※ 본 결과는 입력값 기준의 실무 참고용입니다. (앱 " + PATCH_NOTES.version + " · " + PATCH_NOTES.date + " 기준)");
       copyResultText(lines.join("\n"), copyResultBtn);
+    });
+  }
+
+  const dcReportBtn = root.querySelector("#dc-report-btn");
+  if (dcReportBtn) {
+    dcReportBtn.addEventListener("click", () => {
+      const lines = ["화면: 법정기한 계산기"];
+      lines.push("계산 유형: " + mode.label);
+      lines.push((mode.baseDateLabel || "기산일") + ": " + formatDate(baseDate));
+      if (deadline) lines.push("기한: " + formatDate(deadline));
+      else if (appointDeadline) lines.push("기한: " + formatDate(appointDeadline));
+      _openFeedbackModal(lines.join("\n"));
     });
   }
 
@@ -5274,7 +5400,7 @@ function renderMultiuse() {
         const noteBox = document.createElement("div");
         noteBox.className = "info-box amber";
         noteBox.style.cssText = "margin-top:10px;font-size:13px;";
-        noteBox.innerHTML = `<div class="ib-title">📅 법 편입 시기 안내</div>${note}`;
+        noteBox.innerHTML = `<div class="ib-title">법 편입 시기 안내</div>${note}`;
         card.appendChild(noteBox);
       }
     }
@@ -5651,6 +5777,7 @@ function renderOccupancyCalculator() {
         </div>
 
         <p class="occ-note">※ 그 외 대상은 기숙사·의료시설·노유자시설·수련시설·숙박시설 제외 기준입니다.</p>
+        <button id="occ-staffing-report-btn" class="btn btn-ghost explorer-copy-btn" type="button" style="margin-top:8px;">⚠️ <span>오류 제보</span></button>
       </section>
 
       <div class="dc-ref-accordion">
@@ -5742,6 +5869,21 @@ function renderOccupancyCalculator() {
         staffingInput.setSelectionRange(staffingInput.value.length, staffingInput.value.length);
       }
     }
+
+    const occStaffingReportBtn = root.querySelector("#occ-staffing-report-btn");
+    if (occStaffingReportBtn) {
+      occStaffingReportBtn.addEventListener("click", () => {
+        const isApt = occupancyState.staffingTargetType === "apartment";
+        const val = isApt ? occupancyState.staffingHouseholds : occupancyState.staffingArea;
+        const r = getAssistantStaffingResult(occupancyState.staffingTargetType, val);
+        const lines = ["화면: 수용인원 계산기 > 보조자 선임인원"];
+        lines.push("대상: " + (isApt ? "아파트" : "그 외 대상"));
+        if (val) lines.push((isApt ? "세대수" : "연면적") + ": " + val);
+        if (r) lines.push("결과: " + r.count + "명");
+        _openFeedbackModal(lines.join("\n"));
+      });
+    }
+
     return;
   }
 
@@ -5812,6 +5954,7 @@ function renderOccupancyCalculator() {
       </div>
 
       <p class="occ-note">※ 복도·계단·화장실 바닥면적은 포함하지 않습니다. 소수점 이하는 반올림합니다.</p>
+      <button id="occ-calc-report-btn" class="btn btn-ghost explorer-copy-btn" type="button" style="margin-top:8px;">⚠️ <span>오류 제보</span></button>
     </section>
     </div>
   `;
@@ -5870,6 +6013,18 @@ function renderOccupancyCalculator() {
       el.focus();
       el.setSelectionRange(el.value.length, el.value.length);
     }
+  }
+
+  const occCalcReportBtn = root.querySelector("#occ-calc-report-btn");
+  if (occCalcReportBtn) {
+    occCalcReportBtn.addEventListener("click", () => {
+      const lines = ["화면: 수용인원 계산기 > 수용인원 산정"];
+      const catLabels = { general: "일반", lodging: "숙박", assembly: "집회" };
+      lines.push("분류: " + (catLabels[occupancyState.category] || occupancyState.category));
+      if (occupancyState.subType) lines.push("세부유형: " + occupancyState.subType);
+      if (calcResult !== null) lines.push("결과: " + calcResult + "명");
+      _openFeedbackModal(lines.join("\n"));
+    });
   }
 }
 
@@ -5978,7 +6133,7 @@ const yearState = {
     yEraChoice: "after2004",
     yOccupancyType: "neighborhood",
     yAutoCalcAreas: "yes",
-    yPermitdate: "2026-06-06",
+    yPermitdate: "2026-06-07",
     yTotalArea: "1500",
     yAboveGroundFloors: "4",
     yBasementFloors: "0",
@@ -7359,29 +7514,7 @@ const yearSteps = [
       { value: "yes", label: "있음", description: "보호장소(보호시설)로 사용하는 부분이 있음" },
       { value: "no", label: "없음", description: "해당 부분이 없음" },
     ],
-    condition: (ya, pd) => ya.yOccupancyType === "office" && pd >= YD.D20070325,
-  },
-  {
-    key: "yOfficeHasCO2System",
-    type: "ychoice",
-    title: "이산화탄소소화설비(호스릴 제외)가 설치된 장소가 있습니까?",
-    help: "2012년 9월 14일 이후 이산화탄소소화설비가 설치된 장소가 있으면 출입구 인근에 공기호흡기를 비치해야 합니다.",
-    options: [
-      { value: "yes", label: "있음", description: "전역방출방식 등 이산화탄소소화설비가 설치돼 있음" },
-      { value: "no", label: "없음", description: "해당 설비가 없음" },
-    ],
-    condition: (ya, pd) => ya.yOccupancyType === "office" && pd >= YD.D20120914,
-  },
-  {
-    key: "yOfficeLeakageAlarmCond",
-    type: "ychoice",
-    title: "계약전류용량이 100A를 초과하고, 내화구조가 아니면서 벽·바닥·반자에 철망을 넣어 시공한 건축물입니까?",
-    help: "두 조건을 모두 충족할 때만 누전경보기 설치 대상입니다. (대부분의 내화구조 업무시설은 해당 없음)",
-    options: [
-      { value: "yes", label: "예 (두 조건 모두 충족)", description: "100A 초과 + 비내화구조(철망 시공)" },
-      { value: "no", label: "아니오", description: "둘 중 하나라도 해당하지 않음" },
-    ],
-    condition: (ya) => ya.yOccupancyType === "office",
+    condition: (ya, pd) => ya.yOccupancyType === "office" && pd >= YD.D20070325 && !yearIsAutoAreaMode(),
   },
   {
     key: "yOfficeHasNightUnmanned",
@@ -7595,29 +7728,6 @@ const yearSteps = [
     ],
     condition: (ya) => ya.yEraChoice === "before2004" && ya.yOccupancyType === "office",
   },
-  {
-    key: "yBefore2004OfficeNonFireResistant",
-    type: "ychoice",
-    title: "내화구조가 아니면서 벽·바닥·반자에 철망을 넣어 시공한 건축물입니까?",
-    help: "누전경보기는 이 구조 조건을 충족할 때만 설치 대상입니다. (콘크리트 등 내화구조는 해당 없음)",
-    options: [
-      { value: "yes", label: "예 (비내화·철망 구조)", description: "철망을 넣어 시공한 비내화구조" },
-      { value: "no", label: "아니오", description: "내화구조 등 해당 없음" },
-    ],
-    condition: (ya) => ya.yEraChoice === "before2004" && ya.yOccupancyType === "office",
-  },
-  {
-    key: "yBefore2004OfficeOver100A",
-    type: "ychoice",
-    title: "계약전류용량이 100A를 초과합니까?",
-    help: "누전경보기 설치 여부 판단에 사용됩니다.",
-    options: [
-      { value: "yes", label: "예 (100A 초과)", description: "계약전류용량 100A 초과" },
-      { value: "no", label: "아니오", description: "100A 이하" },
-    ],
-    condition: (ya) => ya.yEraChoice === "before2004" && ya.yOccupancyType === "office" && ya.yBefore2004OfficeNonFireResistant === "yes",
-  },
-
   // ── 소방법 분법 이전(~2004.5.29) 근린생활시설 전용 스텝 ──
   {
     key: "yBefore2004FacilitySubtype",
@@ -7983,8 +8093,6 @@ const yearStepOrder = new Map([
   "yOfficeOfficetelHasKitchen",
   "yOfficeHasGroupMeal",
   "yOfficeHasImmigrationDetention",
-  "yOfficeHasCO2System",
-  "yOfficeLeakageAlarmCond",
   "yOfficeHasNightUnmanned",
   "yOfficeHasFloor1500",
   "yOfficeHas24HourStaff",
@@ -8023,8 +8131,6 @@ const yearStepOrder = new Map([
   "yBefore2004SalesLargeFloor1000",
   "yBefore2004SalesAutoDetFloor600",
   "yBefore2004SalesHasFloor1500",
-  "yBefore2004OfficeNonFireResistant",
-  "yBefore2004OfficeOver100A",
   "yBefore2004OfficeHasLargeFloor450",
   "yBefore2004OfficeHasLargeFloor300",
   "yBefore2004OfficeSprinklerFloor",
@@ -8340,10 +8446,8 @@ function yearGetActiveSteps() {
       const ag = parseInt(ya.yAboveGroundFloors) || 0;
       const preBefore1992 = pd > 0 && pd < YD.D19920728;
       const postAfter1992 = pd >= YD.D19920728;
-      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet", "yOfficeParkingElecSet", "yBefore2004OfficeNonFireResistant"];
+      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet", "yOfficeParkingElecSet"];
       if (alwaysShow.includes(step.key)) return true;
-      // 누전경보기 100A 질문은 비내화·철망 구조일 때만
-      if (step.key === "yBefore2004OfficeOver100A") return ya.yBefore2004OfficeNonFireResistant === "yes";
       // 옥외소화전 1·2층 면적 (수동 모드, 연면적 9,000㎡ 이상일 때만)
       if (step.key === "yOfficeFirstSecondFloorArea") return ta >= 9000;
       // 1992년 이전 전용 스텝
@@ -8598,6 +8702,34 @@ function yearApplyAutoCalc() {
   }
 }
 
+function yearResetAutoCalcAnswers() {
+  const ya = yearState.answers;
+  const reset = (keys) => keys.forEach(k => { ya[k] = "no"; });
+  if (ya.yEraChoice === "before2004") {
+    switch (ya.yOccupancyType) {
+      case "neighborhood": reset(["yBefore2004HasLargeFloor450","yBefore2004HasDetFloor300","yBefore2004LargeFloor1000","yBefore2004SprinklerFloor"]); break;
+      case "lodging": reset(["yBefore2004LodgingHasLargeFloor450","yBefore2004LodgingSprinklerFloor","yBefore2004LodgingAutoDetFloor300","yBefore2004LodgingHasLargeFloor300","yBefore2004LodgingHasLargeFloor1000","yBefore2004LodgingHasFloor1500"]); break;
+      case "medical": reset(["yBefore2004MedicalHasLargeFloor450","yBefore2004MedicalHasLargeFloor300","yBefore2004MedicalSprinklerFloor","yBefore2004MedicalAutoDetFloor300","yBefore2004MedicalHasLargeFloor1000","yBefore2004MedicalHasFloor1500"]); break;
+      case "elderly": reset(["yBefore2004ElderlyHasLargeFloor450","yBefore2004ElderlySprinklerFloor","yBefore2004ElderlyAutoDetFloor300","yBefore2004ElderlyHasLargeFloor300","yBefore2004ElderlyLargeFloor1000","yBefore2004ElderlyHasFloor500Plus"]); break;
+      case "religious": reset(["yBefore2004ReligiousHasLargeFloor600"]); break;
+      case "sales": reset(["yBefore2004SalesHasLargeFloor450","yBefore2004SalesHasLargeFloor300","yBefore2004SalesSprinklerFloor","yBefore2004SalesLargeFloor1000","yBefore2004SalesAutoDetFloor600","yBefore2004SalesHasFloor1500"]); break;
+      case "office": reset(["yBefore2004OfficeHasLargeFloor450","yBefore2004OfficeHasLargeFloor300","yBefore2004OfficeSprinklerFloor","yBefore2004OfficeLargeFloor1000","yBefore2004OfficeAutoDetFloor300"]); break;
+      case "apartment": reset(["yBefore2004AptHasLargeFloor450","yBefore2004AptHasLargeFloor600","yBefore2004AptDetFloor600"]); break;
+    }
+  } else {
+    switch (ya.yOccupancyType) {
+      case "neighborhood": reset(["yHasLargeTargetFloor","yHasLargeFloorFor1000"]); break;
+      case "lodging": reset(["yLodgingHasLargeFloorFor1000"]); break;
+      case "elderly": reset(["yElderlyHasLargeTargetFloor","yElderlyHasFloor500Plus"]); break;
+      case "medical": reset(["yMedicalHasLargeTargetFloor","yMedicalHasFloor500Plus"]); break;
+      case "religious": reset(["yReligiousHasLargeTargetFloor"]); break;
+      case "sales": reset(["ySalesHasLargeTargetFloor"]); break;
+      case "office": reset(["yOfficeHasLargeTargetFloor","yOfficeHasLargeFloorFor1000","yOfficeHasFloor1500"]); break;
+      case "apartment": reset(["yAptHasFloor600","yAptHasFloor1000","yAptHasSpecialStair"]); break;
+    }
+  }
+}
+
 function yearRecalcF12() {
   const ta = parseFloat(yearState.answers.yTotalArea) || 0;
   const ba = parseFloat(yearState.answers.yBasementAreaSum) || 0;
@@ -8735,6 +8867,7 @@ function yearRenderChoiceStep(step) {
     cb.style.flexShrink = "0";
     cb.addEventListener("change", () => {
       yearState.answers.yAutoCalcAreas = cb.checked ? "yes" : "no";
+      if (!cb.checked) yearResetAutoCalcAnswers();
     });
     const text = document.createElement("div");
     text.innerHTML = `<div class="ib-title">면적 자동 산정 (체크) · 직접 입력 (해제)</div>
@@ -17452,25 +17585,33 @@ document.getElementById('back-from-report-guide').addEventListener('click', func
 });
 
 document.getElementById('open-contact').addEventListener('click', function () {
+  _resetContactModal();
   document.getElementById('contact-confirm-modal').classList.remove('hidden');
 });
 
 document.getElementById('contact-confirm-cancel').addEventListener('click', function () {
+  _resetContactModal();
   document.getElementById('contact-confirm-modal').classList.add('hidden');
 });
 
 document.getElementById('contact-confirm-modal').addEventListener('click', function (e) {
-  if (e.target === this) this.classList.add('hidden');
+  if (e.target === this) {
+    _resetContactModal();
+    this.classList.add('hidden');
+  }
 });
 
 document.getElementById('contact-confirm-ok').addEventListener('click', function () {
   document.getElementById('contact-confirm-modal').classList.add('hidden');
   var isAndroid = /android/i.test(navigator.userAgent);
   var isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches;
+  var subject = _feedbackSnapshot ? '예방GPT 오류 제보' : '예방GPT 건의사항';
+  var body = _feedbackSnapshot ? _buildFeedbackEmailBody(_feedbackSnapshot) : '';
+  _resetContactModal();
   if (isAndroid || isStandaloneApp) {
-    window.location.href = 'mailto:carrotcakehope@gmail.com?subject=예방GPT 건의사항';
+    window.location.href = 'mailto:carrotcakehope@gmail.com?subject=' + encodeURIComponent(subject) + (body ? '&body=' + encodeURIComponent(body) : '');
   } else {
-    window.open('https://mail.google.com/mail/?view=cm&fs=1&to=carrotcakehope@gmail.com&su=예방GPT 건의사항', '_blank');
+    window.open('https://mail.google.com/mail/?view=cm&fs=1&to=carrotcakehope@gmail.com&su=' + encodeURIComponent(subject) + (body ? '&body=' + encodeURIComponent(body) : ''), '_blank');
   }
 });
 

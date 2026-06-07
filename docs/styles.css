@@ -4381,7 +4381,7 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
 }
 
 .reminder-date-label {
-  color: var(--text-dim);
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
@@ -7417,6 +7417,10 @@ html[data-theme="summer"] .home-bottom-btns .shortcut-add-btn:hover {
   color: #075985;
 }
 
+html[data-theme="summer"] .reminder-card-type { color: var(--red); border-color: rgba(3, 105, 161, 0.25); }
+html[data-theme="summer"] .reminder-card-warning { color: var(--red); border-color: var(--red); }
+html[data-theme="summer"] .reminder-date-urgent { color: var(--red); }
+
 /* ══════════════════════════════════════════════════
    SUMMER NIGHT THEME 🌌 여름밤
    ══════════════════════════════════════════════════ */
@@ -7681,6 +7685,9 @@ html[data-theme="autumn"] .status-not-required {
   color: #806040; background: rgba(100, 70, 30, 0.08); border-color: rgba(100, 70, 30, 0.2);
 }
 html[data-theme="autumn"] .cal-day.holiday::after { background: #7840b0; }
+html[data-theme="autumn"] .reminder-card-type { color: var(--red); border-color: rgba(192, 80, 24, 0.28); }
+html[data-theme="autumn"] .reminder-card-warning { color: var(--red); border-color: var(--red); }
+html[data-theme="autumn"] .reminder-date-urgent { color: var(--red); }
 
 /* ══════════════════════════════════════════════════
    WINTER THEME ❄️ 겨울
@@ -7814,6 +7821,9 @@ html[data-theme="winter"] .status-not-required {
   color: #6080a0; background: rgba(80, 110, 150, 0.08); border-color: rgba(80, 110, 150, 0.2);
 }
 html[data-theme="winter"] .cal-day.holiday::after { background: #6050b0; }
+html[data-theme="winter"] .reminder-card-type { color: var(--red); border-color: rgba(72, 120, 200, 0.28); }
+html[data-theme="winter"] .reminder-card-warning { color: var(--red); border-color: var(--red); }
+html[data-theme="winter"] .reminder-date-urgent { color: var(--red); }
 
 /* ?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═?�═
    ?�방?�설 배치 배우�?(LAYOUT LEARN)
