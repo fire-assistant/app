@@ -2819,6 +2819,7 @@ html[data-theme="blossom"] :is(#inspection-content, #multiuse-content) .info-box
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  margin-top: 14px;
 }
 .dc-split-left,
 .dc-split-right {

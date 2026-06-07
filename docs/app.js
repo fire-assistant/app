@@ -882,8 +882,6 @@ const explorerViewState = {
   lastMultiuseItems: null,   // 다중이용업소 — 설치 필요 안전시설 이름 배열
 };
 
-let _feedbackSnapshot = null;
-
 function todayString() {
   const now = new Date();
   return formatInputDate(now);
@@ -3395,115 +3393,6 @@ function copyResultText(text, btn) {
   });
 })();
 
-/* ── 오류 제보: 스냅샷 빌더 ── */
-function _buildFeedbackEmailBody(contextLines) {
-  const time = new Date().toLocaleString("ko-KR");
-  const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-  const ua = navigator.userAgent.slice(0, 120);
-  return [
-    "[오류 제보]",
-    "",
-    "아래 내용을 작성해 주세요:",
-    "- 어떤 동작을 했나요?",
-    "- 기대했던 결과는 무엇인가요?",
-    "- 실제로 어떻게 나왔나요?",
-    "",
-    "",
-    "---",
-    "[자동 첨부 정보]",
-    "버전: " + PATCH_NOTES.version + " (" + PATCH_NOTES.date + ")",
-    "시각: " + time,
-    "설치앱: " + (isStandalone ? "예" : "아니오"),
-    "",
-    "[화면/입력값]",
-    contextLines,
-    "",
-    "[기기]",
-    ua,
-  ].join("\n");
-}
-
-function _openFeedbackModal(snapshot) {
-  _feedbackSnapshot = snapshot;
-  document.getElementById("contact-modal-title").textContent = "⚠️ 오류 제보";
-  document.getElementById("contact-modal-desc").classList.add("hidden");
-  document.getElementById("contact-report-note").classList.remove("hidden");
-  document.getElementById("contact-confirm-modal").classList.remove("hidden");
-}
-
-function _resetContactModal() {
-  _feedbackSnapshot = null;
-  document.getElementById("contact-modal-title").textContent = "✉️ 문의하기";
-  document.getElementById("contact-modal-desc").classList.remove("hidden");
-  document.getElementById("contact-report-note").classList.add("hidden");
-}
-
-/* ── 오류 제보 버튼 핸들러: 탐색기 4종 ── */
-(function initReportBtns() {
-  // 소방시설 탐색기
-  const explorerBtn = document.getElementById("explorer-report-btn");
-  if (explorerBtn) {
-    explorerBtn.addEventListener("click", () => {
-      const input = explorerViewState.lastInput;
-      const items = explorerViewState.lastRequiredItems || [];
-      const lines = ["화면: 소방시설 탐색기"];
-      if (input) {
-        const subtype = getSubtypeLabel(input.facilitySubtype) || "";
-        if (subtype) lines.push("용도: " + subtype);
-        if (input.totalArea) lines.push("연면적: " + input.totalArea + "㎡");
-        if (input.aboveGroundFloors) lines.push("지상: " + input.aboveGroundFloors + "층");
-        if (input.basementFloors) lines.push("지하: " + input.basementFloors + "층");
-      }
-      if (items.length > 0) lines.push("결과시설: " + items.join(", "));
-      _openFeedbackModal(lines.join("\n"));
-    });
-  }
-
-  // 소방시설 탐색기 (연도별)
-  const yearBtn = document.getElementById("year-explorer-report-btn");
-  if (yearBtn) {
-    yearBtn.addEventListener("click", () => {
-      const summaryEl = document.getElementById("year-result-summary");
-      const summaryText = summaryEl ? summaryEl.textContent.replace(/\s+/g, " ").trim() : "";
-      const rows = document.querySelectorAll("#year-required-list .facility-row");
-      const items = Array.from(rows).map((r) => {
-        const spans = r.querySelectorAll("span");
-        return spans.length >= 2 ? spans[spans.length - 1].textContent.trim() : "";
-      }).filter(Boolean);
-      const lines = ["화면: 소방시설 탐색기 (연도별)"];
-      if (summaryText) lines.push(summaryText);
-      if (items.length > 0) lines.push("결과시설: " + items.join(", "));
-      _openFeedbackModal(lines.join("\n"));
-    });
-  }
-
-  // 다중이용업소 안전시설 (연도별)
-  const yearMultiuseBtn = document.getElementById("year-multiuse-report-btn");
-  if (yearMultiuseBtn) {
-    yearMultiuseBtn.addEventListener("click", () => {
-      const rows = document.querySelectorAll("#year-multiuse-required-list .facility-row");
-      const items = Array.from(rows).map((r) => {
-        const spans = r.querySelectorAll("span");
-        return spans.length >= 2 ? spans[spans.length - 1].textContent.trim() : "";
-      }).filter(Boolean);
-      const lines = ["화면: 다중이용업소 안전시설 탐색기 (연도별)"];
-      if (items.length > 0) lines.push("결과시설: " + items.join(", "));
-      _openFeedbackModal(lines.join("\n"));
-    });
-  }
-
-  // 다중이용업소 안전시설
-  const multiuseBtn = document.getElementById("multiuse-report-btn");
-  if (multiuseBtn) {
-    multiuseBtn.addEventListener("click", () => {
-      const items = explorerViewState.lastMultiuseItems || [];
-      const lines = ["화면: 다중이용업소 안전시설 탐색기"];
-      if (items.length > 0) lines.push("결과시설: " + items.join(", "));
-      _openFeedbackModal(lines.join("\n"));
-    });
-  }
-})();
-
 function scrollToTop() {
   const scrollEl = document.querySelector("#screen-explorer .scroll-content");
   if (scrollEl) scrollEl.scrollTop = 0;
@@ -4378,9 +4267,6 @@ function renderDateCalculator() {
         <button id="dc-copy-result-btn" class="dc-hero-save-btn dc-copy-result-btn" type="button">
           📋 <span class="dc-hero-save-label">결과 복사</span>
         </button>
-        <button id="dc-report-btn" class="dc-hero-save-btn" type="button">
-          ⚠️ <span class="dc-hero-save-label">오류 제보</span>
-        </button>
       </div>
     </section>
 
@@ -4505,18 +4391,6 @@ function renderDateCalculator() {
       lines.push("");
       lines.push("※ 본 결과는 입력값 기준의 실무 참고용입니다. (앱 " + PATCH_NOTES.version + " · " + PATCH_NOTES.date + " 기준)");
       copyResultText(lines.join("\n"), copyResultBtn);
-    });
-  }
-
-  const dcReportBtn = root.querySelector("#dc-report-btn");
-  if (dcReportBtn) {
-    dcReportBtn.addEventListener("click", () => {
-      const lines = ["화면: 법정기한 계산기"];
-      lines.push("계산 유형: " + mode.label);
-      lines.push((mode.baseDateLabel || "기산일") + ": " + formatDate(baseDate));
-      if (deadline) lines.push("기한: " + formatDate(deadline));
-      else if (appointDeadline) lines.push("기한: " + formatDate(appointDeadline));
-      _openFeedbackModal(lines.join("\n"));
     });
   }
 
@@ -5777,7 +5651,6 @@ function renderOccupancyCalculator() {
         </div>
 
         <p class="occ-note">※ 그 외 대상은 기숙사·의료시설·노유자시설·수련시설·숙박시설 제외 기준입니다.</p>
-        <button id="occ-staffing-report-btn" class="btn btn-ghost explorer-copy-btn" type="button" style="margin-top:8px;">⚠️ <span>오류 제보</span></button>
       </section>
 
       <div class="dc-ref-accordion">
@@ -5870,20 +5743,6 @@ function renderOccupancyCalculator() {
       }
     }
 
-    const occStaffingReportBtn = root.querySelector("#occ-staffing-report-btn");
-    if (occStaffingReportBtn) {
-      occStaffingReportBtn.addEventListener("click", () => {
-        const isApt = occupancyState.staffingTargetType === "apartment";
-        const val = isApt ? occupancyState.staffingHouseholds : occupancyState.staffingArea;
-        const r = getAssistantStaffingResult(occupancyState.staffingTargetType, val);
-        const lines = ["화면: 수용인원 계산기 > 보조자 선임인원"];
-        lines.push("대상: " + (isApt ? "아파트" : "그 외 대상"));
-        if (val) lines.push((isApt ? "세대수" : "연면적") + ": " + val);
-        if (r) lines.push("결과: " + r.count + "명");
-        _openFeedbackModal(lines.join("\n"));
-      });
-    }
-
     return;
   }
 
@@ -5954,7 +5813,6 @@ function renderOccupancyCalculator() {
       </div>
 
       <p class="occ-note">※ 복도·계단·화장실 바닥면적은 포함하지 않습니다. 소수점 이하는 반올림합니다.</p>
-      <button id="occ-calc-report-btn" class="btn btn-ghost explorer-copy-btn" type="button" style="margin-top:8px;">⚠️ <span>오류 제보</span></button>
     </section>
     </div>
   `;
@@ -6015,17 +5873,6 @@ function renderOccupancyCalculator() {
     }
   }
 
-  const occCalcReportBtn = root.querySelector("#occ-calc-report-btn");
-  if (occCalcReportBtn) {
-    occCalcReportBtn.addEventListener("click", () => {
-      const lines = ["화면: 수용인원 계산기 > 수용인원 산정"];
-      const catLabels = { general: "일반", lodging: "숙박", assembly: "집회" };
-      lines.push("분류: " + (catLabels[occupancyState.category] || occupancyState.category));
-      if (occupancyState.subType) lines.push("세부유형: " + occupancyState.subType);
-      if (calcResult !== null) lines.push("결과: " + calcResult + "명");
-      _openFeedbackModal(lines.join("\n"));
-    });
-  }
 }
 
 screens.occupancy = document.getElementById("screen-occupancy");
@@ -17585,33 +17432,25 @@ document.getElementById('back-from-report-guide').addEventListener('click', func
 });
 
 document.getElementById('open-contact').addEventListener('click', function () {
-  _resetContactModal();
   document.getElementById('contact-confirm-modal').classList.remove('hidden');
 });
 
 document.getElementById('contact-confirm-cancel').addEventListener('click', function () {
-  _resetContactModal();
   document.getElementById('contact-confirm-modal').classList.add('hidden');
 });
 
 document.getElementById('contact-confirm-modal').addEventListener('click', function (e) {
-  if (e.target === this) {
-    _resetContactModal();
-    this.classList.add('hidden');
-  }
+  if (e.target === this) this.classList.add('hidden');
 });
 
 document.getElementById('contact-confirm-ok').addEventListener('click', function () {
   document.getElementById('contact-confirm-modal').classList.add('hidden');
   var isAndroid = /android/i.test(navigator.userAgent);
   var isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches;
-  var subject = _feedbackSnapshot ? '예방GPT 오류 제보' : '예방GPT 건의사항';
-  var body = _feedbackSnapshot ? _buildFeedbackEmailBody(_feedbackSnapshot) : '';
-  _resetContactModal();
   if (isAndroid || isStandaloneApp) {
-    window.location.href = 'mailto:carrotcakehope@gmail.com?subject=' + encodeURIComponent(subject) + (body ? '&body=' + encodeURIComponent(body) : '');
+    window.location.href = 'mailto:carrotcakehope@gmail.com?subject=예방GPT 건의사항';
   } else {
-    window.open('https://mail.google.com/mail/?view=cm&fs=1&to=carrotcakehope@gmail.com&su=' + encodeURIComponent(subject) + (body ? '&body=' + encodeURIComponent(body) : ''), '_blank');
+    window.open('https://mail.google.com/mail/?view=cm&fs=1&to=carrotcakehope@gmail.com&su=예방GPT 건의사항', '_blank');
   }
 });
 
