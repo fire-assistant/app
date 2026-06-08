@@ -156,6 +156,45 @@
   window.openFacilityIntro = openFacilityIntro;
   window.openFacilityWaterComp = openFacilityWaterComp;
 
+  // 결과 화면 등에서 특정 도감 항목만 모달(팝업)로 보기 — 화면 이동 없이 그 항목만
+  function openFacilityModal(itemId) {
+    let found = null;
+    FACILITIES_DATA.forEach(tab => (tab.items || []).forEach(it => { if (it.id === itemId) found = it; }));
+    if (!found) return;
+    const overlay = document.getElementById('fac-modal-overlay');
+    const host = document.getElementById('fac-modal-body');
+    if (!overlay || !host) return;
+    const titleEl = document.getElementById('fac-modal-title');
+    const catEl = document.getElementById('fac-modal-cat');
+    if (catEl) catEl.textContent = found.category || '';
+    if (titleEl) titleEl.textContent = found.name || '';
+    host.innerHTML = '';
+    const acc = buildAccordion(found);
+    const accBody = acc.querySelector('.rg-accordion-body');
+    if (accBody) { accBody.classList.remove('hidden'); host.appendChild(accBody); }
+    else { host.appendChild(acc); }
+    overlay.classList.remove('hidden');
+    host.scrollTop = 0;
+    trackMenuClick('소방시설도감');
+  }
+  function closeFacilityModal() {
+    const overlay = document.getElementById('fac-modal-overlay');
+    if (overlay) overlay.classList.add('hidden');
+  }
+  window.openFacilityModal = openFacilityModal;
+  window.closeFacilityModal = closeFacilityModal;
+
+  (function bindFacModal() {
+    const overlay = document.getElementById('fac-modal-overlay');
+    if (!overlay) return;
+    const closeBtn = document.getElementById('fac-modal-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeFacilityModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeFacilityModal(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeFacilityModal();
+    });
+  })();
+
   function encodePath(path) {
     return path.split('/').map((seg, i) => (i === 0 && (seg === '.' || seg === '..')) ? seg : encodeURIComponent(seg)).join('/');
   }

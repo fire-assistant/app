@@ -1304,6 +1304,71 @@ html[data-theme="official"] .lli-kind {
   letter-spacing: -0.2px;
 }
 
+/* 결과 시설명 → 소방시설 도감 딥링크 */
+.result-name-link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+.result-name-link:hover { opacity: 0.78; }
+.fr-name.result-name-link { font-weight: inherit; }
+
+/* 도감 단일 항목 모달(결과 화면에서 시설 클릭 시) */
+.fac-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.fac-modal-overlay.hidden { display: none !important; }
+.fac-modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 520px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp 0.18s ease;
+}
+.fac-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.fac-modal-cat { font-size: 11px; opacity: 0.6; margin-bottom: 3px; }
+.fac-modal-title { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+.fac-modal-close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  line-height: 1;
+}
+.fac-modal-close:hover { background: rgba(127, 127, 127, 0.12); }
+.fac-modal-body {
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+}
+
 .result-status {
   flex-shrink: 0;
   padding: 6px 11px;

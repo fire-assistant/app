@@ -45,7 +45,7 @@ function trackMenuClick(menuName) {
 // ── 패치노트 설정 (여기만 수정하면 됩니다) ──────────────────────────────
 const PATCH_NOTES = {
   version: "v1.0.2",
-  date: "2026-06-07",
+  date: "2026-06-08",
   items: [
     { type: "notice",  text: "이 사이트는 법적기준이 아닙니다. 참고만해주세요!" },
     { type: "new",     text: "① 참고법령 안내 기능 추가<br> ② 법정기한계산기 공휴일 자동반영<br>③ 안내 펫 일구 기능 추가<br>④ 계절테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면 우측 위 테마변경버튼 누르세요)" },
@@ -2923,6 +2923,61 @@ function getSubtypeLabel(value) {
   return labels[value] || value;
 }
 
+/* ── 결과 시설명 → 소방시설 도감 딥링크 ── */
+function normFacName(name) {
+  return String(name == null ? "" : name).replace(/[(（].*$/, "").replace(/\s+/g, "").trim();
+}
+let _facGuideIndex = null;
+function getFacGuideIndex() {
+  if (_facGuideIndex) return _facGuideIndex;
+  const idx = {};
+  if (typeof FACILITIES_DATA !== "undefined") {
+    FACILITIES_DATA.forEach((tab, tabIdx) => {
+      (tab.items || []).forEach((it) => {
+        if (it && it.name) idx[normFacName(it.name)] = { tabIdx, itemId: it.id };
+      });
+    });
+  }
+  _facGuideIndex = idx;
+  return idx;
+}
+// 결과 표기와 도감 항목명이 다른 경우 보정(정규화·부분매칭으로 못 잡는 것만)
+const FAC_GUIDE_ALIAS = {
+  "소화기구": "소화기",
+  "유도등": "유도등및유도표지",
+  "소화수조및저수지": "소화수조·저수조",
+};
+function findFacGuideTarget(resultName) {
+  const idx = getFacGuideIndex();
+  const norm = normFacName(resultName);
+  if (!norm) return null;
+  if (idx[norm]) return idx[norm];
+  const aliased = FAC_GUIDE_ALIAS[norm];
+  if (aliased && idx[aliased]) return idx[aliased];
+  // 한쪽이 다른 쪽으로 시작(부연어 차이) — 오매칭 방지 위해 4글자 이상일 때만
+  if (norm.length >= 4) {
+    for (const k in idx) {
+      if (k.length >= 4 && (k.startsWith(norm) || norm.startsWith(k))) return idx[k];
+    }
+  }
+  return null;
+}
+function applyFacGuideLink(el, name) {
+  if (!el) return;
+  const t = findFacGuideTarget(name);
+  if (!t) return;
+  el.classList.add("result-name-link");
+  el.setAttribute("role", "button");
+  el.setAttribute("tabindex", "0");
+  el.title = "도감에서 이 시설 보기";
+  const open = (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    if (typeof window.openFacilityModal === "function") window.openFacilityModal(t.itemId);
+  };
+  el.addEventListener("click", open);
+  el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") open(e); });
+}
+
 function renderResultGroup(targetId, items, excludedNames, allowedNames) {
   const list = document.getElementById(targetId);
   const template = document.getElementById("result-item-template");
@@ -2974,7 +3029,10 @@ function renderSimpleRequiredList(items, targetId = "required-list") {
   items.forEach((item) => {
     const node = document.createElement("div");
     node.className = "facility-row";
-    node.innerHTML = `<span class="fr-dot"></span><span>${item.name}</span>`;
+    node.innerHTML = `<span class="fr-dot"></span><span class="fr-name"></span>`;
+    const _frName = node.querySelector(".fr-name");
+    _frName.textContent = item.name;
+    applyFacGuideLink(_frName, item.name);
     list.appendChild(node);
   });
 }
@@ -5980,7 +6038,7 @@ const yearState = {
     yEraChoice: "after2004",
     yOccupancyType: "neighborhood",
     yAutoCalcAreas: "yes",
-    yPermitdate: "2026-06-07",
+    yPermitdate: "2026-06-08",
     yTotalArea: "1500",
     yAboveGroundFloors: "4",
     yBasementFloors: "0",
