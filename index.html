@@ -327,6 +327,7 @@
         <div class="result-two-col">
           <div class="result-col-a">
             <p class="section-label">설치 필요한 소방시설</p>
+            <p style="font-size:12px;opacity:0.55;margin:-6px 0 8px;">각 항목을 누르면 상세 설명을 볼 수 있습니다.</p>
             <div id="year-required-list" style="display:flex;flex-direction:column;gap:6px;"></div>
             <div id="year-extra-items-section" class="hidden">
               <p class="section-label" style="margin-top:16px;">기타</p>
@@ -340,7 +341,7 @@
             <div id="year-exception-list"></div>
           </div>
         </div>
-        <button id="year-explorer-copy-result-btn" class="btn btn-ghost explorer-copy-btn" type="button">📋 <span>결과 복사</span></button>
+        <button id="year-explorer-copy-result-btn" class="btn btn-ghost explorer-copy-btn" type="button"><span>결과 복사</span></button>
         <div style="display:flex;gap:8px;margin-top:8px;">
           <button id="year-open-multiuse-safety" class="btn btn-primary hidden" type="button" style="flex:1;">안전시설 확인</button>
           <button id="year-result-prev-btn" class="btn btn-ghost" type="button" style="flex:1;">이전</button>
@@ -370,7 +371,7 @@
 
         <div id="year-multiuse-transitional-notes"></div>
 
-        <button id="year-multiuse-copy-result-btn" class="btn btn-ghost explorer-copy-btn" type="button">📋 <span>결과 복사</span></button>
+        <button id="year-multiuse-copy-result-btn" class="btn btn-ghost explorer-copy-btn" type="button"><span>결과 복사</span></button>
         <div class="w-nav">
           <button id="year-back-to-main-result" class="btn btn-primary" type="button">기본 결과로</button>
           <button id="year-restart-from-multiuse" class="btn btn-ghost" type="button">다시 입력</button>
@@ -420,6 +421,7 @@
         <div class="result-two-col">
           <div class="result-col-a">
             <p class="section-label">설치 필요한 소방시설</p>
+            <p style="font-size:12px;opacity:0.55;margin:-6px 0 8px;">각 항목을 누르면 상세 설명을 볼 수 있습니다.</p>
             <div id="required-list" style="display:flex;flex-direction:column;gap:6px;"></div>
             <div id="extra-items-section" class="hidden">
               <p class="section-label" style="margin-top:16px;">기타</p>
@@ -434,7 +436,7 @@
           </div>
         </div>
 
-        <button id="explorer-copy-result-btn" class="btn btn-ghost explorer-copy-btn" type="button">📋 <span>결과 복사</span></button>
+        <button id="explorer-copy-result-btn" class="btn btn-ghost explorer-copy-btn" type="button"><span>결과 복사</span></button>
         <div style="display:flex;gap:8px;margin-top:8px;">
           <button id="open-multiuse-safety" class="btn btn-primary hidden" type="button" style="flex:1;">안전시설 확인</button>
           <button id="result-back-to-select" class="btn btn-ghost" type="button" style="flex:1;">이전</button>
@@ -464,7 +466,7 @@
 
         <div id="multiuse-transitional-notes"></div>
 
-        <button id="multiuse-copy-result-btn" class="btn btn-ghost explorer-copy-btn" type="button">📋 <span>결과 복사</span></button>
+        <button id="multiuse-copy-result-btn" class="btn btn-ghost explorer-copy-btn" type="button"><span>결과 복사</span></button>
         <div class="w-nav">
           <button id="back-to-main-result" class="btn btn-primary" type="button">기본 결과로</button>
           <button id="restart-explorer-from-multiuse" class="btn btn-ghost" type="button">다시 입력</button>
@@ -516,13 +518,13 @@
             <span class="guide-tool-chevron">›</span>
           </summary>
           <div class="guide-tool-body">
-            <p class="guide-tool-desc">건물 용도·면적·층수·허가일자 등 조건을 입력하면 설치 의무가 있는 소방시설 목록과 설치 이유를 확인합니다.</p>
+            <p class="guide-tool-desc">건물 조건을 입력하면 설치 의무가 있는 소방시설 목록을 확인하고, 시설명을 눌러 역할·설치 위치·주의사항 등 상세 내용을 볼 수 있습니다.</p>
             <div class="guide-steps">
-              <div class="guide-step"><span class="gs-num">1</span><span><strong>간단한 버전</strong>은 현행 기준 빠른 확인, <strong>자세한 버전</strong>은 건축허가일 기준 연도별 확인</span></div>
+              <div class="guide-step"><span class="gs-num">1</span><span>간단한 확인 또는 자세한 확인 중 필요한 방식 선택</span></div>
               <div class="guide-step"><span class="gs-num">2</span><span>용도·연면적·층수·지하층·스프링클러 여부 등 질문에 순서대로 답하기</span></div>
-              <div class="guide-step"><span class="gs-num">3</span><span>결과에서 <strong>설치 필요 시설</strong>, <strong>제외·검토 시설</strong>, <strong>판정 이유</strong> 확인</span></div>
+              <div class="guide-step"><span class="gs-num">3</span><span>결과에서 <strong>설치 필요 시설</strong>, <strong>제외·검토 시설</strong>, <strong>판정 이유</strong>를 확인하고 시설명을 눌러 상세 설명 보기</span></div>
             </div>
-            <div class="guide-tip">💡 자체점검 실시결과 보고서의 3페이지 소방시설 현황과 비교할 때 먼저 기준 목록을 잡는 용도로 쓰면 좋습니다.</div>
+            <div class="guide-tip">💡 결과 목록은 보고서의 소방시설 현황과 비교할 기준을 잡는 데 쓰고, 낯선 시설은 항목을 눌러 어떤 시설인지 먼저 확인하면 좋습니다.</div>
           </div>
         </details>
 
@@ -930,6 +932,15 @@
               <span class="cc-num">02</span>
               <strong>다중이용업소 안전시설 탐색</strong>
               <span class="cc-desc">다중이용업소에 설치해야 하는 소방·안전시설을 확인합니다.</span>
+            </span>
+            <span class="cc-arrow">›</span>
+          </button>
+          <button id="lab-open-simple-explorer" class="choice-button choice-card" type="button">
+            <span class="cc-icon mc-red">🧯</span>
+            <span class="cc-body">
+              <span class="cc-num">03</span>
+              <strong>소방시설 탐색기 (간단한 버전)</strong>
+              <span class="cc-desc">현행 법령 기준으로 빠르게 설치 의무를 도출합니다. 건축허가일 입력 없이 바로 사용할 수 있습니다.</span>
             </span>
             <span class="cc-arrow">›</span>
           </button>

@@ -1118,12 +1118,34 @@ function phaseOf(key) {
   return 2; // 특수조건 (기본값)
 }
 // 단계바 4칸(<li>)에 done/active 클래스 적용. phaseIdx: 0=용도 1=규모 2=특수조건 3=결과
-function renderPhaseBar(container, phaseIdx) {
+function renderPhaseBar(container, phaseIdx, nav) {
   if (!container) return;
   [...container.children].forEach((li, i) => {
     li.classList.toggle("is-done", i < phaseIdx);
     li.classList.toggle("is-active", i === phaseIdx);
+    // 단계바 클릭 → 해당 질문 그룹의 첫 질문으로 이동. 이미 지나온/현재 그룹(용도·규모·특수조건)만 허용.
+    const clickable = !!nav && i <= phaseIdx && i <= 2;
+    li.style.cursor = clickable ? "pointer" : "";
+    li.onclick = clickable ? () => nav(i) : null;
   });
+}
+
+function jumpToPhaseSimple(targetPhase) {
+  const activeSteps = getActiveSteps();
+  const idx = activeSteps.findIndex((s) => phaseOf(s.key) === targetPhase);
+  if (idx < 0) return;
+  state.currentStep = idx;
+  renderCurrentStep();
+  scrollToTop();
+}
+
+function jumpToPhaseYear(targetPhase) {
+  const activeSteps = yearGetActiveSteps();
+  const idx = activeSteps.findIndex((s) => phaseOf(s.key) === targetPhase);
+  if (idx < 0) return;
+  yearState.currentStep = idx;
+  yearRenderCurrentStep();
+  yearScrollToTop();
 }
 
 function sortBySimpleAfter2004Order(activeSteps) {
@@ -1408,7 +1430,7 @@ function updateProgress() {
   if (wrap) wrap.classList.remove("hidden");
   const activeSteps = getActiveSteps();
   const step = activeSteps[state.currentStep];
-  renderPhaseBar(document.getElementById("phase-steps"), step ? phaseOf(step.key) : 0);
+  renderPhaseBar(document.getElementById("phase-steps"), step ? phaseOf(step.key) : 0, jumpToPhaseSimple);
 }
 
 function renderChoiceStep(step) {
@@ -3165,7 +3187,10 @@ function showExplorerCard(view) {
   multiuseSafetyCard.classList.toggle("hidden", view !== "multiuse-result");
   // 메인 결과 화면이면 단계바 ④결과 점등(다중이용업소 전용 모드는 바 숨김 상태라 제외)
   if (view === "main-result" && explorerRuntime.mode !== "multiuse-only") {
-    renderPhaseBar(document.getElementById("phase-steps"), 3);
+    renderPhaseBar(document.getElementById("phase-steps"), 3, (p) => {
+      showExplorerCard("question");
+      jumpToPhaseSimple(p);
+    });
   }
 }
 
@@ -3391,11 +3416,30 @@ function copyResultText(text, btn) {
       return;
     }
     const summaryEl = document.getElementById("year-result-summary");
-    const summaryText = summaryEl ? summaryEl.textContent.replace(/\s+/g, " ").trim() : "";
+    const summaryLines = [];
+    if (summaryEl) {
+      const title = summaryEl.querySelector(".ib-title")?.textContent.trim();
+      const chips = Array.from(summaryEl.querySelectorAll(".ib-chip")).map((chip) => {
+        const label = chip.querySelector(".ib-chip-label")?.textContent.trim();
+        const value = chip.querySelector(".ib-chip-value")?.textContent.trim();
+        return label && value ? `- ${label}: ${value}` : "";
+      }).filter(Boolean);
+      const notes = Array.from(summaryEl.querySelectorAll(".ib-note")).map((note) =>
+        note.textContent.replace(/\s+/g, " ").trim()
+      ).filter(Boolean);
+      if (title || chips.length) {
+        summaryLines.push(title || "입력값 기준");
+        summaryLines.push(...chips);
+      }
+      if (notes.length) {
+        if (summaryLines.length) summaryLines.push("");
+        summaryLines.push(...notes);
+      }
+    }
     const lines = [];
     lines.push("[예방업무 어시스턴트] 소방시설 탐색기 결과 (연도별)");
     lines.push("");
-    if (summaryText) lines.push(summaryText);
+    if (summaryLines.length) lines.push(...summaryLines);
     lines.push("");
     lines.push("▶ 설치 필요한 소방시설");
     items.forEach((name) => lines.push("• " + name));
@@ -4049,8 +4093,8 @@ function renderDateCalculator() {
     `;
     legendMarkup = `
       <div class="cl-item"><span class="cl-dot" style="background: transparent; border: 2px solid var(--red);"></span>선택일</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.18);"></span>산정 날짜</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.45); border: 1.5px solid rgba(217, 48, 37, 0.85);"></span>마감일</div>
+      <div class="cl-item"><span class="cl-dot" style="background: color-mix(in srgb, var(--red) 18%, transparent);"></span>산정 날짜</div>
+      <div class="cl-item"><span class="cl-dot" style="background: color-mix(in srgb, var(--red) 45%, transparent); border: 1.5px solid color-mix(in srgb, var(--red) 85%, transparent);"></span>마감일</div>
       <div class="cl-item"><span class="cl-dot cl-dot-holiday"></span>입력 공휴일</div>
     `;
   }
@@ -4089,7 +4133,7 @@ function renderDateCalculator() {
     legendMarkup = `
       <div class="cl-item"><span class="cl-dot" style="background: transparent; border: 2px solid var(--red);"></span>선택일</div>
       <div class="cl-item"><span class="cl-dot cl-dot-appoint-range"></span>선임기한 범위</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.45); border: 1.5px solid rgba(217, 48, 37, 0.85);"></span>선임기한</div>
+      <div class="cl-item"><span class="cl-dot" style="background: color-mix(in srgb, var(--red) 45%, transparent); border: 1.5px solid color-mix(in srgb, var(--red) 85%, transparent);"></span>선임기한</div>
       <div class="cl-item"><span class="cl-dot cl-dot-report-range"></span>선임신고 범위</div>
       <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.42); border: 1.5px solid rgba(66, 133, 244, 0.85);"></span>선임신고기한</div>
       <div class="cl-item"><span class="cl-dot cl-dot-holiday"></span>입력 공휴일</div>
@@ -4128,7 +4172,7 @@ function renderDateCalculator() {
     legendMarkup = `
       <div class="cl-item"><span class="cl-dot" style="background: transparent; border: 2px solid var(--red);"></span>선택일</div>
       <div class="cl-item"><span class="cl-dot cl-dot-appoint-range"></span>이행완료 범위</div>
-      <div class="cl-item"><span class="cl-dot" style="background: rgba(217, 48, 37, 0.45); border: 1.5px solid rgba(217, 48, 37, 0.85);"></span>이행완료기한</div>
+      <div class="cl-item"><span class="cl-dot" style="background: color-mix(in srgb, var(--red) 45%, transparent); border: 1.5px solid color-mix(in srgb, var(--red) 85%, transparent);"></span>이행완료기한</div>
       <div class="cl-item"><span class="cl-dot cl-dot-report-range"></span>완료신고 범위</div>
       <div class="cl-item"><span class="cl-dot" style="background: rgba(66, 133, 244, 0.42); border: 1.5px solid rgba(66, 133, 244, 0.85);"></span>완료신고기한</div>
       <div class="cl-item"><span class="cl-dot cl-dot-holiday"></span>입력 공휴일</div>
@@ -5478,7 +5522,10 @@ function multiuseRestart() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 document.getElementById("open-explorer").addEventListener("click", () => {
-  showScreen("explorerSelect");
+  trackMenuClick("소방시설 탐색기");
+  explorerRuntime.from = "home";
+  showScreen("explorerYear");
+  yearWizardRestart();
 });
 document.getElementById("back-from-explorer-select").addEventListener("click", () => showScreen("home"));
 document.getElementById("explorer-select-simple").addEventListener("click", () => {
@@ -5961,6 +6008,14 @@ document.getElementById("open-lab").addEventListener("click", () => {
 });
 document.getElementById("back-from-lab").addEventListener("click", () => showScreen("home"));
 
+document.getElementById("lab-open-simple-explorer").addEventListener("click", () => {
+  trackMenuClick("소방시설 탐색기-간단한버전");
+  explorerRuntime.mode = "default";
+  explorerRuntime.from = "lab";
+  applyExplorerModeUI();
+  showScreen("explorer");
+  restartExplorer();
+});
 document.getElementById("lab-open-multiuse-safety").addEventListener("click", () => {
   explorerRuntime.mode = "multiuse-only";
   explorerRuntime.from = "lab";
@@ -5975,7 +6030,7 @@ document.getElementById("open-layout-learn").addEventListener("click", () => {
 document.getElementById("back-from-layout-learn").addEventListener("click", () => showScreen("lab"));
 document.getElementById("back-from-explorer").addEventListener("click", () => {
   if (explorerRuntime.mode === "multiuse-only") showScreen(explorerRuntime.from === "lab" ? "lab" : "multiuseSelect");
-  else showScreen("home");
+  else showScreen(explorerRuntime.from === "lab" ? "lab" : "home");
 });
 // =============================================
 // 연도별 탐색기 (Year-based Explorer)
@@ -6265,7 +6320,7 @@ const yearSteps = [
     key: "yEraChoice",
     type: "ychoice",
     title: "건축허가일이 소방법 분법 이전인가요, 이후인가요?",
-    help: "소방법은 2004년 5월 30일 소방기본법·소방시설 설치유지 및 안전관리에 관한 법률·소방시설공사업법·위험물안전관리법으로 분법됐습니다. 분법 전후로 소방시설 기준이 크게 달라지므로 먼저 구분합니다.",
+    help: "소방법은 여러 법률로 나뉘면서 소방시설 기준이 크게 달라졌습니다. 먼저 분법 이전 기준인지, 이후 기준인지 구분합니다.",
     options: [
       { value: "before2004", label: "소방법 분법 이전 (소방법 시행령)", description: "1981. 11. 6. ~ 2004년 5월 29일" },
       { value: "after2004", label: "소방법 분법 이후 (소방시설 설치유지 및 안전관리에 관한 법률 시행령)", description: "2004년 5월 30일 ~ 현재" },
@@ -6450,6 +6505,7 @@ const yearSteps = [
     type: "ycompound",
     title: "무창층 정보를 입력하세요",
     help: "무창층이란 채광·환기 조건 등을 충족하지 못하는 층입니다.",
+    condition: () => !yearIsAutoAreaMode(),
   },
   {
     key: "yHasLargeTargetFloor",
@@ -6481,7 +6537,7 @@ const yearSteps = [
     placeholder: "예: 1200",
     min: 0,
     step: 0.1,
-    condition: (ya, pd) => ya.yOccupancyType === "neighborhood" && pd >= YD.D20061207,
+    condition: (ya, pd) => ya.yOccupancyType === "neighborhood" && pd >= YD.D20061207 && !yearIsAutoAreaMode(),
   },
   {
     key: "yFacilitySubtype",
@@ -6682,7 +6738,7 @@ const yearSteps = [
     placeholder: "예: 450",
     min: 0,
     step: 0.1,
-    condition: (ya) => ya.yOccupancyType === "lodging",
+    condition: (ya) => ya.yOccupancyType === "lodging" && !yearIsAutoAreaMode(),
   },
   {
     key: "yLodgingIsLiving",
@@ -6947,7 +7003,7 @@ const yearSteps = [
     placeholder: "예: 400",
     min: 0,
     step: 0.1,
-    condition: (ya, pd) => ya.yOccupancyType === "elderly" && pd >= YD.D20080229,
+    condition: (ya, pd) => ya.yOccupancyType === "elderly" && pd >= YD.D20080229 && !yearIsAutoAreaMode(),
   },
   {
     key: "yElderlyHasLargeTargetFloor",
@@ -7070,7 +7126,7 @@ const yearSteps = [
     placeholder: "예: 1500",
     min: 0,
     step: 0.1,
-    condition: (ya) => ya.yOccupancyType === "medical",
+    condition: (ya) => ya.yOccupancyType === "medical" && !yearIsAutoAreaMode(),
   },
   {
     key: "yMedicalHasLargeTargetFloor",
@@ -7258,6 +7314,7 @@ const yearSteps = [
     step: 0.1,
     condition: (ya, pd) => {
       if (ya.yOccupancyType !== "sales") return false;
+      if (yearIsAutoAreaMode()) return false;
       const salesArea = parseFloat(ya.ySalesArea) || 0;
       const aboveGroundFloors = parseInt(ya.yAboveGroundFloors, 10) || 0;
       const threshold = pd >= YD.D20140708 ? 5000 : (aboveGroundFloors <= 3 ? 6000 : 5000);
@@ -7508,7 +7565,7 @@ const yearSteps = [
     placeholder: "예: 6000",
     min: 0,
     step: 0.1,
-    condition: (ya) => ya.yEraChoice === "before2004" && ya.yOccupancyType === "sales",
+    condition: (ya) => ya.yEraChoice === "before2004" && ya.yOccupancyType === "sales" && !yearIsAutoAreaMode(),
   },
   {
     key: "yBefore2004SalesHasLargeFloor450",
@@ -8226,7 +8283,8 @@ function yearGetActiveSteps() {
         return true;
       }
       // 항상 표시
-      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet", "yFirstSecondFloorArea", "yParkingElecSet"];
+      if (step.key === "yWindowlessSet") return !yearIsAutoAreaMode();
+      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yFirstSecondFloorArea", "yParkingElecSet"];
       if (alwaysShow.includes(step.key)) return true;
       // 제연설비: 1982.9.28 이후
       if (step.key === "ySmokeControlArea") return pd >= YD.D19820928;
@@ -8259,7 +8317,8 @@ function yearGetActiveSteps() {
         if (step.key === "yLodgingMultiuseSimpleSprinklerCheck") return pd >= YD.D20010521;
         return true;
       }
-      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet", "yBefore2004LodgingIsTouristHotel", "yBefore2004LodgingParkingElecSet"];
+      if (step.key === "yWindowlessSet") return !yearIsAutoAreaMode();
+      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yBefore2004LodgingIsTouristHotel", "yBefore2004LodgingParkingElecSet"];
       if (alwaysShow.includes(step.key)) return true;
       // 1992년 이전 전용 스텝
       if (step.key === "yBefore2004LodgingHasLargeFloor450") return preBefore1992 && ta < 2100;
@@ -8279,7 +8338,8 @@ function yearGetActiveSteps() {
       const ag = parseInt(ya.yAboveGroundFloors) || 0;
       const preBefore1992 = pd > 0 && pd < YD.D19920728;
       const postAfter1992 = pd >= YD.D19920728;
-      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet"];
+      if (step.key === "yWindowlessSet") return !yearIsAutoAreaMode();
+      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet"];
       if (alwaysShow.includes(step.key)) return true;
       if (step.key === "yBefore2004MedicalSubtype") return true;
       if (step.key === "yBefore2004MedicalHasLargeFloor450") return preBefore1992 && ta < 2100;
@@ -8299,7 +8359,8 @@ function yearGetActiveSteps() {
       const ag = parseInt(ya.yAboveGroundFloors) || 0;
       const preBefore1992 = pd > 0 && pd < YD.D19920728;
       const postAfter1992 = pd >= YD.D19920728;
-      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet", "yBefore2004ElderlyParkingElecSet"];
+      if (step.key === "yWindowlessSet") return !yearIsAutoAreaMode();
+      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yBefore2004ElderlyParkingElecSet"];
       if (alwaysShow.includes(step.key)) return true;
       // 분법 이전 전용 스텝 (1981~1992)
       if (step.key === "yBefore2004ElderlyHasLargeFloor450") return preBefore1992 && ta < 2100;
@@ -8316,7 +8377,8 @@ function yearGetActiveSteps() {
     if (ya.yEraChoice === "before2004" && ya.yOccupancyType === "religious") {
       if (ya.yAutoCalcAreas === "yes" && YEAR_AUTO_CANDIDATE_KEYS_BY_OCCUPANCY_BEFORE2004.religious.has(step.key)) return false;
       const ta = parseFloat(ya.yTotalArea) || 0;
-      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet", "yBefore2004ReligiousParkingElecSet"];
+      if (step.key === "yWindowlessSet") return !yearIsAutoAreaMode();
+      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yBefore2004ReligiousParkingElecSet"];
       if (alwaysShow.includes(step.key)) return true;
       if (step.key === "yBefore2004ReligiousHasLargeFloor600") return ta < 3000;
       return false;
@@ -8329,7 +8391,9 @@ function yearGetActiveSteps() {
       const ag = parseInt(ya.yAboveGroundFloors) || 0;
       const preBefore1992 = pd > 0 && pd < YD.D19920728;
       const postAfter1992 = pd >= YD.D19920728;
-      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet", "yBefore2004SalesArea", "ySalesParkingElecSet"];
+      if (step.key === "yWindowlessSet") return !yearIsAutoAreaMode();
+      if (step.key === "yBefore2004SalesArea") return !yearIsAutoAreaMode();
+      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "ySalesParkingElecSet"];
       if (alwaysShow.includes(step.key)) return true;
       // 옥외소화전 1·2층 면적 (수동 모드, 연면적 9,000㎡ 이상일 때만)
       if (step.key === "ySalesFirstSecondFloorArea") return ta >= 9000;
@@ -8351,7 +8415,8 @@ function yearGetActiveSteps() {
       const ag = parseInt(ya.yAboveGroundFloors) || 0;
       const preBefore1992 = pd > 0 && pd < YD.D19920728;
       const postAfter1992 = pd >= YD.D19920728;
-      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet", "yOfficeParkingElecSet"];
+      if (step.key === "yWindowlessSet") return !yearIsAutoAreaMode();
+      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAboveGroundFloors", "yBasementSet", "yOfficeParkingElecSet"];
       if (alwaysShow.includes(step.key)) return true;
       // 옥외소화전 1·2층 면적 (수동 모드, 연면적 9,000㎡ 이상일 때만)
       if (step.key === "yOfficeFirstSecondFloorArea") return ta >= 9000;
@@ -8369,7 +8434,8 @@ function yearGetActiveSteps() {
     if (ya.yEraChoice === "before2004" && ya.yOccupancyType === "apartment") {
       const ta = parseFloat(ya.yTotalArea) || 0;
       const perDongTa = ta / Math.max(parseInt(ya.yAptBuildingCount) || 1, 1); // 동당 연면적
-      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAptBuildingCount", "yAboveGroundFloors", "yBasementSet", "yWindowlessSet",
+      if (step.key === "yWindowlessSet") return !yearIsAutoAreaMode();
+      const alwaysShow = ["yOccupancyType", "yPermitDate", "yTotalArea", "yAptBuildingCount", "yAboveGroundFloors", "yBasementSet",
         "yBefore2004AptHouseholds", "yBefore2004AptElecSet", "yAptParkingBuildingSet"];
       if (alwaysShow.includes(step.key)) return true;
       if (step.key === "yBefore2004AptCorridorType") return ya.yAutoCalcAreas === "no";
@@ -8773,10 +8839,11 @@ function yearRenderChoiceStep(step) {
     cb.addEventListener("change", () => {
       yearState.answers.yAutoCalcAreas = cb.checked ? "yes" : "no";
       if (!cb.checked) yearResetAutoCalcAnswers();
+      else { yearState.answers.yHasWindowlessFloor = "no"; yearState.answers.yWindowlessArea = ""; }
     });
     const text = document.createElement("div");
-    text.innerHTML = `<div class="ib-title">면적 자동 산정 (체크) · 직접 입력 (해제)</div>
-      체크하면 연면적·층수를 기준으로 층별 바닥면적을 자동 산정합니다. 건물이 직사각형이고 모든 층의 바닥면적이 동일하다고 가정하며, 이 조건에 맞지 않으면 <strong>체크 해제</strong> 후 직접 입력하세요.`;
+    text.innerHTML = `<div class="ib-title">간단히 확인 (체크) · 자세히 확인 (해제)</div>
+      체크하면 연면적·층수처럼 쉽게 알 수 있는 정보만으로 먼저 판정합니다. 결과가 부족하거나 더 정확한 확인이 필요하면 <strong>체크 해제</strong> 후 무창층, 층별 면적, 용도별 면적 등 자세한 조건을 직접 입력하세요.`;
     toggleWrap.appendChild(cb);
     toggleWrap.appendChild(text);
     container.appendChild(toggleWrap);
@@ -9139,7 +9206,7 @@ function yearRenderCurrentStep() {
 function yearUpdateProgress() {
   const activeSteps = yearGetActiveSteps();
   const step = activeSteps[yearState.currentStep];
-  renderPhaseBar(document.getElementById("year-phase-steps"), step ? phaseOf(step.key) : 0);
+  renderPhaseBar(document.getElementById("year-phase-steps"), step ? phaseOf(step.key) : 0, jumpToPhaseYear);
 }
 
 function yearCurrentStepIsValid() {
@@ -9169,8 +9236,13 @@ function showYearResultWithLoading() {
     document.getElementById("year-question-card").classList.add("hidden");
     document.getElementById("year-result-card").classList.remove("hidden");
     document.getElementById("year-multiuse-safety-card").classList.add("hidden");
-    // 결과 화면에서도 단계바 유지하고 ④결과 점등
-    renderPhaseBar(document.getElementById("year-phase-steps"), 3);
+    // 결과 화면에서도 단계바 유지하고 ④결과 점등. 앞 단계 클릭 시 질문화면 복귀.
+    renderPhaseBar(document.getElementById("year-phase-steps"), 3, (p) => {
+      document.getElementById("year-question-card").classList.remove("hidden");
+      document.getElementById("year-result-card").classList.add("hidden");
+      document.getElementById("year-multiuse-safety-card").classList.add("hidden");
+      jumpToPhaseYear(p);
+    });
     yearScrollToTop();
   });
 }
@@ -9201,17 +9273,21 @@ function yearNormalizeAnswers() {
   const pd = yPermitDateInt();
   const bf = parseInt(ya.yBasementFloors) || 0;
   const ba = parseFloat(ya.yBasementAreaSum) || 0;
-  const wlArea = parseFloat(ya.yWindowlessArea) || 0;
+  // 면적 자동산정 모드: 무창층은 없는 것으로, 용도별 바닥면적은 연면적으로 자동 처리
+  const autoArea = yearIsAutoAreaMode();
+  const ta = parseFloat(ya.yTotalArea) || 0;
+  const wlArea = autoArea ? 0 : (parseFloat(ya.yWindowlessArea) || 0);
+  const usageArea = (k) => autoArea ? ta : (parseFloat(ya[k]) || 0);
   return {
     pd,
     permitDateInt: pd,
     eraChoice: ya.yEraChoice,
     occupancyType: ya.yOccupancyType,
-    totalArea: parseFloat(ya.yTotalArea) || 0,
+    totalArea: ta,
     aboveGroundFloors: parseInt(ya.yAboveGroundFloors) || 0,
     basementFloors: bf,
     basementAreaSum: ba,
-    hasWindowlessFloor: ya.yHasWindowlessFloor === "yes",
+    hasWindowlessFloor: autoArea ? false : (ya.yHasWindowlessFloor === "yes"),
     windowlessArea: wlArea,
     hasLargeTargetFloor: ya.yHasLargeTargetFloor === "yes",
     hasLargeFloorFor1000: ya.yHasLargeFloorFor1000 === "yes",
@@ -9220,7 +9296,7 @@ function yearNormalizeAnswers() {
     before2004SprinklerFloor: ya.yBefore2004SprinklerFloor === "yes",
     before2004HasDetFloor300: ya.yBefore2004HasDetFloor300 === "yes",
     before2004LargeFloor1000: ya.yBefore2004LargeFloor1000 === "yes",
-    neighborhoodArea: parseFloat(ya.yNeighborhoodArea) || 0,
+    neighborhoodArea: usageArea("yNeighborhoodArea"),
     facilitySubtype: ya.yFacilitySubtype,
     isPostpartum: ya.yIsPostpartum === "yes",
     postpartumAreaRange: ya.yPostpartumAreaRange,
@@ -9249,7 +9325,7 @@ function yearNormalizeAnswers() {
     basementAvg: bf > 0 ? ba / bf : 0,
     totalFloors: (parseInt(ya.yAboveGroundFloors) || 0) + bf,
     // 숙박시설 전용
-    lodgingArea: parseFloat(ya.yLodgingArea) || 0,
+    lodgingArea: usageArea("yLodgingArea"),
     lodgingIsLiving: ya.yLodgingIsLiving === "yes",
     lodgingIsTouristHotel: ya.yLodgingIsTouristHotel === "yes",
     lodgingHasLargeFloorFor1000: ya.yLodgingHasLargeFloorFor1000 === "yes",
@@ -9274,7 +9350,7 @@ function yearNormalizeAnswers() {
     lodgingMultiuseHasEvacuationRoute: ya.yLodgingMultiuseHasEvacuationRoute === "yes",
     // 노유자시설 전용
     elderlySubtype: ya.yElderlySubtype,
-    elderlyArea: parseFloat(ya.yElderlyArea) || 0,
+    elderlyArea: usageArea("yElderlyArea"),
     elderlyHasLargeTargetFloor: ya.yElderlyHasLargeTargetFloor === "yes",
     elderlyHasGrillWindow: ya.yElderlyHasGrillWindow === "yes",
     elderlyHasGasFacility: ya.yElderlyHasGasFacility === "yes",
@@ -9288,7 +9364,7 @@ function yearNormalizeAnswers() {
     elderlyHasSmallUndergroundParking: ya.yElderlyHasSmallUndergroundParking === "yes",
     // 의료시설 전용
     medicalSubtype: ya.yMedicalSubtype,
-    medicalArea: parseFloat(ya.yMedicalArea) || 0,
+    medicalArea: usageArea("yMedicalArea"),
     medicalHasLargeTargetFloor: ya.yMedicalHasLargeTargetFloor === "yes",
     medicalHasGrillWindow: ya.yMedicalHasGrillWindow === "yes",
     medicalHasGasFacility: ya.yMedicalHasGasFacility === "yes",
@@ -9348,7 +9424,7 @@ function yearNormalizeAnswers() {
     religiousStageArea: parseFloat(ya.yReligiousStageArea) || 0,
     religiousHasGasFacility: ya.yReligiousHasGasFacility === "yes",
     // 판매시설 전용
-    salesArea: parseFloat(ya.ySalesArea) || 0,
+    salesArea: usageArea("ySalesArea"),
     salesHasLargeTargetFloor: ya.ySalesHasLargeTargetFloor === "yes",
     salesFirstSecondFloorArea: parseFloat(ya.ySalesFirstSecondFloorArea) || 0,
     salesIndoorParkingArea: parseFloat(ya.ySalesIndoorParkingArea) || 0,
@@ -9380,7 +9456,7 @@ function yearNormalizeAnswers() {
     officeMechanicalParkingCapacity: parseInt(ya.yOfficeMechanicalParkingCapacity) || 0,
     officeElectricalRoomArea: parseFloat(ya.yOfficeElectricalRoomArea) || 0,
     // 분법 이전 판매시설(구 「시장」) 전용
-    before2004SalesArea: parseFloat(ya.yBefore2004SalesArea) || 0,
+    before2004SalesArea: usageArea("yBefore2004SalesArea"),
     before2004SalesHasLargeFloor450: ya.yBefore2004SalesHasLargeFloor450 === "yes",
     before2004SalesHasLargeFloor300: ya.yBefore2004SalesHasLargeFloor300 === "yes",
     before2004SalesSprinklerFloor: ya.yBefore2004SalesSprinklerFloor === "yes",
@@ -14898,7 +14974,7 @@ function yearShowResults() {
   // 입력값 요약 칩 그리드 헬퍼
   const nf = (v) => { const n = Number(v); return Number.isFinite(n) ? n.toLocaleString() : v; };
   const ibChip = (icon, label, value) =>
-    `<div class="ib-chip"><div class="ib-chip-label">${icon} ${label}</div><div class="ib-chip-value">${value}</div></div>`;
+    `<div class="ib-chip"><div class="ib-chip-label">${label}</div><div class="ib-chip-value">${value}</div></div>`;
   const ibSummary = (chips, note) =>
     `<div class="ib-title">입력값 기준</div><div class="ib-grid">${chips.join("")}</div>${note || ""}`;
   const floorsChip = () => ibChip("🏬", "층수", `지상 ${inp.aboveGroundFloors} · 지하 ${inp.basementFloors}`);
@@ -15240,9 +15316,9 @@ function yearWizardRestart() {
   yearRenderCurrentStep();
 }
 
-document.getElementById("back-from-explorer-year").addEventListener("click", () => showScreen("explorerSelect"));
+document.getElementById("back-from-explorer-year").addEventListener("click", () => showScreen("home"));
 document.getElementById("year-prev-btn").addEventListener("click", () => {
-  if (yearState.currentStep === 0) showScreen("explorerSelect");
+  if (yearState.currentStep === 0) showScreen("home");
   else yearMoveStep(-1);
 });
 document.getElementById("year-next-btn").addEventListener("click", () => {
@@ -15388,7 +15464,7 @@ document.getElementById("prev-step").addEventListener("click", () => {
     if (explorerRuntime.mode === "multiuse-only") {
       showScreen("multiuseSelect");
     } else {
-      showScreen("explorerSelect");
+      showScreen(explorerRuntime.from === "lab" ? "lab" : "home");
     }
   } else {
     moveStep(-1);
@@ -15848,7 +15924,7 @@ history.replaceState({ screen: 'home' }, '');
         yearMoveStep(-1);
         return true;
       }
-      showScreen("explorerSelect");
+      showScreen("home");
       return false;
     }
 
@@ -15878,7 +15954,7 @@ history.replaceState({ screen: 'home' }, '');
       if (explorerRuntime.mode === "multiuse-only") {
         showScreen(explorerRuntime.from === "lab" ? "lab" : "multiuseSelect");
       } else {
-        showScreen("explorerSelect");
+        showScreen(explorerRuntime.from === "lab" ? "lab" : "home");
       }
       return false;
     }
@@ -17698,12 +17774,12 @@ function goToRgGuideSection(tab, sectionId) {
     {
       icon: "🧯", title: "소방시설 탐색기 (간단한 버전)", desc: "현행 법령 기준으로 빠르게 설치 의무 도출",
       keywords: ["탐색기", "소방시설", "간단", "의무", "설치", "소화기", "스프링클러"],
-      action: () => { showScreen("explorerSelect"); },
+      action: () => { showScreen("lab"); },
     },
     {
       icon: "🔍", title: "소방시설 탐색기 (자세한 버전)", desc: "건축허가일 기준 법령 적용 상세 결과",
       keywords: ["탐색기", "자세한", "연도별", "건축허가", "법령", "소방시설"],
-      action: () => { showScreen("explorerSelect"); },
+      action: () => { explorerRuntime.from = "home"; showScreen("explorerYear"); yearWizardRestart(); },
     },
     {
       icon: "📅", title: "자체점검 제출기한 계산", desc: "점검 완료일로부터 15일 이내 제출기한",

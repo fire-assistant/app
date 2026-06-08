@@ -7,8 +7,8 @@
   --border2: #3a3a3a;
   --red: #d93025;
   --red-soft: #ff6a5f;
-  --red-dim: rgba(217, 48, 37, 0.1);
-  --red-dim2: rgba(217, 48, 37, 0.18);
+  --red-dim: color-mix(in srgb, var(--red) 10%, transparent);
+  --red-dim2: color-mix(in srgb, var(--red) 18%, transparent);
   --amber: #f9ab00;
   --amber-dim: rgba(249, 171, 0, 0.1);
   --blue: #4285f4;
@@ -243,7 +243,7 @@ input:focus-visible {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 80% 160% at 0% 50%, rgba(217,48,37,0.09) 0%, transparent 65%);
+  background: radial-gradient(ellipse 80% 160% at 0% 50%, color-mix(in srgb, var(--red) 9%, transparent) 0%, transparent 65%);
   pointer-events: none;
 }
 
@@ -254,7 +254,7 @@ input:focus-visible {
   top: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(to bottom, var(--red) 0%, rgba(217,48,37,0.2) 100%);
+  background: linear-gradient(to bottom, var(--red) 0%, color-mix(in srgb, var(--red) 20%, transparent) 100%);
 }
 
 .home-badge,
@@ -352,7 +352,7 @@ input:focus-visible {
 .contact-card {
   margin: 0 16px 24px;
   padding: 0;
-  border: 1px solid rgba(217, 48, 37, 0.15);
+  border: 1px solid color-mix(in srgb, var(--red) 15%, transparent);
   border-radius: 14px;
   background: var(--surface);
   overflow: hidden;
@@ -405,7 +405,7 @@ input:focus-visible {
   justify-content: center;
   gap: 3px;
   padding: 18px 24px;
-  background: rgba(217,48,37,0.04);
+  background: color-mix(in srgb, var(--red) 4%, transparent);
   text-align: center;
   min-width: 140px;
 }
@@ -418,11 +418,11 @@ input:focus-visible {
 }
 
 .contact-right-link:hover {
-  background: rgba(217,48,37,0.10);
+  background: color-mix(in srgb, var(--red) 10%, transparent);
 }
 
 .contact-right-link:active {
-  background: rgba(217,48,37,0.16);
+  background: color-mix(in srgb, var(--red) 16%, transparent);
 }
 
 .contact-label {
@@ -504,7 +504,7 @@ input:focus-visible {
   transform: scale(1.05);
 }
 
-.mc-red   { background: var(--red-dim);   border: 1px solid rgba(217, 48, 37, 0.22); }
+.mc-red   { background: var(--red-dim);   border: 1px solid color-mix(in srgb, var(--red) 22%, transparent); }
 .mc-amber { background: var(--amber-dim); border: 1px solid rgba(249, 171, 0, 0.22); }
 .mc-blue  { background: var(--blue-dim);  border: 1px solid rgba(66, 133, 244, 0.22); }
 .mc-green { background: var(--green-dim); border: 1px solid rgba(52, 168, 83, 0.22); }
@@ -629,7 +629,7 @@ input:focus-visible {
 .phase-steps li.is-active .ph-dot {
   background: var(--red);
   border-color: var(--red);
-  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.28);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 28%, transparent);
 }
 .phase-steps li.is-active .ph-label { color: var(--text); font-weight: 600; }
 
@@ -778,11 +778,11 @@ input:focus-visible {
   border-color: var(--red);
   background: var(--red-dim2);
   color: var(--red-soft);
-  box-shadow: 0 0 0 1px rgba(217, 48, 37, 0.15);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--red) 15%, transparent);
 }
 
 .choice-button.selected span {
-  color: rgba(255, 106, 95, 0.65);
+  color: color-mix(in srgb, var(--red-soft) 65%, transparent);
 }
 
 .choice-button.selected::after {
@@ -916,7 +916,7 @@ input:focus-visible {
 .calc-textarea:focus {
   border-color: var(--red);
   background: #1a1414;
-  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.12);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 12%, transparent);
 }
 
 .calc-textarea {
@@ -1138,8 +1138,8 @@ html[data-theme="official"] .lli-kind {
 
 .g-sp {
   color: var(--red-soft);
-  border: 1px solid rgba(217, 48, 37, 0.3);
-  background: rgba(217, 48, 37, 0.14);
+  border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
+  background: color-mix(in srgb, var(--red) 14%, transparent);
 }
 
 /* ?�?� Transitional Notes ?�?� */
@@ -1681,7 +1681,7 @@ html[data-theme="official"] .lli-kind {
 /* ?�?� Calc Result ?�?� */
 .calc-result {
   background: linear-gradient(140deg, #1a0e0e 0%, #110d0d 60%, var(--surface) 100%);
-  border: 1px solid rgba(217, 48, 37, 0.2);
+  border: 1px solid color-mix(in srgb, var(--red) 20%, transparent);
   border-radius: var(--radius);
   padding: 22px;
   margin-bottom: 12px;
@@ -1894,8 +1894,8 @@ html[data-theme="official"] .lli-kind {
   position: relative;
   padding: 18px 20px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, rgba(217, 48, 37, 0.10), rgba(217, 48, 37, 0.02));
-  border: 1px solid rgba(217, 48, 37, 0.22);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--red) 10%, transparent), color-mix(in srgb, var(--red) 2%, transparent));
+  border: 1px solid color-mix(in srgb, var(--red) 22%, transparent);
   transition: opacity var(--transition);
 }
 .occ-result-card:not(.has-result) {
@@ -2461,12 +2461,12 @@ html[data-theme="official"] #occupancy-content .dc-ref-row:not(:first-child) {
 }
 
 .cal-day.in-range {
-  background: rgba(217, 48, 37, 0.16);
+  background: color-mix(in srgb, var(--red) 16%, transparent);
   color: #fff;
 }
 
 .cal-day.appoint-range {
-  background: rgba(217, 48, 37, 0.16);
+  background: color-mix(in srgb, var(--red) 16%, transparent);
   color: #fff;
 }
 
@@ -2476,21 +2476,21 @@ html[data-theme="official"] #occupancy-content .dc-ref-row:not(:first-child) {
 }
 
 .cal-day.appoint-range.report-range {
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.16) 0%, rgba(66, 133, 244, 0.16) 50%, rgba(217, 48, 37, 0.16) 50%, rgba(217, 48, 37, 0.16) 100%);
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.16) 0%, rgba(66, 133, 244, 0.16) 50%, color-mix(in srgb, var(--red) 16%, transparent) 50%, color-mix(in srgb, var(--red) 16%, transparent) 100%);
 }
 
 .cal-day.deadline {
-  background: rgba(217, 48, 37, 0.45);
+  background: color-mix(in srgb, var(--red) 45%, transparent);
   color: var(--red-soft);
   font-weight: 700;
-  box-shadow: inset 0 0 0 1.5px rgba(217, 48, 37, 0.85);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--red) 85%, transparent);
 }
 
 .cal-day.appoint-deadline {
-  background: rgba(217, 48, 37, 0.45);
+  background: color-mix(in srgb, var(--red) 45%, transparent);
   color: var(--red-soft);
   font-weight: 700;
-  box-shadow: inset 0 0 0 1.5px rgba(217, 48, 37, 0.85);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--red) 85%, transparent);
 }
 
 .cal-day.report-deadline {
@@ -2501,7 +2501,7 @@ html[data-theme="official"] #occupancy-content .dc-ref-row:not(:first-child) {
 }
 
 .cal-day.appoint-range.report-deadline {
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.42) 0%, rgba(66, 133, 244, 0.42) 50%, rgba(217, 48, 37, 0.16) 50%, rgba(217, 48, 37, 0.16) 100%);
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.42) 0%, rgba(66, 133, 244, 0.42) 50%, color-mix(in srgb, var(--red) 16%, transparent) 50%, color-mix(in srgb, var(--red) 16%, transparent) 100%);
   color: #9fc4ff;
   font-weight: 700;
   box-shadow: inset 0 0 0 1.5px rgba(66, 133, 244, 0.85);
@@ -2543,7 +2543,7 @@ html[data-theme="official"] #occupancy-content .dc-ref-row:not(:first-child) {
   flex-shrink: 0;
 }
 
-.cl-dot-appoint-range { background: rgba(217, 48, 37, 0.18); }
+.cl-dot-appoint-range { background: color-mix(in srgb, var(--red) 18%, transparent); }
 .cl-dot-report-range  { background: rgba(66, 133, 244, 0.14); }
 
 .cl-dot-holiday { background: transparent; position: relative; }
@@ -2576,8 +2576,8 @@ html[data-theme="blossom"] .cl-dot-holiday::after { background: #7a40c0; }
 }
 
 .insp-comprehensive {
-  background: linear-gradient(140deg, rgba(217, 48, 37, 0.18) 0%, rgba(249, 171, 0, 0.08) 100%);
-  border: 1px solid rgba(217, 48, 37, 0.35);
+  background: linear-gradient(140deg, color-mix(in srgb, var(--red) 18%, transparent) 0%, rgba(249, 171, 0, 0.08) 100%);
+  border: 1px solid color-mix(in srgb, var(--red) 35%, transparent);
 }
 
 .insp-operational {
@@ -2597,9 +2597,9 @@ html[data-theme="blossom"] .cl-dot-holiday::after { background: #7a40c0; }
 }
 
 .insp-comprehensive .ir-badge {
-  background: rgba(217, 48, 37, 0.16);
+  background: color-mix(in srgb, var(--red) 16%, transparent);
   color: var(--red-soft);
-  border: 1px solid rgba(217, 48, 37, 0.3);
+  border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
 }
 
 .insp-operational .ir-badge {
@@ -2733,7 +2733,7 @@ html[data-theme="blossom"] .cl-dot-holiday::after { background: #7a40c0; }
 }
 
 :is(#inspection-content, #multiuse-content) .insp-result.insp-comprehensive {
-  border: 1px solid rgba(217, 48, 37, 0.25);
+  border: 1px solid color-mix(in srgb, var(--red) 25%, transparent);
 }
 
 :is(#inspection-content, #multiuse-content) .insp-result.insp-operational {
@@ -2766,9 +2766,9 @@ html[data-theme="blossom"] .cl-dot-holiday::after { background: #7a40c0; }
 }
 
 :is(#inspection-content, #multiuse-content) .insp-comprehensive .ir-badge {
-  background: rgba(217, 48, 37, 0.12);
+  background: color-mix(in srgb, var(--red) 12%, transparent);
   color: var(--red-soft);
-  border-bottom: 1px solid rgba(217, 48, 37, 0.2);
+  border-bottom: 1px solid color-mix(in srgb, var(--red) 20%, transparent);
 }
 
 :is(#inspection-content, #multiuse-content) .insp-comprehensive .ir-badge::before {
@@ -3415,7 +3415,7 @@ html[data-theme="blossom"] #date-content .dc-hero-date.dc-accent-blue { color: v
 }
 #date-content .dc-control-card input[type="date"]:focus {
   border-color: var(--red);
-  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.12);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 12%, transparent);
 }
 
 #date-content .dc-action-toggle-btn {
@@ -3860,15 +3860,15 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
 @keyframes inspChoiceLift {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 0 rgba(217, 48, 37, 0);
+    box-shadow: 0 0 0 color-mix(in srgb, var(--red) 0%, transparent);
   }
   45% {
     transform: scale(1.07);
-    box-shadow: 0 10px 40px -8px rgba(217, 48, 37, 0.45);
+    box-shadow: 0 10px 40px -8px color-mix(in srgb, var(--red) 45%, transparent);
   }
   100% {
     transform: scale(1.06);
-    box-shadow: 0 8px 32px -10px rgba(217, 48, 37, 0.4);
+    box-shadow: 0 8px 32px -10px color-mix(in srgb, var(--red) 40%, transparent);
   }
 }
 
@@ -4426,9 +4426,9 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
 }
 
 .reminder-delete-btn:hover {
-  background: rgba(217, 48, 37, 0.15);
+  background: color-mix(in srgb, var(--red) 15%, transparent);
   color: var(--red-soft);
-  border-color: rgba(217, 48, 37, 0.4);
+  border-color: color-mix(in srgb, var(--red) 40%, transparent);
 }
 
 .reminder-card-name {
@@ -4984,8 +4984,8 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   border-bottom: 1px solid var(--border);
 }
 .guide-info-card.warn .guide-info-head {
-  background: rgba(217, 48, 37, 0.10);
-  border-bottom-color: rgba(217, 48, 37, 0.22);
+  background: color-mix(in srgb, var(--red) 10%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--red) 22%, transparent);
 }
 .guide-info-meta {
   flex: 1;
@@ -5312,9 +5312,9 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--red-dim2);
-  border: 1px solid rgba(217, 48, 37, 0.3);
-  color: var(--red-soft);
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  color: var(--text-muted);
   font-size: 12px;
   font-weight: 700;
   font-family: var(--mono);
@@ -5332,8 +5332,8 @@ html[data-theme="light"] {
   --border2: #b0b0b0;
   --red: #d93025;
   --red-soft: #c0271d;
-  --red-dim: rgba(217, 48, 37, 0.08);
-  --red-dim2: rgba(217, 48, 37, 0.13);
+  --red-dim: color-mix(in srgb, var(--red) 8%, transparent);
+  --red-dim2: color-mix(in srgb, var(--red) 13%, transparent);
   --amber: #c47f00;
   --amber-dim: rgba(196, 127, 0, 0.1);
   --blue: #1a73e8;
@@ -5741,8 +5741,9 @@ html[data-theme="light"] .rg-tab-bar {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--red);
-  color: #fff;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  color: var(--text-muted);
   font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
@@ -5999,7 +6000,7 @@ html[data-theme="light"] .rg-tab-bar {
 
 .fac-level-full {
   color: var(--red-soft);
-  border: 1px solid rgba(217, 48, 37, 0.4);
+  border: 1px solid color-mix(in srgb, var(--red) 40%, transparent);
   background: var(--red-dim);
 }
 
@@ -6211,7 +6212,7 @@ html[data-theme="light"] .rg-tab-bar {
   justify-content: center;
   border-radius: 50%;
   background: var(--red-dim2);
-  border: 1px solid rgba(217, 48, 37, 0.3);
+  border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
   color: var(--red-soft);
   font-size: 10px;
   font-weight: 700;
@@ -8256,7 +8257,7 @@ html[data-theme="winter"] .reminder-date-urgent { color: var(--red); }
 
 .home-search-wrap:focus-within .home-search-inner {
   border-color: var(--red);
-  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.1);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 10%, transparent);
 }
 
 .home-search-icon {
@@ -8785,12 +8786,12 @@ html[data-intro-active="true"] .ilgu-summon-btn {
 
 .ilgu-resize-handle:active {
   transform: scale(1.08);
-  border-color: rgba(255, 106, 95, 0.9);
+  border-color: color-mix(in srgb, var(--red-soft) 90%, transparent);
 }
 
 html[data-theme="light"] .ilgu-resize-handle,
 html[data-theme="official"] .ilgu-resize-handle {
-  --ilgu-resize-handle-color: rgba(217, 48, 37, 0.88);
+  --ilgu-resize-handle-color: color-mix(in srgb, var(--red) 88%, transparent);
   --ilgu-resize-handle-shadow: rgba(255, 255, 255, 0.95);
 }
 
@@ -8872,13 +8873,13 @@ html[data-theme="blossom"] .ilgu-resize-handle {
 }
 
 .ilgu-panel-action.primary {
-  border-color: rgba(217, 48, 37, 0.45);
+  border-color: color-mix(in srgb, var(--red) 45%, transparent);
   background: var(--red-dim2);
   color: #fff;
 }
 
 .ilgu-drop-target {
-  outline: 2px solid rgba(255, 106, 95, 0.82);
+  outline: 2px solid color-mix(in srgb, var(--red-soft) 82%, transparent);
   outline-offset: 3px;
 }
 
@@ -8958,8 +8959,8 @@ html[data-theme="winter"] .ilgu-panel-action {
 }
 
 .ilgu-summon-btn.is-active {
-  border-color: rgba(255, 106, 95, 0.48);
-  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.1);
+  border-color: color-mix(in srgb, var(--red-soft) 48%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 10%, transparent);
 }
 
 .ilgu-summon-btn.is-disabled .ilgu-summon-face {
@@ -9016,7 +9017,7 @@ html[data-theme="winter"] .ilgu-panel-action {
 .guide-dev-letter-btn {
   position: relative;
   padding: 10px 16px 10px 50px;
-  border: 1px dashed rgba(217, 48, 37, 0.5);
+  border: 1px dashed color-mix(in srgb, var(--red) 50%, transparent);
   border-radius: 4px;
   background: #fffbf2;
   color: #3a2a1a;
@@ -9065,7 +9066,7 @@ html[data-theme="winter"] .ilgu-panel-action {
 html[data-theme="dark"] .guide-dev-letter-btn {
   background: #2a221a;
   color: #f1e8d8;
-  border-color: rgba(255,120,110,0.55);
+  border-color: color-mix(in srgb, var(--red-soft) 55%, transparent);
 }
 
 /* ===== 인사말 화면 ===== */
@@ -9262,7 +9263,7 @@ html[data-theme="dark"] .devletter-head {
 .devletter-music-volume::-webkit-slider-runnable-track {
   height: 8px;
   border-radius: 999px;
-  background: linear-gradient(to right, var(--red) 0 var(--range-fill), rgba(217,48,37,0.12) var(--range-fill) 100%);
+  background: linear-gradient(to right, var(--red) 0 var(--range-fill), color-mix(in srgb, var(--red) 12%, transparent) var(--range-fill) 100%);
 }
 
 .devletter-music-volume::-webkit-slider-thumb {
@@ -9289,7 +9290,7 @@ html[data-theme="dark"] .devletter-head {
 
 .devletter-music-volume::-moz-range-track {
   height: 8px;
-  background: rgba(217,48,37,0.12);
+  background: color-mix(in srgb, var(--red) 12%, transparent);
 }
 
 .devletter-music-progress::-moz-range-progress,
@@ -9345,7 +9346,7 @@ html[data-theme="dark"] .devletter-head {
 }
 
 .devletter-music-btn.is-active {
-  border-color: rgba(217, 48, 37, 0.45);
+  border-color: color-mix(in srgb, var(--red) 45%, transparent);
   background: var(--red-dim2);
   color: var(--red-soft);
 }
