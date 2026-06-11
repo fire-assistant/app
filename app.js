@@ -20117,7 +20117,7 @@ function goToRgGuideSection(tab, sectionId) {
   if (backBtn) {
     backBtn.addEventListener("click", () => {
       closeDevLetterMusic();
-      if (typeof showScreen === "function") showScreen("home");
+      if (typeof showScreen === "function") showScreen("guide");
     });
   }
 
