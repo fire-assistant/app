@@ -17,7 +17,7 @@
   --green-dim: rgba(52, 168, 83, 0.1);
   --text: #ececec;
   --text-muted: #a0a0a0;
-  --text-dim: #595959;
+  --text-dim: #888888;
   --radius: 16px;
   --radius-sm: 10px;
   --mono: "Consolas", "D2Coding", monospace;
@@ -4961,7 +4961,7 @@ html[data-theme="blossom"] #date-content .info-box.amber { border-left-color: va
   background: rgba(66, 133, 244, 0.08);
   border: 1px solid rgba(66, 133, 244, 0.18);
   font-size: 12px;
-  color: #7db1ff;
+  color: var(--text);
   line-height: 1.65;
   word-break: keep-all;
 }
@@ -5342,7 +5342,7 @@ html[data-theme="light"] {
   --green-dim: rgba(30, 138, 62, 0.1);
   --text: #111111;
   --text-muted: #555555;
-  --text-dim: #999999;
+  --text-dim: #646464;
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.09);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.16), 0 2px 5px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -6821,21 +6821,21 @@ html[data-theme="light"] .fac-photo-source-badge {
 }
 
 .pn-tag-new {
-  background: rgba(52, 168, 83, 0.15);
-  color: #7ed69a;
-  border: 1px solid rgba(52, 168, 83, 0.25);
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
 }
 
 .pn-tag-fix {
-  background: rgba(66, 133, 244, 0.15);
-  color: #7db1ff;
-  border: 1px solid rgba(66, 133, 244, 0.25);
+  background: var(--blue-dim);
+  color: var(--blue);
+  border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent);
 }
 
 .pn-tag-improve {
-  background: rgba(249, 171, 0, 0.13);
-  color: #ffd27e;
-  border: 1px solid rgba(249, 171, 0, 0.25);
+  background: var(--amber-dim);
+  color: var(--amber);
+  border: 1px solid color-mix(in srgb, var(--amber) 30%, transparent);
 }
 
 .pn-tag-notice {
@@ -7373,7 +7373,7 @@ html[data-theme="summer"] {
   --green-dim: rgba(15, 118, 110, 0.1);
   --text: #06202e;
   --text-muted: #1a4a60;
-  --text-dim: #3a7a90;
+  --text-dim: #347082;
   --shadow-sm: 0 1px 4px rgba(3, 105, 161, 0.12), 0 1px 2px rgba(3, 105, 161, 0.07);
   --shadow-md: 0 4px 14px rgba(3, 105, 161, 0.16), 0 2px 5px rgba(3, 105, 161, 0.09);
   --shadow-lg: 0 8px 28px rgba(3, 105, 161, 0.20), 0 4px 10px rgba(3, 105, 161, 0.10);
@@ -7522,8 +7522,8 @@ html[data-theme="summer-night"] {
   --green: #34d399;
   --green-dim: rgba(52, 211, 153, 0.1);
   --text: #d8eeff;
-  --text-muted: #6898b8;
-  --text-dim: #304860;
+  --text-muted: #93bdda;
+  --text-dim: #6488a3;
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.6), 0 2px 5px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.7), 0 4px 10px rgba(0, 0, 0, 0.5);
@@ -7655,7 +7655,7 @@ html[data-theme="autumn"] {
   --green-dim: rgba(64, 112, 64, 0.1);
   --text: #280e00;
   --text-muted: #7a4820;
-  --text-dim: #b88840;
+  --text-dim: #8a6020;
   --shadow-sm: 0 1px 4px rgba(160, 80, 20, 0.08), 0 1px 2px rgba(160, 80, 20, 0.05);
   --shadow-md: 0 4px 14px rgba(160, 80, 20, 0.12), 0 2px 5px rgba(160, 80, 20, 0.07);
   --shadow-lg: 0 8px 28px rgba(160, 80, 20, 0.15), 0 4px 10px rgba(160, 80, 20, 0.08);
@@ -7791,7 +7791,7 @@ html[data-theme="winter"] {
   --green-dim: rgba(48, 120, 112, 0.1);
   --text: #0c1c30;
   --text-muted: #486080;
-  --text-dim: #8aaac4;
+  --text-dim: #4c6c8a;
   --shadow-sm: 0 1px 4px rgba(60, 100, 160, 0.08), 0 1px 2px rgba(60, 100, 160, 0.05);
   --shadow-md: 0 4px 14px rgba(60, 100, 160, 0.12), 0 2px 5px rgba(60, 100, 160, 0.07);
   --shadow-lg: 0 8px 28px rgba(60, 100, 160, 0.15), 0 4px 10px rgba(60, 100, 160, 0.08);

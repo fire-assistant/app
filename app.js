@@ -45,7 +45,7 @@ function trackMenuClick(menuName) {
 // ── 패치노트 설정 (여기만 수정하면 됩니다) ──────────────────────────────
 const PATCH_NOTES = {
   version: "v1.0.2",
-  date: "2026-06-12",
+  date: "2026-06-13",
   items: [
     { type: "notice",  text: "이 사이트는 법적기준이 아닙니다. 참고만해주세요!" },
     { type: "new",     text: "① 참고법령 안내 기능 추가<br> ② 법정기한계산기 공휴일 자동반영<br>③ 안내 펫 일구 기능 추가<br>④ 계절테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면 우측 위 테마변경버튼 누르세요)" },
@@ -6106,7 +6106,7 @@ const yearState = {
     yEraChoice: "after2004",
     yOccupancyType: "neighborhood",
     yAutoCalcAreas: "yes",
-    yPermitdate: "2026-06-12",
+    yPermitdate: "2026-06-13",
     yTotalArea: "1500",
     yAboveGroundFloors: "4",
     yBasementFloors: "0",
@@ -17278,6 +17278,12 @@ const RG_SECTION_IMAGES = {
   'ac05': './image/inspection/무선통신보조설비.png',
 };
 
+// 점검표 자료(이미지)가 있는 시설만 3·4페이지에 노출한다.
+// 제연설비(ac01)는 자료 추가 예정이라 예외로 노출.
+function rgItemVisible(id) {
+  return !!RG_SECTION_IMAGES[id] || id === 'ac01';
+}
+
 // 설비별 작성방법 설명
 function rgField(label, text) {
   return '<b>' + label + '</b>: ' + text;
@@ -17296,9 +17302,8 @@ const RG_COMMON_GUIDE = {
 
 const RG_FACILITY_DESCS = {
   'w01': [
-    rgField('종류', '소화기 종류(분말/기타)를 구분하여 기재합니다.'),
+    rgField('구분', '소화기와 자동소화장치 종류를 구분하여 기재합니다.'),
     rgField('수량', '동별·층별 설치 수량을 적고, 층별 소계와 전체 합계가 맞는지 확인합니다.'),
-    rgNote('수량', '투척용 소화용구, 간이소화용구, 자동확산소화기는 일반 소화기와 구분하여 별도 칸에 수량을 적습니다.'),
   ],
   'w02': [
     rgField('종류', '주거용·상업용 주방자동소화장치, 캐비닛형 등 설치된 종류를 구분합니다.'),
@@ -17323,7 +17328,7 @@ const RG_FACILITY_DESCS = {
     rgNote('설치대상', '화재조기진압용 스프링클러는 랙식 창고 등 특수 용도에서 주로 확인됩니다.'),
   ],
   'w11': [
-    rgField('수량', '옥외소화전이 설치된 총 개수를 기재합니다.'),
+    rgField('설치개수', '옥외소화전이 설치된 총 개수를 기재합니다.'),
   ],
   'g01': [
     rgField('종류', '이산화탄소, 할론, 할로겐화합물 및 불활성기체, 분말, 강화액, 고체에어로졸 소화설비 중 해당되는 종류를 확인합니다.'),
@@ -17333,7 +17338,7 @@ const RG_FACILITY_DESCS = {
     '<b>전용/겸용</b>: 비상방송설비 전용으로 쓰이는 장비인지, 일반 방송설비와 겸용해서 사용하는지 확인합니다.',
     rgNote('전용/겸용', '겸용은 평상시 일반 BGM이나 안내 방송용으로 사용할 수 있으나, 화재 시에는 비상경보 외의 일반 방송이 즉시 차단되는 구조입니다.'),
     '<b>전층경보/우선경보</b>: 화재시 피난중 병목현상을 방지하기 위해 일정규모 이상의 건물에는 우선경보 방식을 사용하여 위험한 층에 있는 사람부터 대피할 수 있게 하는 방식입니다. 대부분의 작은 규모의 건물(11층 이하)에는 전층경보 방식을 사용합니다.', 
-    rgField('설치장소', '증폭기가 설치된 동명, 층, 실명을 기재합니다.'),
+    rgField('증폭기 설치장소', '증폭기가 설치된 동명, 층, 실명을 기재합니다.'),
   ],
   'a05': [
     rgField('수신기 위치', '동명, 지상/지하 층수, 수신기가 설치된 실명을 기재합니다.'),
@@ -17356,7 +17361,6 @@ const RG_FACILITY_DESCS = {
   'e01': [
     rgField('종류', '피난사다리, 완강기, 구조대 등 실제 설치된 피난기구 종류를 확인합니다.'),
     rgField('수량', '동별·층별 설치 수량을 기재합니다. 종류가 여러 개이면 종류별 수량도 함께 확인합니다.'),
-    rgField('판단 기준', '건물의 용도, 규모, 층수 조건에 따라 필요한 피난기구의 종류와 수량이 달라집니다.'),
     rgNote('종류', '일반 건물은 완강기가 많은 편이고, 노유자시설은 구조대나 승강식 피난기, 다중이용업소는 피난사다리가 많이 확인됩니다.'),
   ],
   'e02': [
@@ -17378,8 +17382,9 @@ const RG_FACILITY_DESCS = {
     rgField('전원', '전원 방식은 대부분 건전지식입니다.'),
   ],
   's01': [
-    rgField('규격', '상수도소화용수설비의 소화전 호칭지름을 확인합니다.'),
+    rgField('소화전 호칭지름', '상수도소화용수설비의 소화전 호칭지름을 확인합니다.'),
     rgField('설치장소', '소화전이 설치된 위치를 기재합니다.'),
+    rgNote('종류', '소화수조 및 저수조 등 다른 소화용수설비도 있으나, 점검표 예시는 가장 일반적인 상수도소화용수설비를 기준으로 안내합니다.'),
   ],
   's02': [
     rgField('용량', '소화수조·저수조의 용량(㎥)을 확인하여 기재합니다.'),
@@ -17423,7 +17428,18 @@ const RG_FACILITY_DESCS = {
 
 // 설비별 참고 박스 (noteTitle + noteItems)
 const RG_FACILITY_NOTES = {
-  'a05': {
+  'g01': {
+    noteTitle: '가스계 소화약제 분류',
+    noteItems: [
+      { tag: '이산화탄소', text: '이산화탄소(CO₂) 약제입니다. 점검표 종류란의 "이산화탄소"에 해당합니다.' },
+      { tag: '할론', text: '할론1301·할론2402·할론1211·할론104(사염화탄소) 등이 해당합니다. 오존층 파괴 문제로 신규 설치는 제한됩니다.' },
+      { tag: '할로겐화합물 및 불활성기체', text: 'FC-3-1-10, HCFC BLEND A, HCFC-124, HFC-125, HFC-227ea, HFC-23, IG-541, IG-100 등이 해당합니다.' },
+      { tag: '분말', text: '제1종(중탄산나트륨)·제2종(중탄산칼륨)·제3종(제일인산암모늄)·제4종(중탄산칼륨+요소) 분말이 해당합니다.' },
+      { tag: '강화액', text: '물에 알칼리금속염 등을 첨가해 소화력을 높인 약제입니다.' },
+      { tag: '고체에어로졸', text: '고체 화합물이 연소하며 생성되는 에어로졸로 소화하는 방식입니다.' },
+    ],
+  },
+  'a03': {
     noteTitle: '전층경보 vs 우선경보 방식',
     noteItems: [
       { tag: '전층경보', text: '화재 감지 시 건물 전체에 즉시 경보를 발령하는 방식입니다. <b>11층 미만(공동주택은 16층 미만)</b>인 건축물에 적용됩니다.' },
@@ -17532,6 +17548,11 @@ const RG_WATER_COMMON = [
       rgField('설비의 종류', '수원을 사용하는 소방설비를 기재합니다.'),
       rgField('수원 구분', '주수원과 보조수원으로 나누어 각각의 용량과 위치를 기재합니다.'),
     ],
+    noteTitle: '주수원·보조수원 구분',
+    noteItems: [
+      { tag: '주수원', text: '화재 시 소화설비가 정상 작동하는 데 필요한 법정 수량을 확보한 주된 수원입니다. 보통 펌프실 인근에 둡니다.' },
+      { tag: '보조수원', text: '주수원과 별도로 건물 옥상 등 높은 곳에 두는 수원입니다. 정전·펌프 고장 등으로 주수원이 공급되지 않을 때 낙차 압력으로 초기 살수를 이어가는 역할을 하며, 보통 주수원(유효수량)의 1/3 이상을 옥상수조에 저장하도록 규정되어 있습니다.' },
+    ],
   },
   {
     id: '_wc_ga', label: '가압송수장치', img: './image/inspection/가압송수장치.png',
@@ -17539,6 +17560,13 @@ const RG_WATER_COMMON = [
       rgField('방식', '펌프방식/고가수조방식/압력수조방식 중 해당하는 란에 표시합니다.'),
       rgField('설치장소', '동명, 지상/지하 층, 실명을 기재합니다.'),
       rgField('성능값', '토출량(ℓ/min)과 전양정(m) 또는 압력(㎫), 동력(㎾)을 기재합니다.'),
+      rgNote('방식', '실무에서는 대부분 펌프방식으로 설치되어, 점검표 예시 이미지도 펌프방식을 기준으로 합니다. 고가수조·압력수조 방식은 거의 설치되지 않습니다.'),
+    ],
+    noteTitle: '가압송수장치 방식 구분',
+    noteItems: [
+      { tag: '펌프방식', text: '전동기(또는 내연기관)로 펌프를 돌려 물을 가압해 보내는 방식입니다. 가장 일반적이며, 평상시 배관 압력을 유지하는 충압펌프와 화재 시 동작하는 주펌프로 구성됩니다.' },
+      { tag: '고가수조방식', text: '건물 옥상 등 높은 곳에 수조를 두고, 수조와 방수구의 높이차(낙차)로 생기는 자연 압력으로 송수하는 방식입니다. 별도의 동력이 필요 없지만 충분한 높이가 확보되어야 합니다.' },
+      { tag: '압력수조방식', text: '밀폐된 탱크에 물과 압축공기를 함께 넣고, 공기압으로 물을 밀어내는 방식입니다. 펌프 없이 압력을 얻을 수 있으나 수조 용량만큼만 방수할 수 있습니다.' },
     ],
   },
   {
@@ -17553,6 +17581,13 @@ const RG_WATER_COMMON = [
     desc: [
       rgField('종류', '자가발전설비/비상전원수전설비/축전지설비/전기저장장치 중 해당하는 란에 표시합니다.'),
       rgField('설치장소', '동명, 층, 실명을 기재합니다.'),
+    ],
+    noteTitle: '비상전원 종류 구분',
+    noteItems: [
+      { tag: '자가발전설비', text: '정전 시 디젤·가스 엔진으로 발전기를 돌려 전원을 직접 만들어 공급하는 설비입니다. 소방부하 전용/겸용 등으로 구분되며, 비교적 규모가 큰 건물에 주로 설치됩니다.' },
+      { tag: '비상전원수전설비', text: '외부 전력(한전) 전원을 화재에도 견디도록 내화 처리한 배선·수전설비로 끌어와 비상전원으로 쓰는 방식입니다. 별도 발전기 없이, 화재 초기 소화설비가 동작하는 동안 전원을 공급합니다.' },
+      { tag: '축전지설비', text: '평상시 충전해 둔 배터리(축전지)의 전기를 정전 시 방출해 공급하는 설비입니다. 유도등·수신기 등 비교적 적은 전력을 쓰는 설비의 비상전원으로 많이 쓰입니다.' },
+      { tag: '전기저장장치 (ESS)', text: '대용량 배터리에 전기를 저장해 두었다가 비상시 공급하는 설비입니다. 축전지설비보다 용량이 크고, 최근 지어진 건물에 주로 설치됩니다.' },
     ],
   },
 ];
@@ -17920,7 +17955,7 @@ const RG_PAGE2_SECTIONS = [
     img: './image/inspection/page 2/page2-다중이용업소.png',
     desc: [
       '해당 특정소방대상물에 현재 입점 중인 다중이용업소 업종에 ✔ 표시하고, 그 업소 숫자를 기입합니다.',
-      '휴게음식점, 일반음식점, 단란주점, 유흥주점 등이 해당됩니다.(해당 업소가 다중이용업소인지는 <b>다중이용업소판독기</b> 사용)',
+      '휴게음식점, 일반음식점, 노래방, PC방 등이 해당됩니다.(해당 업소가 다중이용업소인지는 <b>다중이용업소 해당 여부 판독기</b> 사용)',
       '해당 없는 경우 해당없음에 ✔ 표시합니다.',
     ],
   },
@@ -18048,7 +18083,8 @@ function renderRgChecklist(c) {
   c.appendChild(rgSectionLabel('설치된 소방시설 선택'));
 
   RG_FACILITY_GROUPS.forEach(function (group) {
-    var allItems = group.items;
+    var allItems = group.items.filter(function (i) { return rgItemVisible(i.id); });
+    if (!allItems.length) return;
 
     var header = document.createElement('div');
     header.className = 'rg-group-header';
@@ -18141,6 +18177,7 @@ function renderRgSections(c) {
   var allFlat = [];
   RG_FACILITY_GROUPS.forEach(function (g) {
     g.items.forEach(function (item) {
+      if (!rgItemVisible(item.id)) return;
       allFlat.push({ id: item.id, label: item.label, sectionLabel: g.sectionLabel });
     });
   });
@@ -18219,6 +18256,22 @@ function renderRgSections(c) {
         wBody.appendChild(descWrapW);
       }
 
+      if (wItem.noteItems && wItem.noteItems.length) {
+        var wNoteBox = document.createElement('div');
+        wNoteBox.className = 'rg-role-note';
+        var wNoteTitle = document.createElement('div');
+        wNoteTitle.className = 'rg-role-note-title';
+        wNoteTitle.innerHTML = '<span class="rg-note-badge">참고</span> ' + (wItem.noteTitle || '구분');
+        wNoteBox.appendChild(wNoteTitle);
+        wItem.noteItems.forEach(function (ni) {
+          var row = document.createElement('div');
+          row.className = 'rg-role-item';
+          row.innerHTML = '<span class="rg-role-tag">' + ni.tag + '</span>' + ni.text;
+          wNoteBox.appendChild(row);
+        });
+        wBody.appendChild(wNoteBox);
+      }
+
       wHeader.addEventListener('click', function () {
         wBody.hidden = !wBody.hidden;
         wHeader.classList.toggle('open', !wBody.hidden);
@@ -18281,9 +18334,12 @@ function renderFacilityBlock(c, item, selectedIds) {
   } else {
     var noImg = document.createElement('div');
     noImg.className = 'rg-section-rare';
+    var noImgText = (item.id === 'ac01')
+      ? '점검표 이미지는 준비 중입니다. 곧 추가될 예정입니다.'
+      : '이 시설은 특정한 상황에만 설치됩니다. 잘 쓰이지 않습니다.';
     noImg.innerHTML =
       '<span class="rg-rare-icon">ℹ️</span>' +
-      '<span>이 시설은 특정한 상황에만 설치됩니다. 잘 쓰이지 않습니다.</span>';
+      '<span>' + noImgText + '</span>';
     body.appendChild(noImg);
   }
 
