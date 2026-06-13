@@ -4959,16 +4959,20 @@ function renderInspection() {
 }
 
 function inspectionSelect(option, btn) {
+  // 전환 대기(550ms) 중 재클릭 차단 — 같은 버튼 연타/빠른 다른 버튼 클릭 시 중복 push·단계 건너뜀 방지
+  if (inspectionState.transitioning) return;
+  inspectionState.transitioning = true;
   if (btn) {
     btn.classList.add("selected");
-    // 같은 리스트 내 다른 버튼은 클릭 무효화
+    // 누른 버튼 포함 리스트 전체 클릭 무효화
     const list = btn.parentElement;
-    if (list) list.querySelectorAll("button").forEach((b) => { if (b !== btn) b.style.pointerEvents = "none"; });
+    if (list) list.querySelectorAll("button").forEach((b) => { b.style.pointerEvents = "none"; });
   }
   const currentNodeKey = inspectionState.current;
   setTimeout(() => {
     inspectionState.history.push({ node: currentNodeKey, label: option.label });
     inspectionState.current = option.next;
+    inspectionState.transitioning = false;
     renderInspection();
     const scrollEl = document.querySelector("#screen-inspection .scroll-content");
     if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: "smooth" });
@@ -5494,15 +5498,19 @@ function renderMultiuse() {
 }
 
 function multiuseSelect(option, btn) {
+  // 전환 대기(550ms) 중 재클릭 차단 — 중복 push·단계 건너뜀 방지
+  if (multiuseState.transitioning) return;
+  multiuseState.transitioning = true;
   if (btn) {
     btn.classList.add("selected");
     const list = btn.parentElement;
-    if (list) list.querySelectorAll("button.choice-button").forEach((b) => { if (b !== btn) b.style.pointerEvents = "none"; });
+    if (list) list.querySelectorAll("button.choice-button").forEach((b) => { b.style.pointerEvents = "none"; });
   }
   const currentNodeKey = multiuseState.current;
   setTimeout(() => {
     multiuseState.history.push({ node: currentNodeKey, label: option.label });
     multiuseState.current = option.next;
+    multiuseState.transitioning = false;
     renderMultiuse();
     const scrollEl = document.querySelector("#screen-multiuse .scroll-content");
     if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: "smooth" });
@@ -19951,12 +19959,8 @@ function goToRgGuideSection(tab, sectionId) {
 
   if (!openBtn) return;
 
-  // 개발자 모드일 때만 버튼 노출
-  try {
-    if (localStorage.getItem("devMode") === "true") {
-      openBtn.hidden = false;
-    }
-  } catch {}
+  // 항상 노출 (개발자 모드 무관)
+  openBtn.hidden = false;
 
   // ✏️ 도입부만 자주 고친다면 LETTER_INTRO 상수만 수정하면 됨.
   // 형식: LETTER_INTRO = 도입부 / "[개발자가 전하는 글]" = 구분선 / "숫자. 제목" = 챕터 시작
