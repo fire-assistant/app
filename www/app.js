@@ -44,12 +44,12 @@ function trackMenuClick(menuName) {
 
 // ── 패치노트 설정 (여기만 수정하면 됩니다) ──────────────────────────────
 const PATCH_NOTES = {
-  version: "v1.0.2",
+  version: "v1.0.1",
   date: "2026-06-13",
   items: [
-    { type: "notice",  text: "이 사이트는 법적기준이 아닙니다. 참고만해주세요!" },
-    { type: "new",     text: "① 참고법령 안내 기능 추가<br> ② 법정기한계산기 공휴일 자동반영<br>③ 안내 펫 일구 기능 추가<br>④ 계절테마 추가<br>&nbsp;&nbsp;&nbsp;(눈 아프면 우측 위 테마변경버튼 누르세요)" },
-    { type: "improve", text: "① 메인화면 메뉴 배치 및 이름, UI 변경 등<br>② 모바일 화면 확대 기능 추가" },
+    { type: "notice",  text: "자그마한 피드백이라도 큰 도움이 됩니다. 편한 마음으로 언제든 연락주세요!" },
+    { type: "new",     text: "① 참고법령 안내 기능 추가<br> ② 법정기한계산기 공휴일 자동반영<br>③ 안내 펫 일구 기능 추가"},
+    { type: "improve", text: "메인화면 메뉴 배치 및 이름, UI 변경 등" },
     { type: "fix",     text: "유틸리티 도구함 숫자입력 버그 수정" },
   ],
 };
@@ -2328,7 +2328,7 @@ function buildLodgingExceptionItems(results, input) {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상입니다." });
   }
   if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
-    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (autoDetection && autoDetection.status === "required" && singleDetector && singleDetector.status === "required") {
     exceptionItems.push({ category: "설치 제외", name: "단독경보형 감지기", status: "review", reason: "자동화재탐지설비가 설치되면 단독경보형 감지기는 중복 설치가 불필요합니다." });
@@ -2620,7 +2620,7 @@ function buildElderlyExceptionItems(results, input) {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상입니다." });
   }
   if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
-    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (autoDetection && autoDetection.status === "required" && singleDetector && singleDetector.status === "required") {
     exceptionItems.push({ category: "설치 제외", name: "단독경보형 감지기", status: "review", reason: "자동화재탐지설비가 설치되면 단독경보형 감지기는 중복 설치가 불필요합니다." });
@@ -2899,7 +2899,7 @@ function buildExceptionItems(results, input) {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상으로 봅니다." });
   }
   if (autoDetection && emergencyAlarm && autoDetection.status === "required" && emergencyAlarm.status === "required") {
-    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (waterSpray && waterSpray.status === "required" && hasParkingWaterSprayCondition) {
     exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 공간에 스프링클러설비가 설치될 수 있습니다." });
@@ -3011,6 +3011,17 @@ function renderResultGroup(targetId, items, excludedNames, allowedNames) {
   const filtered = isCriteriaTarget
     ? items.filter((item) => item.status !== "notRequired" && !excluded.has(item.name) && (!allowed || allowed.has(item.name)))
     : items;
+  // 연도별 탐색기: 1층 필로티 주차장(허가일<2019.8.13) → 설치 이유 맨 아래에 호스릴 가스계 현장확인 안내
+  if (targetId === "year-criteria-list"
+      && yearState.answers.yPilotiParkingFirstFloor === "yes"
+      && yPermitDateInt() < YD.D20190813) {
+    filtered.push({
+      category: "확인 필요",
+      name: "호스릴 가스계소화설비",
+      status: "review",
+      reason: "1층 필로티 구조 주차장입니다. 2019년 8월 13일 이전 허가 건물의 필로티 1층 주차장에는 호스릴 방식 가스계소화설비가 설치돼 있을 수 있으니 현장 확인이 필요합니다.",
+    });
+  }
   filtered.forEach((item) => {
     const fragment = template.content.cloneNode(true);
     const status = statusMeta[item.status];
@@ -6099,6 +6110,7 @@ const YD = {
   D20181018: 20181018,
   D20180627: 20180627,
   D20190806: 20190806,
+  D20190813: 20190813, // 필로티 1층 주차장 호스릴 가스계 현장확인 안내 기준일
   D20220225: 20220225,
   D20221201: 20221201,
   D20231201: 20231201,
@@ -6141,6 +6153,10 @@ const yearState = {
     yElectricalRoomArea: "",
     ySmokeControlArea: "0",
     yHasSmallUndergroundParking: "no",
+    // 주차장·전기실 예/아니오 게이트 + 필로티 (연도별 비아파트 공용, 한 번에 한 용도라 공용 1세트)
+    yHasIndoorParking: "no",
+    yHasElecRoom: "no",
+    yPilotiParkingFirstFloor: "no",
     // 근린생활시설 다중이용업소
     yHasMultiuseBusiness: "no",
     yMultiuseInBasement: "no",
@@ -6451,7 +6467,7 @@ const yearSteps = [
   {
     key: "yAptParkingElecSet",
     type: "ycompound",
-    title: "기계식 주차장·전기실 정보를 입력하세요",
+    title: "전기실 정보를 입력하세요",
     help: "물분무등소화설비 판단에 사용됩니다. 해당 없으면 0을 입력하세요.",
     condition: (ya) => ya.yEraChoice === "after2004" && ya.yOccupancyType === "apartment",
   },
@@ -8976,6 +8992,127 @@ function makeYearBinaryField(labelText, name) {
   return wrapper;
 }
 
+// 주차장/전기실 유무 게이트(예/아니오). "아니오" 선택 시 onNo로 관련 면적값 비움.
+function makeYearGateField(labelText, name, onNo) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "calc-form-row";
+  const label = document.createElement("label");
+  label.textContent = labelText;
+  wrapper.appendChild(label);
+  const buttons = document.createElement("div");
+  buttons.className = "choice-list";
+  [{ value: "yes", label: "예" }, { value: "no", label: "아니오" }].forEach((opt) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "choice-button";
+    if (yearState.answers[name] === opt.value) btn.classList.add("selected");
+    btn.innerHTML = `<strong>${opt.label}</strong>`;
+    btn.addEventListener("click", () => {
+      yearState.answers[name] = opt.value;
+      if (opt.value === "no" && typeof onNo === "function") onNo();
+      yearRenderCurrentStep();
+    });
+    buttons.appendChild(btn);
+  });
+  wrapper.appendChild(buttons);
+  return wrapper;
+}
+
+// 1층 필로티 개방형 주차장 — 부가 조건이라 갈림길 예/아니오가 아니라 체크박스로. 주차장="예" & 허가일<2019.8.13 일 때만 노출.
+function makeYearPilotiField() {
+  const wrapper = document.createElement("div");
+  wrapper.className = "calc-form-row";
+  const row = document.createElement("div");
+  row.style.cssText = "display:flex;align-items:center;gap:8px;";
+
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.setAttribute("role", "checkbox");
+  toggle.style.cssText = "flex:1;display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;text-align:left;font-size:14px;font-weight:600;transition:background var(--transition),border-color var(--transition),color var(--transition);";
+
+  const box = document.createElement("span");
+  box.style.cssText = "width:18px;height:18px;flex-shrink:0;border-radius:5px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;line-height:1;color:#fff;transition:background var(--transition),border-color var(--transition);";
+
+  const text = document.createElement("span");
+  text.textContent = "1층이 필로티 구조 개방형 주차장";
+
+  toggle.appendChild(box);
+  toggle.appendChild(text);
+
+  const applyState = () => {
+    const on = yearState.answers.yPilotiParkingFirstFloor === "yes";
+    toggle.setAttribute("aria-checked", on ? "true" : "false");
+    toggle.style.borderColor = on ? "var(--red)" : "var(--border)";
+    toggle.style.background = on ? "var(--red-dim2)" : "var(--surface2)";
+    toggle.style.color = on ? "var(--red-soft)" : "var(--text)";
+    box.style.background = on ? "var(--red)" : "transparent";
+    box.style.borderColor = on ? "var(--red)" : "var(--border2)";
+    box.textContent = on ? "✓" : "";
+  };
+  applyState();
+  toggle.addEventListener("click", () => {
+    yearState.answers.yPilotiParkingFirstFloor = yearState.answers.yPilotiParkingFirstFloor === "yes" ? "no" : "yes";
+    applyState();
+  });
+
+  const info = document.createElement("span");
+  info.className = "calc-mode-info";
+  info.textContent = "i";
+  info.setAttribute("aria-label", "필로티 구조 설명");
+  info.style.flexShrink = "0";
+  info.setAttribute("data-floating-tooltip", "필로티 = 1층에 벽 없이 기둥만 세우고 그 아래를 주차장으로 쓰는 구조(위층은 건물).");
+  info.addEventListener("click", (e) => e.stopPropagation());
+
+  row.appendChild(toggle);
+  row.appendChild(info);
+  wrapper.appendChild(row);
+  return wrapper;
+}
+
+// 주차장/전기실 그룹을 시각적으로 분리하는 테두리 박스 + 소제목
+function makeYearSectionBox(titleText) {
+  const box = document.createElement("div");
+  box.style.cssText = "border:1px solid var(--border2);border-radius:12px;padding:14px 14px 2px;margin-bottom:14px;";
+  const head = document.createElement("p");
+  head.textContent = titleText;
+  head.style.cssText = "margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:0.03em;color:var(--red-soft);";
+  box.appendChild(head);
+  return box;
+}
+
+// 연도별 비아파트 주차장·전기실 입력 묶음: 주차장 유무→면적/대수/필로티, 전기실 유무→면적
+function appendYearParkingElecGroup(wrapper, cfg) {
+  const ya = yearState.answers;
+
+  const parkBox = makeYearSectionBox("주차 공간");
+  parkBox.appendChild(makeYearGateField("건물 내부에 주차장이 있나요?", "yHasIndoorParking", () => {
+    cfg.parkFields.forEach((f) => { ya[f.key] = ""; });
+    ya.yPilotiParkingFirstFloor = "no";
+  }));
+  if (ya.yHasIndoorParking === "yes") {
+    cfg.parkFields.forEach((f) => {
+      parkBox.appendChild(makeYearField(f.label, f.key, ya[f.key], { min: 0, step: f.step ?? 0.1, placeholder: "없으면 0" }));
+    });
+    if (yPermitDateInt() < YD.D20190813) {
+      const divider = document.createElement("p");
+      divider.textContent = "추가 확인 사항";
+      divider.style.cssText = "margin:6px 0 10px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:0.03em;color:var(--text-muted);";
+      parkBox.appendChild(divider);
+      parkBox.appendChild(makeYearPilotiField());
+    }
+  }
+  wrapper.appendChild(parkBox);
+
+  const elecBox = makeYearSectionBox("전기실·발전실 등");
+  elecBox.appendChild(makeYearGateField("건물 내부에 전기실·발전실·변전실·전산실이 있나요?", "yHasElecRoom", () => {
+    ya[cfg.elecKey] = "";
+  }));
+  if (ya.yHasElecRoom === "yes") {
+    elecBox.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", cfg.elecKey, ya[cfg.elecKey], { min: 0, step: 0.1, placeholder: "없으면 0" }));
+  }
+  wrapper.appendChild(elecBox);
+}
+
 function yearRenderChoiceStep(step) {
   const container = document.createElement("div");
   const wrapper = document.createElement("div");
@@ -9222,65 +9359,105 @@ function yearRenderCompoundStep(step) {
   }
 
   if (step.key === "yParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yIndoorParkingArea", ya.yIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yMechanicalParkingCapacity", ya.yMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yElectricalRoomArea", ya.yElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "yIndoorParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "yMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "yElectricalRoomArea",
+    });
   }
 
   if (step.key === "yLodgingParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yLodgingIndoorParkingArea", ya.yLodgingIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yLodgingMechanicalParkingCapacity", ya.yLodgingMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yLodgingElectricalRoomArea", ya.yLodgingElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "yLodgingIndoorParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "yLodgingMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "yLodgingElectricalRoomArea",
+    });
   }
 
   if (step.key === "yElderlyParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yElderlyIndoorParkingArea", ya.yElderlyIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yElderlyMechanicalParkingCapacity", ya.yElderlyMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yElderlyElectricalRoomArea", ya.yElderlyElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "yElderlyIndoorParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "yElderlyMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "yElderlyElectricalRoomArea",
+    });
   }
 
   if (step.key === "yMedicalParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yMedicalIndoorParkingArea", ya.yMedicalIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yMedicalMechanicalParkingCapacity", ya.yMedicalMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yMedicalElectricalRoomArea", ya.yMedicalElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "yMedicalIndoorParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "yMedicalMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "yMedicalElectricalRoomArea",
+    });
   }
 
   if (step.key === "yBefore2004LodgingParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yBefore2004LodgingIndoorParkingArea", ya.yBefore2004LodgingIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yBefore2004LodgingMechanicalParkingCapacity", ya.yBefore2004LodgingMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yBefore2004LodgingElectricalRoomArea", ya.yBefore2004LodgingElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "yBefore2004LodgingIndoorParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "yBefore2004LodgingMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "yBefore2004LodgingElectricalRoomArea",
+    });
   }
 
   if (step.key === "yBefore2004MedicalParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yBefore2004MedicalIndoorParkingArea", ya.yBefore2004MedicalIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yBefore2004MedicalMechanicalParkingCapacity", ya.yBefore2004MedicalMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yBefore2004MedicalElectricalRoomArea", ya.yBefore2004MedicalElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "yBefore2004MedicalIndoorParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "yBefore2004MedicalMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "yBefore2004MedicalElectricalRoomArea",
+    });
   }
 
   if (step.key === "yBefore2004ElderlyParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yBefore2004ElderlyIndoorParkingArea", ya.yBefore2004ElderlyIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yBefore2004ElderlyMechanicalParkingCapacity", ya.yBefore2004ElderlyMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yBefore2004ElderlyElectricalRoomArea", ya.yBefore2004ElderlyElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "yBefore2004ElderlyIndoorParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "yBefore2004ElderlyMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "yBefore2004ElderlyElectricalRoomArea",
+    });
   }
 
   if (step.key === "yReligiousParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yReligiousIndoorParkingArea", ya.yReligiousIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yReligiousMechanicalParkingCapacity", ya.yReligiousMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yReligiousElectricalRoomArea", ya.yReligiousElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "yReligiousIndoorParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "yReligiousMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "yReligiousElectricalRoomArea",
+    });
   }
 
   if (step.key === "ySalesParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "ySalesIndoorParkingArea", ya.ySalesIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("지하 차고·주차장 바닥면적 합계(㎡)", "ySalesUndergroundParkingArea", ya.ySalesUndergroundParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "ySalesMechanicalParkingCapacity", ya.ySalesMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "ySalesElectricalRoomArea", ya.ySalesElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "ySalesIndoorParkingArea", step: 0.1 },
+        { label: "지하 차고·주차장 바닥면적 합계(㎡)", key: "ySalesUndergroundParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "ySalesMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "ySalesElectricalRoomArea",
+    });
   }
 
   if (step.key === "yOfficeParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yOfficeIndoorParkingArea", ya.yOfficeIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("지하 차고·주차장 바닥면적 합계(㎡)", "yOfficeUndergroundParkingArea", ya.yOfficeUndergroundParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yOfficeMechanicalParkingCapacity", ya.yOfficeMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yOfficeElectricalRoomArea", ya.yOfficeElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "yOfficeIndoorParkingArea", step: 0.1 },
+        { label: "지하 차고·주차장 바닥면적 합계(㎡)", key: "yOfficeUndergroundParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "yOfficeMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "yOfficeElectricalRoomArea",
+    });
   }
 
   if (step.key === "yFactorySpecialCombustibleSet") {
@@ -9291,14 +9468,17 @@ function yearRenderCompoundStep(step) {
   }
 
   if (step.key === "yFactoryParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yFactoryIndoorParkingArea", ya.yFactoryIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("지하 차고·주차장 바닥면적 합계(㎡)", "yFactoryUndergroundParkingArea", ya.yFactoryUndergroundParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yFactoryMechanicalParkingCapacity", ya.yFactoryMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yFactoryElectricalRoomArea", ya.yFactoryElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "yFactoryIndoorParkingArea", step: 0.1 },
+        { label: "지하 차고·주차장 바닥면적 합계(㎡)", key: "yFactoryUndergroundParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "yFactoryMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "yFactoryElectricalRoomArea",
+    });
   }
 
   if (step.key === "yAptParkingElecSet") {
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yAptMechanicalParkingCapacity", ya.yAptMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
     wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yAptElectricalRoomArea", ya.yAptElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
   }
 
@@ -9312,16 +9492,23 @@ function yearRenderCompoundStep(step) {
       wrapper.appendChild(makeYearField("주차장동 연면적(㎡)", "yAptParkingArea", ya.yAptParkingArea, { min: 0, step: 0.1, placeholder: "예: 5000" }));
       wrapper.appendChild(makeYearField("주차장동 지상 층수", "yAptParkingAbove", ya.yAptParkingAbove, { min: 0, step: 1, placeholder: "예: 0" }));
       wrapper.appendChild(makeYearField("주차장동 지하 층수", "yAptParkingBelow", ya.yAptParkingBelow, { min: 0, step: 1, placeholder: "예: 2" }));
-      wrapper.appendChild(makeYearField("주차장동 지하 바닥면적 합계(㎡)", "yAptParkingBasementArea", ya.yAptParkingBasementArea, { min: 0, step: 0.1, placeholder: "예: 5000" }));
     } else {
       wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yAptIndoorParkingArea", ya.yAptIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    }
+    // 기계식 주차 대수는 주차 정보와 한 화면에서 입력 (분법 이후 전용)
+    if (ya.yEraChoice === "after2004") {
+      wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yAptMechanicalParkingCapacity", ya.yAptMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
     }
   }
 
   if (step.key === "yBefore2004ReligiousParkingElecSet") {
-    wrapper.appendChild(makeYearField("건물 내부 차고·주차장 바닥면적(㎡)", "yBefore2004ReligiousIndoorParkingArea", ya.yBefore2004ReligiousIndoorParkingArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("기계식 주차 대수(대)", "yBefore2004ReligiousMechanicalParkingCapacity", ya.yBefore2004ReligiousMechanicalParkingCapacity, { min: 0, step: 1, placeholder: "없으면 0" }));
-    wrapper.appendChild(makeYearField("전기실·발전실·변전실·전산실 바닥면적(㎡)", "yBefore2004ReligiousElectricalRoomArea", ya.yBefore2004ReligiousElectricalRoomArea, { min: 0, step: 0.1, placeholder: "없으면 0" }));
+    appendYearParkingElecGroup(wrapper, {
+      parkFields: [
+        { label: "건물 내부 차고·주차장 바닥면적(㎡)", key: "yBefore2004ReligiousIndoorParkingArea", step: 0.1 },
+        { label: "기계식 주차 대수(대)", key: "yBefore2004ReligiousMechanicalParkingCapacity", step: 1 },
+      ],
+      elecKey: "yBefore2004ReligiousElectricalRoomArea",
+    });
   }
 
   if (step.key === "yMultiuseSimpleSprinklerCheck") {
@@ -9398,6 +9585,7 @@ function yearRenderCurrentStep() {
   else if (step.type === "ydate") node = yearRenderDateStep();
   else node = yearRenderNumberStep(step);
   inputEl.appendChild(node);
+  initFloatingTooltips(inputEl);
 
   const prevBtn = document.getElementById("year-prev-btn");
   const nextBtn = document.getElementById("year-next-btn");
@@ -9481,6 +9669,11 @@ function yearNormalizeAnswers() {
   const ta = parseFloat(ya.yTotalArea) || 0;
   const wlArea = autoArea ? 0 : (parseFloat(ya.yWindowlessArea) || 0);
   const usageArea = (k) => autoArea ? ta : (parseFloat(ya[k]) || 0);
+  // 별동 주차장 지하 바닥면적 합계 = (연면적÷전체층수)×지하층수 자동산정 (별도 입력칸 제거)
+  const pkAg = parseInt(ya.yAptParkingAbove) || 0;
+  const pkBf = parseInt(ya.yAptParkingBelow) || 0;
+  const pkArea = parseFloat(ya.yAptParkingArea) || 0;
+  const pkBasementArea = (pkBf > 0 && pkAg + pkBf > 0) ? Math.round((pkArea / (pkAg + pkBf)) * pkBf * 10) / 10 : 0;
   return {
     pd,
     permitDateInt: pd,
@@ -9705,7 +9898,7 @@ function yearNormalizeAnswers() {
     aptIndoorParkingArea: parseFloat(ya.yAptIndoorParkingArea) || 0,
     aptMechanicalParkingCapacity: parseInt(ya.yAptMechanicalParkingCapacity) || 0,
     aptElectricalRoomArea: parseFloat(ya.yAptElectricalRoomArea) || 0,
-    aptUndergroundParkingArea: parseFloat(ya.yAptUndergroundParkingArea) || parseFloat(ya.yAptParkingBasementArea) || 0,
+    aptUndergroundParkingArea: parseFloat(ya.yAptUndergroundParkingArea) || pkBasementArea || 0,
     aptHasSpecialStair: ya.yAptHasSpecialStair === "yes",
     // 공동주택 전용 (분법 이전)
     before2004AptHouseholds: parseInt(ya.yBefore2004AptHouseholds) || 0,
@@ -9714,7 +9907,7 @@ function yearNormalizeAnswers() {
     aptParkingArea: parseFloat(ya.yAptParkingArea) || 0,
     aptParkingAbove: parseInt(ya.yAptParkingAbove) || 0,
     aptParkingBelow: parseInt(ya.yAptParkingBelow) || 0,
-    aptParkingBasementArea: parseFloat(ya.yAptParkingBasementArea) || 0,
+    aptParkingBasementArea: pkBasementArea,
     before2004AptHasLargeFloor450: ya.yBefore2004AptHasLargeFloor450 === "yes",
     before2004AptHasLargeFloor600: ya.yBefore2004AptHasLargeFloor600 === "yes",
     before2004AptDetFloor600: ya.yBefore2004AptDetFloor600 === "yes",
@@ -14114,7 +14307,7 @@ function yearBuildApartmentExceptionItems(results, inp) {
     items.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상으로 봅니다." });
   }
   if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
-    items.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    items.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   return items;
 }
@@ -15148,7 +15341,7 @@ function yearBuildLodgingExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상입니다." });
   }
   if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
-    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (autoDetection && autoDetection.status === "required" && singleDetector && singleDetector.status === "required") {
     exceptionItems.push({ category: "설치 제외", name: "단독경보형 감지기", status: "review", reason: "자동화재탐지설비가 설치되면 단독경보형 감지기는 중복 설치가 불필요합니다." });
@@ -15183,7 +15376,7 @@ function yearBuildElderlyExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상입니다." });
   }
   if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
-    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (autoDetection && autoDetection.status === "required" && singleDetector && singleDetector.status === "required") {
     exceptionItems.push({ category: "설치 제외", name: "단독경보형 감지기", status: "review", reason: "자동화재탐지설비가 설치되면 단독경보형 감지기는 중복 설치가 불필요합니다." });
@@ -15217,7 +15410,7 @@ function yearBuildMedicalExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상입니다." });
   }
   if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
-    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (autoDetection && autoDetection.status === "required" && singleDetector && singleDetector.status === "required") {
     exceptionItems.push({ category: "설치 제외", name: "단독경보형 감지기", status: "review", reason: "자동화재탐지설비가 설치되면 단독경보형 감지기는 중복 설치가 불필요합니다." });
@@ -15244,7 +15437,7 @@ function yearBuildReligiousExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상으로 봅니다." });
   }
   if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
-    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
     exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
@@ -15268,7 +15461,7 @@ function yearBuildSalesExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상으로 봅니다." });
   }
   if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
-    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
     exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
@@ -15292,7 +15485,7 @@ function yearBuildOfficeExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상으로 봅니다." });
   }
   if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
-    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
     exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
@@ -15313,7 +15506,7 @@ function yearBuildFactoryExceptionItems(results, inp) {
   const parkingCondition = Math.max(inp.factoryIndoorParkingArea, inp.factoryUndergroundParkingArea || 0) >= 200 || inp.factoryMechanicalParkingCapacity >= 20;
 
   if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
-    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (sprinkler && sprinkler.status === "required" && drencher && drencher.status === "required") {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상으로 봅니다." });
@@ -15344,7 +15537,7 @@ function yearBuildNeighborhoodExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상으로 봅니다." });
   }
   if (autoDetection && autoDetection.status === "required" && emergencyAlarm && emergencyAlarm.status === "required") {
-    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 면제 관계로 검토할 수 있습니다." });
+    exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
     exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 공간에 스프링클러설비가 설치될 수 있습니다." });
@@ -15992,6 +16185,9 @@ function yearWizardRestart() {
   ya.yElectricalRoomArea = "";
   ya.ySmokeControlArea = "0";
   ya.yHasSmallUndergroundParking = "no";
+  ya.yHasIndoorParking = "no";
+  ya.yHasElecRoom = "no";
+  ya.yPilotiParkingFirstFloor = "no";
   // 근린생활시설 다중이용업소
   ya.yHasMultiuseBusiness = "no";
   ya.yMultiuseInBasement = "no";
