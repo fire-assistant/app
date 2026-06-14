@@ -45,7 +45,7 @@ function trackMenuClick(menuName) {
 // ── 패치노트 설정 (여기만 수정하면 됩니다) ──────────────────────────────
 const PATCH_NOTES = {
   version: "v1.0.1",
-  date: "2026-06-13",
+  date: "2026-06-14",
   items: [
     { type: "notice",  text: "자그마한 피드백이라도 큰 도움이 됩니다. 편한 마음으로 언제든 연락주세요!" },
     { type: "new",     text: "① 참고법령 안내 기능 추가<br> ② 법정기한계산기 공휴일 자동반영<br>③ 안내 펫 일구 기능 추가"},
@@ -2334,7 +2334,7 @@ function buildLodgingExceptionItems(results, input) {
     exceptionItems.push({ category: "설치 제외", name: "단독경보형 감지기", status: "review", reason: "자동화재탐지설비가 설치되면 단독경보형 감지기는 중복 설치가 불필요합니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
   }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
@@ -2348,7 +2348,7 @@ function buildLodgingRequiredItems(results, input, exceptionItems) {
   let requiredItems = results.filter((r) => r.status === "required" && !excludedNames.has(r.name));
   if (parkingCondition && input.lodgingElectricalRoomArea < 300) {
     requiredItems = requiredItems.filter((r) => r.name !== "물분무등소화설비");
-    if (!requiredItems.some((r) => r.name.includes("스프링클러설비"))) {
+    if (!requiredItems.some((r) => r.name === "스프링클러설비")) {
       requiredItems.push({
         category: categories.extinguishing,
         name: "스프링클러설비(주차 관련 대체설비)",
@@ -2626,7 +2626,7 @@ function buildElderlyExceptionItems(results, input) {
     exceptionItems.push({ category: "설치 제외", name: "단독경보형 감지기", status: "review", reason: "자동화재탐지설비가 설치되면 단독경보형 감지기는 중복 설치가 불필요합니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
   }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
@@ -2640,7 +2640,7 @@ function buildElderlyRequiredItems(results, input, exceptionItems) {
   let requiredItems = results.filter((r) => r.status === "required" && !excludedNames.has(r.name));
   if (parkingCondition && input.elderlyElectricalRoomArea < 300) {
     requiredItems = requiredItems.filter((r) => r.name !== "물분무등소화설비");
-    if (!requiredItems.some((r) => r.name.includes("스프링클러설비"))) {
+    if (!requiredItems.some((r) => r.name === "스프링클러설비")) {
       requiredItems.push({
         category: categories.extinguishing,
         name: "스프링클러설비(주차 관련 대체설비)",
@@ -2846,7 +2846,7 @@ function buildMedicalExceptionItems(results, input) {
     exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치대상 목록에서 제외됩니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
   }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
@@ -2860,7 +2860,7 @@ function buildMedicalRequiredItems(results, input, exceptionItems) {
   let requiredItems = results.filter((r) => r.status === "required" && !excludedNames.has(r.name));
   if (parkingCondition && input.medicalElectricalRoomArea < 300) {
     requiredItems = requiredItems.filter((r) => r.name !== "물분무등소화설비");
-    if (!requiredItems.some((r) => r.name.includes("스프링클러설비"))) {
+    if (!requiredItems.some((r) => r.name === "스프링클러설비")) {
       requiredItems.push({
         category: categories.extinguishing,
         name: "스프링클러설비(주차 관련 대체설비)",
@@ -2901,8 +2901,8 @@ function buildExceptionItems(results, input) {
   if (autoDetection && emergencyAlarm && autoDetection.status === "required" && emergencyAlarm.status === "required") {
     exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
-  if (waterSpray && waterSpray.status === "required" && hasParkingWaterSprayCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 공간에 스프링클러설비가 설치될 수 있습니다." });
+  if (waterSpray && waterSpray.status === "required" && hasParkingWaterSprayCondition && !input.pilotiParkingFirstFloor) {
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 공간에 스프링클러설비가 설치될 수 있습니다." });
   }
   if (input.pilotiParkingFirstFloor) {
     exceptionItems.unshift({ category: "확인 필요", name: "호스릴 가스계소화설비", status: "review", reason: "1층 필로티 구조 주차장입니다. 2019년 8월 13일 이전 허가 건물의 필로티 1층 주차장에는 호스릴 방식 가스계소화설비가 설치돼 있을 수 있으니 현장 확인이 필요합니다." });
@@ -2920,7 +2920,7 @@ function buildRequiredItems(results, input, exceptionItems) {
 
   if (parkingWaterSprayCondition && input.electricalRoomArea < 300) {
     requiredItems = requiredItems.filter((item) => item.name !== "물분무등소화설비");
-    if (!requiredItems.some((item) => item.name.includes("스프링클러설비"))) {
+    if (!input.pilotiParkingFirstFloor && !requiredItems.some((item) => item.name === "스프링클러설비")) {
       requiredItems.push({
         category: categories.extinguishing,
         name: "스프링클러설비(주차 관련 대체설비)",
@@ -3270,7 +3270,7 @@ function renderResults(results, input) {
     ibFloorsChip(input.aboveGroundFloors, input.basementFloors),
   ]);
   renderSimpleRequiredList(requiredItems);
-  renderResultGroup("criteria-list", results, excludedNames, requiredItems.map((i) => i.name));
+  renderResultGroup("criteria-list", requiredItems, excludedNames, requiredItems.map((i) => i.name));
   renderResultGroup("exception-list", exceptionItems);
   renderMultiuseEntryButton(input);
 }
@@ -3556,7 +3556,7 @@ function showResults() {
       ibFloorsChip(input.lodgingAboveGroundFloors, input.lodgingBasementFloors),
     ]);
     renderSimpleRequiredList(requiredItems);
-    renderResultGroup("criteria-list", results, excludedNames, requiredItems.map((i) => i.name));
+    renderResultGroup("criteria-list", requiredItems, excludedNames, requiredItems.map((i) => i.name));
     renderResultGroup("exception-list", exceptionItems);
     renderLodgingMultiuseEntryButton(input);
     renderExtraItems(input);
@@ -3579,7 +3579,7 @@ function showResults() {
       ibFloorsChip(input.elderlyAboveGroundFloors, input.elderlyBasementFloors),
     ]);
     renderSimpleRequiredList(requiredItems);
-    renderResultGroup("criteria-list", results, excludedNames, requiredItems.map((i) => i.name));
+    renderResultGroup("criteria-list", requiredItems, excludedNames, requiredItems.map((i) => i.name));
     renderResultGroup("exception-list", exceptionItems);
     const button = document.getElementById("open-multiuse-safety");
     if (button) button.classList.add("hidden");
@@ -3610,7 +3610,7 @@ function showResults() {
       ibFloorsChip(input.medicalAboveGroundFloors, input.medicalBasementFloors),
     ]);
     renderSimpleRequiredList(requiredItems);
-    renderResultGroup("criteria-list", results, excludedNames, requiredItems.map((i) => i.name));
+    renderResultGroup("criteria-list", requiredItems, excludedNames, requiredItems.map((i) => i.name));
     renderResultGroup("exception-list", exceptionItems);
     const button = document.getElementById("open-multiuse-safety");
     if (button) button.classList.add("hidden");
@@ -6126,7 +6126,7 @@ const yearState = {
     yEraChoice: "after2004",
     yOccupancyType: "neighborhood",
     yAutoCalcAreas: "yes",
-    yPermitdate: "2026-06-13",
+    yPermitdate: "2026-06-14",
     yTotalArea: "1500",
     yAboveGroundFloors: "4",
     yBasementFloors: "0",
@@ -6501,7 +6501,7 @@ const yearSteps = [
       { value: "yes", label: "예 (갓복도형)", description: "제연설비 면제 대상" },
       { value: "no", label: "아니오", description: "일반 구조" },
     ],
-    condition: (ya) => ya.yOccupancyType === "apartment" && ya.yApartmentSubtype === "apt" && ya.yAptHasSpecialStair === "yes",
+    condition: (ya) => ya.yOccupancyType === "apartment" && ya.yApartmentSubtype === "apt" && ya.yAptHasSpecialStair === "yes" && !yearIsAutoAreaMode(),
   },
   {
     key: "yAptHouseholds",
@@ -7650,7 +7650,7 @@ const yearSteps = [
       { value: "yes", label: "예", description: "24시간 화재 감시 근무자 상주" },
       { value: "no", label: "아니오", description: "24시간 감시 근무자 없음" },
     ],
-    condition: (ya, pd) => ya.yOccupancyType === "factory" && pd >= YD.D20140708 && pd < YD.D20221201 && ya.yFactoryHasFloor1500 === "yes",
+    condition: (ya, pd) => ya.yOccupancyType === "factory" && pd >= YD.D20140708 && pd < YD.D20221201 && ya.yFactoryHasFloor1500 === "yes" && !yearIsAutoAreaMode(),
   },
   {
     key: "yFactoryHas50Workers",
@@ -10352,7 +10352,7 @@ function buildBefore2004ExceptionItems(results, pd, options = {}) {
   // B-4) 자탐 + SP/연결살수 → 헤드 설치 층의 자탐 감지기 생략 가능
   if (isReq("자동화재탐지설비") && (isReq("스프링클러설비") || isReq("연결살수설비"))) {
     exceptionItems.push({ category: "설치 제외 검토", name: "자동화재탐지설비 감지기 (헤드 설치 층)", status: "review",
-      reason: "스프링클러설비 또는 연결살수설비가 함께 설치된 경우, 해당 헤드가 설치된 층(또는 부분)에는 자동화재탐지설비의 감지기를 생략할 수 있습니다. 실무적으로 흔히 적용됩니다." });
+      reason: "스프링클러설비 또는 연결살수설비가 함께 설치된 경우, 해당 헤드가 설치된 층(또는 부분)에는 자동화재탐지설비의 감지기를 생략할 수 있습니다." });
   }
 
   if (exceptionItems.length === 0) {
@@ -15350,7 +15350,7 @@ function yearBuildLodgingExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "휴대용비상조명등", status: "review", reason: "숙박시설 복도에 비상조명등이 설치되면 객실에 설치하는 휴대용비상조명등의 설치는 제외될 수 있습니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
   }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
@@ -15382,7 +15382,7 @@ function yearBuildElderlyExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "단독경보형 감지기", status: "review", reason: "자동화재탐지설비가 설치되면 단독경보형 감지기는 중복 설치가 불필요합니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
   }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
@@ -15416,7 +15416,7 @@ function yearBuildMedicalExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "단독경보형 감지기", status: "review", reason: "자동화재탐지설비가 설치되면 단독경보형 감지기는 중복 설치가 불필요합니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간은 물분무등소화설비 기준이 적용되나, 대체설비로 스프링클러설비를 설치할 수 있습니다." });
   }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
@@ -15440,7 +15440,7 @@ function yearBuildReligiousExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
   }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
@@ -15464,7 +15464,7 @@ function yearBuildSalesExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
   }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
@@ -15488,7 +15488,7 @@ function yearBuildOfficeExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
   }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
@@ -15512,7 +15512,7 @@ function yearBuildFactoryExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "연결살수설비", status: "review", reason: "스프링클러설비가 설치 대상이면 연결살수설비는 설치 제외 대상으로 봅니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 주차 공간에 스프링클러설비를 설치할 수 있습니다." });
   }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
@@ -15540,7 +15540,7 @@ function yearBuildNeighborhoodExceptionItems(results, inp) {
     exceptionItems.push({ category: "설치 제외", name: "비상경보설비", status: "review", reason: "자동화재탐지설비가 설치되면 비상경보설비는 설치 제외 대상입니다." });
   }
   if (waterSpray && waterSpray.status === "required" && parkingCondition) {
-    exceptionItems.push({ category: "대체설비", name: "주차장 관련 스프링클러설비 대체 가능", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 공간에 스프링클러설비가 설치될 수 있습니다." });
+    exceptionItems.push({ category: "대체설비", name: "물분무등소화설비", status: "review", reason: "주차 관련 공간의 기본 기준은 물분무등소화설비이며, 그 대체설비로 해당 공간에 스프링클러설비가 설치될 수 있습니다." });
   }
   if (!exceptionItems.length) {
     exceptionItems.push({ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." });
@@ -16102,7 +16102,9 @@ function yearShowResults() {
   ensureAutoFireNotify30F(results, inp);
 
   const excludedNames = new Set(exceptionItems.filter((e) => e.category === "설치 제외").map((e) => e.name));
-  const hasParkingReplacement = exceptionItems.some((e) => e.category === "대체설비" && e.name === "주차장 관련 스프링클러설비 대체 가능");
+  const hasParkingReplacement = exceptionItems.some((e) => e.category === "대체설비" && e.name === "물분무등소화설비");
+  // 1층 필로티 주차장(허가일<2019.8.13)이면 주차 공간은 호스릴 가스계로 보고, 주차 관련 스프링클러 대체는 표시하지 않는다
+  const pilotiActive = yearState.answers.yPilotiParkingFirstFloor === "yes" && yPermitDateInt() < YD.D20190813;
   let allRequiredItems = results.filter((r) => r.status === "required" || r.status === "review");
   let requiredItems = allRequiredItems.filter((r) => !excludedNames.has(r.name));
 
@@ -16125,7 +16127,7 @@ function yearShowResults() {
 
     // 이미 일반 스프링클러설비가 required(전층)가 아닌 경우에만 주차 전용 항목 추가
     const mainSprinkler = requiredItems.find((r) => r.name === "스프링클러설비");
-    if (!mainSprinkler) {
+    if (!mainSprinkler && !pilotiActive) {
       requiredItems.push({
         category: categories.extinguishing,
         name: "스프링클러설비(주차 관련 대체설비)",
@@ -16138,10 +16140,13 @@ function yearShowResults() {
   document.getElementById("year-result-summary").innerHTML = summaryHtml;
   renderSimpleRequiredList(requiredItems, "year-required-list");
   renderYearExtraItems(inp);
-  renderResultGroup("year-criteria-list", results, [...excludedNames], requiredItems.map((i) => i.name));
+  renderResultGroup("year-criteria-list", requiredItems, [...excludedNames], requiredItems.map((i) => i.name));
   let visibleExceptionItems = inp.occupancyType === "apartment"
     ? exceptionItems.filter((item) => item.status !== "notRequired")
     : exceptionItems;
+  if (pilotiActive) {
+    visibleExceptionItems = visibleExceptionItems.filter((item) => !(item.category === "대체설비" && item.name === "물분무등소화설비"));
+  }
   if (!visibleExceptionItems.length) {
     visibleExceptionItems = [{ category: "안내", name: "설치 제외·대체 없음", status: "notRequired", reason: "현재 입력값 기준으로 별도 면제 또는 대체로 표시할 항목이 없습니다." }];
   }
